@@ -791,11 +791,101 @@ Salida observada:
 
 El agente contrasta por listado cuatro documentos: docs/ROADMAP.md, docs/validations/01-structure.md, docs/validations/02-handover-checks.md y docs/validations/verification - resume.md. No aparecen cambios de aplicacion o lockfile en la salida aportada; no se infiere que los artefactos ignorados esten ausentes. No se han ejecutado git add ni git commit.
 
+## PHASE1-CLOSE-01: aprobacion y commit de fase 1
+
+| Campo | Evidencia |
+| --- | --- |
+| Fecha | 2026-11-13; salida sin hora propia |
+| Ejecutor y fuente | Mantenedor; aprobacion y salidas Git Bash compartidas en el chat |
+| Preparacion | Mantenedor ejecuto git add .; diff cached name-status mostro exclusivamente los cuatro documentos previstos como A |
+| Revision | Mantenedor ejecuto git diff --cached y confirmo: "apruebo el contenido." |
+| Comando de commit | `git commit -m "docs: document verified project handover (phase 1)"` |
+| Observado | Rama validation-init, hash corto 3f31fdd, cuatro archivos nuevos, 1534 inserciones, codigo de salida 0 en el contexto del terminal |
+| Resultado | ✅ Hitos 1.4-1.6 completados; fase 1 cerrada con limites explicitos |
+| Limites | No demuestra push, estado limpio posterior ni resolucion de discrepancias de producto o avisos de dependencias |
+
+Salida del mantenedor:
+
+```text
+[validation-init 3f31fdd] docs: document verified project handover (phase 1)
+ 4 files changed, 1534 insertions(+)
+ create mode 100644 docs/ROADMAP.md
+ create mode 100644 docs/validations/01-structure.md
+ create mode 100644 docs/validations/02-handover-checks.md
+ create mode 100644 docs/validations/verification - resume.md
+```
+
+Esta nota y la sincronizacion del estado se redactan despues de 3f31fdd; no forman parte de ese commit y quedan pendientes de versionar. No se modifica el commit creado ni se ejecuta push. GIT-STATUS-01 conserva el estado historico anterior al staging.
+
 ## Siguiente paso: clasificacion del resumen del hito 1.4
 
 El bloque previsto de API/calidad esta contrastado: nueve rutas con casos concretos, PARAM-OP-01, PARAM-DATES-01, METRICS-FULL-01, 15 tests backend, cinco frontend, lint y build. La [matriz del resumen](verification%20-%20resume.md#matriz-de-contraste-del-resumen) conserva ✅ con alcance, ❌ para la incoherencia del periodo UI y ❓ para exactitud global de KPI, estados UI y parada. No se exige que todas las filas sean ✅ ni se ocultan limites para cerrar el handover.
 
-Hitos 1.4 y 1.5 en revision de cierre. GIT-STATUS-01 identifica docs como unico cambio visible; los cuatro documentos son candidatos al commit de fase 1, no estan staged ni aprobados automaticamente. Revisar contenido y enlaces antes de preparar staging; git diff ordinario no muestra archivos no versionados. No revertir cambios del mantenedor ni crear commits sin autorizacion explicita. Vulnerabilidades npm, aviso TestClient y chunk grande siguen pendientes de evaluacion, sin cambios automaticos.
+PHASE1-CLOSE-01 registra aprobacion y commit de los cuatro documentos. Por requisito posterior del mantenedor, falta integrar fase 1 mediante PR antes de iniciar fase 2: incluir notas locales, publicar validation-init, revisar y hacer merge hacia main del fork, sincronizar main y eliminar validation-init local/remota. Vulnerabilidades npm, aviso TestClient y chunk grande siguen pendientes de evaluacion, sin cambios automaticos.
+
+## PR de fase 1: borrador y seguimiento de integracion
+
+Destino comprobado por el agente: origin apunta al fork EricDevs/ai-eng-financial-dashboard-context-project; git ls-remote --symref origin HEAD devuelve refs/heads/main. GitHub CLI esta disponible. Esto no demuestra autenticacion, push, existencia de PR ni merge. Rama actual validation-init; las tres notas posteriores a 3f31fdd estan modificadas y aun deben incluirse en la rama.
+
+Titulo propuesto: `docs: document verified project handover (phase 1)`.
+
+Base: main del fork EricDevs. Head: validation-init. No se propone un PR al repositorio upstream.
+
+### Cuerpo propuesto del PR
+
+#### Resumen
+
+Documenta el handover del dashboard financiero y el plan de cuatro fases. Fase 1 revisada y aprobada por el mantenedor; commit inicial 3f31fdd. No implementa funcionalidades ni reglas de agentes ni memoria del proyecto.
+
+#### Alcance
+
+- Mapa de estructura, servicios, puertos, entradas y flujo React/Vite/FastAPI.
+- Informe canonico consolidado, con afirmaciones confirmadas, discrepancias y limites pendientes.
+- Registro reproducible de comandos, resultados, intentos bloqueados y avisos.
+- Roadmap incremental, con commits independientes e integracion de fase 1 antes de fase 2.
+- Notas de aprobacion y cierre posteriores al commit inicial; no se reescribe 3f31fdd.
+
+#### Verificacion registrada
+
+- Compose, arranque, health, nueve rutas GET con casos concretos y flujo UI/proxy contrastados.
+- Dos controles negativos HTTP 422: literal invalido y fechas requeridas omitidas.
+- METRICS-FULL-01: 360 movimientos, orden por fecha y extremos coincidentes con facets.
+- Backend: 15 tests aprobados; frontend: cinco tests de utilidades aprobados.
+- ESLint y build TypeScript/Vite completados sin errores.
+- Enlaces locales y bloques Markdown comprobados por el agente.
+
+Estas son comprobaciones locales registradas, no resultados de CI ni garantia de cobertura exhaustiva. Comandos y salidas completos en docs/validations/02-handover-checks.md.
+
+#### Limites y riesgos
+
+- Periodo UI fijo 2024 frente a datos observados 2025-2026; discrepancia de producto no corregida.
+- Exactitud global de KPI/series, estados UI y efectos de parada no confirmados.
+- 21 vulnerabilidades reportadas por npm: 1 low, 12 moderate y 8 high; evaluacion pendiente, sin remediacion automatica.
+- Aviso de deprecacion TestClient y aviso de chunk frontend mayor de 500 kB conservados.
+- Sin cambios de codigo, dependencias, reglas ni memory-bank en esta fase.
+
+#### Revision e integracion
+
+- [x] Contenido inicial aprobado por el mantenedor; commit 3f31fdd creado.
+- [ ] Notas posteriores revisadas e incluidas en validation-init.
+- [ ] Diff final del PR limitado a documentacion; requisitos/checks de GitHub revisados.
+- [ ] PR merged en main; URL y hash de merge registrados.
+- [ ] Main local sincronizado sin perder cambios.
+- [ ] Validation-init eliminada local/remota despues del merge.
+- [ ] Rama nueva de fase 2 creada desde main actualizado.
+
+### Estado de integracion
+
+| Dato | Estado |
+| --- | --- |
+| URL y numero de PR | Pendientes |
+| Publicacion de validation-init | Pendiente |
+| Revision final y checks GitHub | Pendientes; no se afirma CI configurada |
+| Metodo y hash de merge | Pendientes; conservar identificacion del commit de fase 1 |
+| Sincronizacion de main y eliminacion local/remota | Pendientes |
+| Rama fase 2 | Pendiente; nombre propuesto phase-2-engineering-findings |
+
+No hacer push forzado, omitir protecciones ni borrar ramas con cambios no integrados. Si se usa squash, registrar su hash y la relacion con 3f31fdd, que puede no quedar como ancestro de main. No se han ejecutado push, merge, eliminacion ni creacion de ramas por el agente.
 
 ## Seguimiento de comprobaciones
 
@@ -828,7 +918,8 @@ Hitos 1.4 y 1.5 en revision de cierre. GIT-STATUS-01 identifica docs como unico 
 - [x] PARAM-DATES-01: omision de ambas fechas rechazada con HTTP 422 y dos errores missing.
 - [x] METRICS-FULL-01: 360 movimientos, orden por fecha y extremos coincidentes con facets.
 - [x] GIT-STATUS-01: docs es el unico directorio no versionado mostrado; cuatro documentos identificados, sin staging ni commit.
+- [x] PHASE1-CLOSE-01: contenido aprobado por el mantenedor y commit 3f31fdd creado para los cuatro documentos de fase 1.
 
 RUN-01 esta aprobada para el arranque inicial observado. `docker compose up --build` construye imagenes y arranca servidores de desarrollo; el [Dockerfile frontend](../../frontend/Dockerfile) no ejecuta `npm run build`, por lo que no sustituye la comprobacion posterior de compilacion con TypeScript y Vite.
 
-El hito 1.5 queda en revision de cierre: los resultados previstos estan conservados con ejecutor, comando, esperado, observado y alcance, incluidos el intento frontend bloqueado, su resolucion y los avisos. Los limites restantes permanecen en el [informe canonico](verification%20-%20resume.md). Falta revisar el diff y acordar el cierre documental antes del commit de fase 1; este registro no autoriza cambios de producto ni remediaciones de dependencias.
+El hito 1.5 queda completado tras la aprobacion del contenido: los resultados previstos estan conservados con ejecutor, comando, esperado, observado y alcance, incluidos el intento frontend bloqueado, su resolucion y los avisos. PHASE1-CLOSE-01 registra el cierre con commit. Los limites restantes permanecen en el [informe canonico](verification%20-%20resume.md); este registro no autoriza cambios de producto ni remediaciones de dependencias.

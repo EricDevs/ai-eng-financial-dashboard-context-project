@@ -4,24 +4,26 @@ Fecha: 2026-11-12. Objetivo: cumplir las cuatro fases de la imagen adjunta con h
 
 ## 1. Alcance y estado inicial
 
-Esta entrega crea el [mapa de estructura](validations/01-structure.md) y este roadmap; posteriormente se consolidaron los informes en el [informe canonico](validations/verification%20-%20resume.md). No implementa aun reglas ni memoria ni crea commits. Al 2026-11-13, el bloque previsto de API/calidad esta contrastado: nueve rutas con casos concretos, dos controles negativos, lista completa, ambas suites, lint y build. Hitos 1.4 y 1.5 en revision documental; limites y riesgos permanecen explicitos. Las fases solo se cierran cuando sus criterios y su commit estan comprobados.
+Esta entrega crea el [mapa de estructura](validations/01-structure.md) y este roadmap; posteriormente se consolidaron los informes en el [informe canonico](validations/verification%20-%20resume.md). No implementa aun reglas ni memoria. Al 2026-11-13, el mantenedor aprobo el contenido y creo el commit de fase 1 `3f31fdd`: nueve rutas con casos concretos, dos controles negativos, lista completa, ambas suites, lint y build contrastados. Hitos 1.1-1.6 completados; limites y riesgos permanecen explicitos. Las fases solo se cierran cuando sus criterios y su commit estan comprobados.
 
 | Elemento | Estado observado | Evidencia |
 | --- | --- | --- |
 | Fork y clon | Confirmados por el mantenedor; origin apunta a EricDevs; rama activa `validation-init` contrastada | [Evidencia del hito 1.1](validations/verification%20-%20resume.md) |
 | Mapa de estructura y entradas | Hito 1.2 completado el 2026-11-13: mapa, servicios/puertos, nueve rutas GET y flujo UI/proxy contrastados | [01-structure.md](validations/01-structure.md), [OPENAPI-01 y UI-PROXY-01](validations/02-handover-checks.md) |
-| Resumen canonico | Hito 1.3 completado mediante sintesis del mantenedor; matriz tecnica clasificada con ✅ / ❌ / ❓ y limites explicitos; revision final pendiente | [Informe canonico](validations/verification%20-%20resume.md), [SUMMARY-01](validations/02-handover-checks.md) |
+| Resumen canonico | Hito 1.3 completado mediante sintesis del mantenedor; matriz tecnica clasificada con ✅ / ❌ / ❓ y limites explicitos; contenido final aprobado por el mantenedor | [Informe canonico](validations/verification%20-%20resume.md), [SUMMARY-01](validations/02-handover-checks.md) |
 | Servicios | Frontend Vite y API FastAPI declarados en Compose | [docker-compose.yml](../docker-compose.yml) |
 | Reglas y skills locales | `.agents` no existe | [AGENTS.md](../AGENTS.md), [README.md](../README.md) |
 | Memoria del proyecto | `memory-bank` no existe | Consulta del directorio indicado por [AGENTS.md](../AGENTS.md) |
 | Validacion ejecutable | Casos de nueve rutas, dos controles negativos, lista completa, 15 tests backend, cinco frontend, lint y build aprobados; historial de bloqueos y avisos conservado. No implica cobertura exhaustiva ni exactitud global de la UI | [Registro de comprobaciones](validations/02-handover-checks.md) |
-| Commits por fase | Pendientes | Se registraran sus hashes al cerrar cada fase |
+| Commits por fase | Fase 1: `3f31fdd`; fases 2-4 pendientes | [PHASE1-CLOSE-01](validations/02-handover-checks.md#phase1-close-01-aprobacion-y-commit-de-fase-1) |
 
 Git mostraba inicialmente `docs/` y el informe de la raiz como no versionados. Por solicitud explicita del mantenedor, los informes se consolidaron y el de la raiz se traslado a validations. Conservar los demas cambios locales y revisar el alcance antes de incluir documentos en un commit. No usar `git add .` para cerrar una fase.
 
 ## 2. Metodo y dependencias
 
 Secuencia obligatoria: fase 1 -> fase 2 -> fase 3 -> fase 4. No cerrar una fase sin su evidencia y su commit propio; un unico commit para las cuatro fases es incompleto segun la imagen. Se permiten incrementos internos, pero debe poder identificarse el cierre separado de cada fase.
+
+Requisito adicional acordado con el mantenedor: antes de avanzar a fase 2, integrar fase 1 mediante PR documentado de validation-init a main en el fork EricDevs, revisar el PR, hacer merge, actualizar main local y eliminar validation-init local/remota. Crear despues una rama nueva para fase 2 desde main actualizado. El commit 3f31fdd confirma el cierre documental, no el cierre de integracion; PR, merge y limpieza siguen pendientes. No eliminar ramas antes del merge ni usar borrado forzado para eludir cambios no integrados.
 
 Cada hito usa uno de estos estados: pendiente, en curso, bloqueado, en revision de cierre o completado. Registrar responsable, fecha, evidencia y bloqueo concreto. No marcar como completado algo que solo se haya propuesto o inspeccionado estaticamente.
 
@@ -40,17 +42,18 @@ Objetivo: que un contribuidor explique que hace el proyecto, como se conecta y c
 | 1.1 Confirmar fork y clon | Completado: el mantenedor aporto remotos/estado y confirmo el fork; se contrasto la rama `validation-init` sin revertir cambios | [Registro del hito 1.1](validations/verification%20-%20resume.md) | Fork y workspace identificados; cambios preexistentes separados |
 | 1.2 Mapear y contrastar entradas | Completado el 2026-11-13: mapa, servicios/puertos, entradas React/FastAPI, nueve rutas GET en Swagger y peticion UI/proxy a backend contrastados. No implica ejecucion funcional de todas las rutas | [01-structure.md](validations/01-structure.md); [OPENAPI-01 y UI-PROXY-01](validations/02-handover-checks.md) | Dos servicios y sus puertos identificados; nueve rutas propias GET y ruta usada por la UI diferenciadas |
 | 1.3 Elaborar resumen del proyecto | Completado el 2026-11-13: informe consolidado y sintesis del mantenedor contrastada en funcionalidad, datos sinteticos, proxy y arranque/parada (SUMMARY-01). No implica aprobacion tecnica de todas las afirmaciones ni prueba de parada | [Informe canonico](validations/verification%20-%20resume.md), [SUMMARY-01](validations/02-handover-checks.md) y mapa | El mantenedor puede explicar que hace, como conecta y como arranca; ninguna afirmacion de producto sin fuente |
-| 1.4 Verificar rutas y corregir discrepancias | En revision de cierre: resumen clasificado con ✅ / ❌ / ❓; nueve rutas con casos concretos, dos controles negativos, lista completa, ambas suites, lint y build contrastados. METRICS-FULL-01 confirma 360 movimientos, orden por fecha y extremos contra facets. Revisar limites y diff; no se declara cobertura exhaustiva ni se corrige producto. Riesgos y avisos conservados, sin cambios automaticos | [Matriz del resumen](validations/verification%20-%20resume.md#matriz-de-contraste-del-resumen); [registro de comandos y resultados](validations/02-handover-checks.md) | Rutas clave comprobadas por el mantenedor; discrepancias documentales corregidas; defectos de codigo separados de la correccion de docs |
-| 1.5 Dejar rastro verificable | En revision de cierre: comandos/resultados previstos conservados, incluidos PARAM-OP-01, PARAM-DATES-01 y METRICS-FULL-01; historial de intentos frontend y avisos preservado. Revisar diff y acordar cierre documental con limites explicitos | [Registro de comprobaciones](validations/02-handover-checks.md) y notas de cierre | Se distingue evidencia estatica de runtime; otra persona puede repetir los checks |
-| 1.6 Commit de fase | Revisar diff y enlaces; seleccionar solo mapa, roadmap y evidencia aprobada de fase 1; crear commit y registrar hash | Commit sugerido `docs: document verified project handover (phase 1)` | Commit exclusivo identificable; no contiene reglas/memoria de fases futuras |
+| 1.4 Verificar rutas y corregir discrepancias | Completado el 2026-11-13: mantenedor aprobo el contenido tras revisar el diff; nueve rutas con casos concretos, dos controles negativos, lista completa, ambas suites, lint y build contrastados. Matriz ✅ / ❌ / ❓ y limites conservados; no se declara cobertura exhaustiva ni se corrige producto | [Matriz del resumen](validations/verification%20-%20resume.md#matriz-de-contraste-del-resumen); [PHASE1-CLOSE-01](validations/02-handover-checks.md#phase1-close-01-aprobacion-y-commit-de-fase-1) | Rutas clave comprobadas por el mantenedor; discrepancias documentales corregidas; defectos de codigo separados de la correccion de docs |
+| 1.5 Dejar rastro verificable | Completado el 2026-11-13: contenido aprobado, comandos/resultados y limites conservados, incluidos intentos bloqueados, resoluciones y avisos | [Registro de comprobaciones](validations/02-handover-checks.md) y notas de cierre | Se distingue evidencia estatica de runtime; otra persona puede repetir los checks |
+| 1.6 Commit de fase | Completado el 2026-11-13: mantenedor creo `3f31fdd`, cuatro documentos nuevos y 1534 inserciones; alcance staged contrastado previamente | `docs: document verified project handover (phase 1)`; [PHASE1-CLOSE-01](validations/02-handover-checks.md#phase1-close-01-aprobacion-y-commit-de-fase-1) | Commit exclusivo identificable; no contiene reglas/memoria de fases futuras |
+| 1.7 Integrar y limpiar rama | Pendiente, requerido por el mantenedor: incluir notas posteriores al commit, publicar validation-init, abrir PR documentado hacia main del fork, revisar checks/diff, hacer merge, actualizar main y eliminar rama local/remota | URL y numero de PR, metodo y hash de merge, resultado de sincronizacion y limpieza en el registro | PR merged; contenido integrado en main; sin cambios locales perdidos; validation-init eliminada antes de crear rama de fase 2 |
 
-Estado al 2026-11-13: 1.1, 1.2 y 1.3 completados. OPENAPI-01 contrasta las nueve operaciones GET, UI-PROXY-01 registra peticion por Vite y dashboard con datos, y SUMMARY-01 conserva la sintesis del mantenedor. METRICS-FULL-01 confirma 360 movimientos ordenados por fecha y extremos `2025-11-01` a `2026-10-28` coincidentes con facets. Nueve rutas con casos concretos, dos controles negativos, 15 tests backend, cinco frontend, ESLint y build contrastados; 1.4 y 1.5 en revision de cierre documental. La UI sigue mostrando `2024 - Full Year`: discrepancia de producto separada de este handover. No se declara cobertura exhaustiva ni exactitud global de KPI/estados UI/parada. Vulnerabilidades npm, aviso TestClient y chunk grande pendientes de evaluacion. 1.6 sigue pendiente; no crear commit sin autorizacion.
+Estado al 2026-11-13: fase 1 completada, hitos 1.1-1.6 y commit `3f31fdd`, tras aprobacion del contenido por el mantenedor. Nueve rutas con casos concretos, dos controles negativos, 360 movimientos ordenados por fecha con extremos contra facets, 15 tests backend, cinco frontend, ESLint y build contrastados. La UI sigue mostrando `2024 - Full Year`: discrepancia de producto separada de este handover. No se declara cobertura exhaustiva ni exactitud global de KPI/estados UI/parada. Vulnerabilidades npm, aviso TestClient y chunk grande pendientes de evaluacion. Fases 2-4 pendientes; no se ha comprobado push.
 
 ### Seguimiento guiado de fase 1
 
 Trabajar una comprobacion por turno y registrar el resultado antes de avanzar. La configuracion ya se comprobo con `docker compose config`; la salida del mantenedor y sus limites se registran como CONFIG-01 en [02-handover-checks.md](validations/02-handover-checks.md). El comando no construye imagenes ni arranca contenedores y no demuestra compilacion o disponibilidad de la aplicacion.
 
-OPENAPI-01, UI-PROXY-01 y SUMMARY-01 registrados; hitos 1.2 y 1.3 cerrados. El bloque previsto de API/calidad esta contrastado: nueve rutas, dos casos negativos HTTP 422, METRICS-FULL-01 (360 movimientos, orden por fecha y extremos contra facets), ambas suites, lint y build. Hitos 1.4 y 1.5 en revision de cierre. Siguiente paso, desde la raiz: `git status --short`, para revisar cambios antes del diff y la seleccion documental de fase 1; no crear commit sin autorizacion explicita. Mantener visibles los limites de KPI/estados UI/parada, discrepancia del periodo y riesgos de dependencias/tamano. El extracto UI-PROXY-01 sigue siendo una muestra truncada; METRICS-FULL-01 aporta ahora el control calculado sobre la lista completa.
+PHASE1-CLOSE-01 registra la aprobacion del contenido y el commit `3f31fdd` del mantenedor. Cierre documental confirmado; falta integrar mediante PR (hito 1.7). Siguiente paso: revisar e incluir las notas posteriores al commit en validation-init antes de publicar y abrir el PR. No empezar fase 2 ni crear reglas o memoria hasta merge, sincronizacion de main y limpieza de validation-init. Mantener visibles los limites de KPI/estados UI/parada, discrepancia del periodo y riesgos de dependencias/tamano.
 
 No repetir construccion ni exigir la salida pendiente de `docker version` solo para confirmar lo que ya demuestra el segundo intento. FRONTEND-BUILD-01 ya comprueba la compilacion completa; el arranque Vite de desarrollo no la sustituye. Los avisos de npm, Debugpy, TestClient y tamano del chunk se conservan sin aplicar cambios automaticos.
 
@@ -87,7 +90,8 @@ No afirmar que las suites pasan antes de ejecutarlas. La configuracion actual de
 - [x] Resumen de que hace, como conecta y como se ejecuta revisado por el mantenedor; SUMMARY-01 y matriz tecnica registrados, con limites de alcance.
 - [x] Resumen contrastado con codigo y evidencia runtime; discrepancia de periodo y limites registrados explicitamente.
 - [x] Rastro de verificacion conservado, incluidos intentos bloqueados, resoluciones y avisos.
-- [ ] Commit dedicado a fase 1 con hash registrado.
+- [x] Commit dedicado a fase 1 `3f31fdd`, creado por el mantenedor y registrado en PHASE1-CLOSE-01.
+- [ ] PR documentado hacia main del fork, revisado y merged; main local actualizado y validation-init eliminada local/remota.
 
 ## 4. Fase 2: derivar hallazgos de ingenieria
 
@@ -219,7 +223,7 @@ Cuando cambien contratos, arranque, stack o estado comprobado, actualizar el doc
 
 | Fase | Condicion para avanzar | Hash de commit | Estado actual |
 | --- | --- | --- | --- |
-| 1 | Mapa, resumen, checks y contraste del mantenedor | Pendiente | En revision de cierre: bloque previsto contrastado, limites registrados; revision final y commit pendientes |
+| 1 | Mapa, resumen, checks, aprobacion e integracion por PR | `3f31fdd`; merge pendiente | Cierre documental confirmado; hito 1.7 pendiente: PR, merge y limpieza de rama |
 | 2 | Hallazgos y reglas propuestas aprobados con fuentes | Pendiente | Pendiente |
 | 3 | Reglas cargadas, tareas reales y validacion de cada una | Pendiente | Pendiente |
 | 4 | Memoria minima completa y handover contrastado | Pendiente | Pendiente |

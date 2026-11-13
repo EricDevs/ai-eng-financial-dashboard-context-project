@@ -277,9 +277,9 @@ Cada respuesta nueva se guarda primero en el registro y solo cambia el icono de 
 
 ### Siguiente comprobacion del hito 1.4
 
-METRICS-FULL-01 confirma el conteo completo, orden por fecha y extremos contra facets. El bloque previsto de API/calidad esta contrastado; hitos 1.4 y 1.5 pasan a revision de cierre, sin declarar cobertura exhaustiva ni resolver las filas ❓ o la discrepancia ❌ de producto.
+METRICS-FULL-01 confirma el conteo completo, orden por fecha y extremos contra facets. El bloque previsto de API/calidad esta contrastado; hitos 1.4 y 1.5 completados tras aprobacion del contenido por el mantenedor, sin declarar cobertura exhaustiva ni resolver las filas ❓ o la discrepancia ❌ de producto.
 
-Siguiente paso, desde la raiz: `git status --short`. Compartir la salida para revisar cambios y despues el diff antes de seleccionar documentos de fase 1. No modifica archivos ni autoriza un commit. Conservar cambios del mantenedor y revisar por separado cualquier lockfile o artefacto; los avisos y vulnerabilidades siguen pendientes de evaluacion.
+Cierre documental de fase 1 confirmado con el commit `3f31fdd`, creado por el mantenedor; [PHASE1-CLOSE-01](02-handover-checks.md#phase1-close-01-aprobacion-y-commit-de-fase-1) conserva la aprobacion y salida. Por requisito posterior del mantenedor, falta PR hacia main del fork, revision, merge, sincronizacion y eliminacion de validation-init antes de crear la rama de fase 2. Los avisos y vulnerabilidades siguen pendientes de evaluacion; no se ha comprobado push.
 
 ### Hito 1.1: fork, workspace y rama
 
@@ -297,6 +297,6 @@ git status --short, antes de consolidar:
 
 La rama activa se contrasto ademas con `git branch --show-current`, que devolvio `validation-init`. La salida de remotos demuestra la configuracion local de origin; la existencia del fork se registra con la confirmacion del mantenedor, sin atribuir una prueba de red o push que no se ha realizado. No se han creado commits ni revertido cambios locales.
 
-Estado al 2026-11-13: hitos 1.1, 1.2 y 1.3 completados; la sintesis del mantenedor se conserva en SUMMARY-01. Nueve rutas con casos concretos, dos controles negativos, lista completa, ambas suites (15 tests backend y cinco frontend), ESLint y build contrastados. Hitos 1.4 y 1.5 en revision de cierre: revisar limites y diff antes del commit de fase 1, aun no autorizado. Las filas ❓ y la discrepancia ❌ permanecen explicitas; no se afirma cobertura exhaustiva, siguiendo el [roadmap](../ROADMAP.md).
+Estado al 2026-11-13: hitos 1.1-1.6 completados; contenido aprobado y commit `3f31fdd` creado por el mantenedor (PHASE1-CLOSE-01). Nueve rutas con casos concretos, dos controles negativos, lista completa, ambas suites (15 tests backend y cinco frontend), ESLint y build contrastados. Las filas ❓ y la discrepancia ❌ permanecen explicitas; no se afirma cobertura exhaustiva, siguiendo el [roadmap](../ROADMAP.md). Las notas de cierre se redactan despues del commit y quedan pendientes de versionar.
 
 El 12 de noviembre de 2026 el mantenedor compartio la salida de `docker compose config`, coherente con los servicios, puertos y montajes descritos. Se registra como CONFIG-01 aprobada en [02-handover-checks.md](02-handover-checks.md). Esta comprobacion por si sola no construye imagenes ni demuestra arranque, compilacion frontend o respuestas HTTP; RUN-01, HEALTH-01 y UI-PROXY-01 aportan evidencia posterior de arranque y peticiones, sin sustituir las comprobaciones independientes de suites y build registradas posteriormente.
