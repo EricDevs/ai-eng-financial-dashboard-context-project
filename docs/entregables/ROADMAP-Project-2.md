@@ -1,0 +1,290 @@
+# Roadmap de handover, reglas y memoria
+
+Fecha: 2026-11-12. Objetivo: cumplir las 4 fases y hitos del entregable 2 con hitos comprobables y un PR de cierre independiente por fase. Este es un plan de trabajo sobre el repositorio existente, no un roadmap de funcionalidades de producto.
+
+## 1. Alcance y estado inicial
+
+Esta entrega crea el [mapa de estructura](../validations/01-structure.md) y este roadmap; posteriormente se consolidaron los informes en el [informe canonico](../validations/03-verification-resume.md). Al 2026-11-13, fase 1 integrada mediante PR #1 y merge `253b3c6`: nueve rutas con casos concretos, dos controles negativos, lista completa, ambas suites, lint y build contrastados. Fase 2 completada documentalmente con propuestas aprobadas y commit propio `d1f27fa`, integrada mediante PR #2. Fase 3 implementa y valida seis reglas en `.agents/rules` con tareas reales, integrada mediante PR #3 y merge `ac99882`. Fase 4 crea `memory-bank` (overview, stack, status) y la audita con un agente de contexto separado (MEM-01); PR de cierre pendiente de aprobacion. Hitos 1.1-1.7, 2.1-2.5, 3.1-3.5 y 4.1-4.3 completados; limites y riesgos permanecen explicitos. Las fases solo se cierran cuando sus criterios y su PR estan comprobados; aprobar propuestas no implica implementarlas ni hacer merge.
+
+| Elemento | Estado observado | Evidencia |
+| --- | --- | --- |
+| Fork y clon | Confirmados por el mantenedor; origin apunta a EricDevs; rama inicial validation-init integrada y eliminada, rama activa phase-2-engineering-findings desde 253b3c6 | [Evidencia del hito 1.1](../validations/03-verification-resume.md); [PHASE1-INTEGRATION-01](../validations/02-handover-checks.md#phase1-integration-01-merge-limpieza-y-rama-de-fase-2) |
+| Mapa de estructura y entradas | Hito 1.2 completado el 2026-11-13: mapa, servicios/puertos, nueve rutas GET y flujo UI/proxy contrastados | [01-structure.md](../validations/01-structure.md), [OPENAPI-01 y UI-PROXY-01](../validations/02-handover-checks.md) |
+| Resumen canonico | Hito 1.3 completado mediante sintesis del mantenedor; matriz tecnica clasificada con ✅ / ❌ / ❓ y limites explicitos; contenido final aprobado por el mantenedor | [Informe canonico](../validations/03-verification-resume.md), [SUMMARY-01](../validations/02-handover-checks.md) |
+| Servicios | Frontend Vite y API FastAPI declarados en Compose | [docker-compose.yml](../../docker-compose.yml) |
+| Reglas y skills locales | `.agents/rules` creada con seis reglas (WF, FIN, API, CAL, FE, DX), enrutadas desde AGENTS.md y validadas con tareas reales; `.agents/skills` no existe (no requerido por fase 3) | [AGENTS.md](../../AGENTS.md), [05-rules-checks.md](../validations/05-rules-checks.md) |
+| Memoria del proyecto | `memory-bank` creada con overview/stack/status, enrutada desde AGENTS.md y auditada con un agente de contexto separado (MEM-01); PR de fase 4 pendiente | [AGENTS.md](../../AGENTS.md), [06-memory-checks.md](../validations/06-memory-checks.md) |
+| Hallazgos y propuestas de fase 2 | 23 hallazgos retenidos, 12 decisiones de filtrado y 24 reglas con alcance, prioridad, tarea y check; conjunto aprobado por el mantenedor e implementado en fase 3 como seis reglas agrupadas | [04-conventions.md](../validations/04-conventions.md), [PHASE2-CLOSE-01](../validations/04-conventions.md#phase2-close-01-aprobación-y-evidencia-documental) |
+| Validacion ejecutable | Casos de nueve rutas, dos controles negativos, lista completa, 15 tests backend, cinco frontend, lint y build aprobados; historial de bloqueos y avisos conservado. Fase 3 anade cuatro ejercicios reales de regla (DX-01, API-01, FIN-CAL-01, FE-01). No implica cobertura exhaustiva ni exactitud global de la UI | [Registro de comprobaciones](../validations/02-handover-checks.md), [05-rules-checks.md](../validations/05-rules-checks.md) |
+| PR y commits por fase | Fase 1: PR #1 (commits `3f31fdd`, `73f8a49`), merge `253b3c6`; fase 2: PR #2 (commits `db1285c`, `d1f27fa`), merge `43a9cda`; fase 3: PR #3 (commit `767012b`), merge `ac99882`; fase 4: PR pendiente | [PHASE1-INTEGRATION-01](../validations/02-handover-checks.md#phase1-integration-01-merge-limpieza-y-rama-de-fase-2), [PHASE2-CLOSE-01](../validations/04-conventions.md#phase2-close-01-aprobación-y-evidencia-documental), [05-rules-checks.md](../validations/05-rules-checks.md) |
+
+Git mostraba inicialmente `docs/` y el informe de la raiz como no versionados. Por solicitud explicita del mantenedor, los informes se consolidaron y el de la raiz se traslado a validations. Conservar los demas cambios locales y revisar el alcance antes de incluir documentos en un commit. No usar `git add .` para cerrar una fase.
+
+## 2. Metodo y dependencias
+
+Secuencia obligatoria: fase 1 -> fase 2 -> fase 3 -> fase 4. No cerrar una fase sin su evidencia y su PR propio; un unico PR para las cuatro fases es incompleto segun el entregable 2. Se permiten incrementos internos, pero debe poder identificarse el cierre separado de cada fase.
+
+Requisito adicional acordado con el mantenedor: antes de avanzar a fase 2, integrar fase 1 mediante PR documentado de validation-init a main en el fork EricDevs, revisar el PR, hacer merge, actualizar main local y eliminar validation-init local/remota. Crear despues una rama nueva para fase 2 desde main actualizado. Cumplido el 2026-11-13: PR #1 merged en 253b3c6, main sincronizado, validation-init eliminada local/remota y phase-2-engineering-findings creada desde el merge. No eliminar ramas antes del merge ni usar borrado forzado para eludir cambios no integrados.
+
+Cada hito usa uno de estos estados: pendiente, en curso, bloqueado, en revision de cierre o completado. Registrar responsable, fecha, evidencia y bloqueo concreto. No marcar como completado algo que solo se haya propuesto o inspeccionado estaticamente.
+
+Roles: el agente inspecciona, propone y ejecuta las tareas autorizadas; el mantenedor contrasta los resultados, aprueba reglas y alcance y confirma el cierre. No se asignan fechas de entrega ni personas que no se hayan acordado.
+
+Trabajo incremental: una afirmacion o regla -> una comprobacion pequena -> resultado -> correccion local -> repetir la misma comprobacion. Si el entorno impide ejecutar, registrar el bloqueo; no reemplazar el resultado por una suposicion.
+
+## 3. Fase 1: comprender el handover
+
+Objetivo: que un contribuidor explique que hace el proyecto, como se conecta y como se ejecuta, sin depender de afirmaciones no contrastadas del agente.
+
+### Hitos y acciones
+
+| Hito | Acciones detalladas | Evidencia / entregable | Criterio de aceptacion |
+| --- | --- | --- | --- |
+| 1.1 Confirmar fork y clon | Completado: el mantenedor aporto remotos/estado y confirmo el fork; se contrasto la rama `validation-init` sin revertir cambios | [Registro del hito 1.1](../validations/03-verification-resume.md) | Fork y workspace identificados; cambios preexistentes separados |
+| 1.2 Mapear y contrastar entradas | Completado el 2026-11-13: mapa, servicios/puertos, entradas React/FastAPI, nueve rutas GET en Swagger y peticion UI/proxy a backend contrastados. No implica ejecucion funcional de todas las rutas | [01-structure.md](../validations/01-structure.md); [OPENAPI-01 y UI-PROXY-01](../validations/02-handover-checks.md) | Dos servicios y sus puertos identificados; nueve rutas propias GET y ruta usada por la UI diferenciadas |
+| 1.3 Elaborar resumen del proyecto | Completado el 2026-11-13: informe consolidado y sintesis del mantenedor contrastada en funcionalidad, datos sinteticos, proxy y arranque/parada (SUMMARY-01). No implica aprobacion tecnica de todas las afirmaciones ni prueba de parada | [Informe canonico](../validations/03-verification-resume.md), [SUMMARY-01](../validations/02-handover-checks.md) y mapa | El mantenedor puede explicar que hace, como conecta y como arranca; ninguna afirmacion de producto sin fuente |
+| 1.4 Verificar rutas y corregir discrepancias | Completado el 2026-11-13: mantenedor aprobo el contenido tras revisar el diff; nueve rutas con casos concretos, dos controles negativos, lista completa, ambas suites, lint y build contrastados. Matriz ✅ / ❌ / ❓ y limites conservados; no se declara cobertura exhaustiva ni se corrige producto | [Matriz del resumen](../validations/03-verification-resume.md#matriz-de-contraste-del-resumen); [PHASE1-CLOSE-01](../validations/02-handover-checks.md#phase1-close-01-aprobacion-y-commit-de-fase-1) | Rutas clave comprobadas por el mantenedor; discrepancias documentales corregidas; defectos de codigo separados de la correccion de docs |
+| 1.5 Dejar rastro verificable | Completado el 2026-11-13: contenido aprobado, comandos/resultados y limites conservados, incluidos intentos bloqueados, resoluciones y avisos | [Registro de comprobaciones](../validations/02-handover-checks.md) y notas de cierre | Se distingue evidencia estatica de runtime; otra persona puede repetir los checks |
+| 1.6 Commit de fase | Completado el 2026-11-13: mantenedor creo `3f31fdd`, cuatro documentos nuevos y 1534 inserciones; alcance staged contrastado previamente | `docs: document verified project handover (phase 1)`; [PHASE1-CLOSE-01](../validations/02-handover-checks.md#phase1-close-01-aprobacion-y-commit-de-fase-1) | Commit exclusivo identificable; no contiene reglas/memoria de fases futuras |
+| 1.7 Integrar y limpiar rama | Completado el 2026-11-13: notas incluidas en 73f8a49, PR #1 revisado y merged mediante merge commit 253b3c6, main sincronizado y validation-init eliminada local/remota; nueva rama phase-2-engineering-findings creada desde el merge | [PR #1](https://github.com/EricDevs/ai-eng-financial-dashboard-context-project/pull/1); [PHASE1-INTEGRATION-01](../validations/02-handover-checks.md#phase1-integration-01-merge-limpieza-y-rama-de-fase-2) | PR merged; contenido integrado en main; sin cambios locales perdidos; validation-init eliminada antes de crear rama de fase 2 |
+
+Estado de fase 1 al 2026-11-13: completada, hitos 1.1-1.7; commits `3f31fdd` y `73f8a49`, PR #1 merged en `253b3c6`, main sincronizado y validation-init eliminada local/remota. Rama phase-2-engineering-findings creada desde el merge; su cierre documental se registra en la seccion de fase 2 y fases 3-4 siguen pendientes. Nueve rutas con casos concretos, dos controles negativos, lista completa, 15 tests backend, cinco frontend, ESLint y build contrastados. Discrepancia del periodo UI y limites de exactitud global de KPI/estados UI/parada conservados. Vulnerabilidades npm, aviso TestClient y chunk grande pendientes de evaluacion; no se afirman checks CI aprobados ni se atribuyen estos resultados historicos a fase 2.
+
+### Seguimiento guiado de fase 1
+
+Trabajar una comprobacion por turno y registrar el resultado antes de avanzar. La configuracion ya se comprobo con `docker compose config`; la salida del mantenedor y sus limites se registran como CONFIG-01 en [02-handover-checks.md](../validations/02-handover-checks.md). El comando no construye imagenes ni arranca contenedores y no demuestra compilacion o disponibilidad de la aplicacion.
+
+PHASE1-INTEGRATION-01 confirma integracion, limpieza y rama nueva. Los hitos 2.1-2.5 de phase-2-engineering-findings se registran ahora en la seccion siguiente con propuestas aprobadas y PR dedicado. No crear aun reglas ni memoria ni corregir producto: seleccionar y validar reglas corresponde a fase 3 cuando se solicite. Mantener visibles los limites de KPI/estados UI/parada, discrepancia del periodo y riesgos de dependencias/tamano.
+
+No repetir construccion ni exigir la salida pendiente de `docker version` solo para confirmar lo que ya demuestra el segundo intento. FRONTEND-BUILD-01 ya comprueba la compilacion completa; el arranque Vite de desarrollo no la sustituye. Los avisos de npm, Debugpy, TestClient y tamano del chunk se conservan sin aplicar cambios automaticos.
+
+Tras el contraste de entradas, revisar con el mantenedor el resumen y clasificar sus afirmaciones como confirmadas, discrepancias o pendientes, indicando fuente y tipo de evidencia. Las marcas del resumen y los checks del registro son entregables relacionados, no intercambiables. Comprobar rutas clave pendientes y ejecutar pruebas una a una antes de preparar el commit de fase. Cada resultado se guarda en el registro; el roadmap solo marca el hito completo cuando cumple todos sus criterios. Configuracion, arranque y salud aprobados no cierran 1.2, 1.4 o 1.5 por si solos.
+
+### Comprobaciones previstas
+
+Desde la raiz, primero validar la configuracion y levantar servicios:
+
+```sh
+docker compose config
+docker compose up --build
+```
+
+En otra terminal consultar `http://localhost:8000/health`, `/api/metrics` y `/openapi.json`; abrir `http://localhost:5173` y comprobar la peticion a `/api/metrics` por el proxy. Obtener `min_date` y `max_date` de facets para construir comparaciones con datos disponibles. Probar cada ruta de la tabla del mapa, incluyendo B2B/B2C, resumen, top y alertas; incluir un literal invalido y una fecha requerida ausente y registrar la respuesta real.
+
+Pruebas desde la raiz, una ejecucion cada vez:
+
+```sh
+uv run --no-project --python 3.13 --with-requirements backend/requirements.txt pytest backend/tests/test_routes.py -q
+npm --prefix frontend test
+npm --prefix frontend run lint
+npm --prefix frontend run build
+```
+
+Requisitos: Docker con Compose operativo, Node/npm compatibles con el proyecto, `uv` disponible y dependencias frontend instaladas. Para una instalacion limpia del cliente usar `npm --prefix frontend ci` cuando corresponda; no reinstalar por rutina en un entorno ya preparado. BACKEND-TEST-01 comprueba el comando uv sin introducir un manifiesto nuevo; FRONTEND-INSTALL-01 conserva la instalacion local necesaria para Vitest. El Dockerfile existente usa otro flujo de instalacion y no se cambia en esta fase.
+
+No afirmar que las suites pasan antes de ejecutarlas. La configuracion actual de Vite apunta al hostname Compose `backend`, por lo que el arranque separado en el host no equivale al flujo documentado. Al terminar, usar `docker compose down` solamente sobre los servicios que se hayan iniciado para la comprobacion, sin interrumpir trabajo ajeno.
+
+### Checklist de cierre
+
+- [x] Fork y clon confirmados; origin de EricDevs y rama `validation-init` registrados.
+- [x] Mapa y entradas contrastados en 1.2; nueve rutas con casos concretos comprobados por el mantenedor.
+- [x] Resumen de que hace, como conecta y como se ejecuta revisado por el mantenedor; SUMMARY-01 y matriz tecnica registrados, con limites de alcance.
+- [x] Resumen contrastado con codigo y evidencia runtime; discrepancia de periodo y limites registrados explicitamente.
+- [x] Rastro de verificacion conservado, incluidos intentos bloqueados, resoluciones y avisos.
+- [x] Commit dedicado a fase 1 `3f31fdd`, creado por el mantenedor y registrado en PHASE1-CLOSE-01.
+- [x] PR #1 documentado hacia main del fork, revisado y merged en 253b3c6; main local actualizado y validation-init eliminada local/remota.
+
+## 4. Fase 2: derivar hallazgos de ingenieria
+
+Objetivo: convertir patrones demostrables del repositorio en propuestas utiles para futuros contribuidores y agentes. No convertir preferencias generales en supuestas convenciones del proyecto.
+
+### Hitos y acciones
+
+| Hito | Acciones detalladas | Evidencia / entregable | Criterio de aceptacion |
+| --- | --- | --- | --- |
+| 2.1 Extraer convenciones | Completado el 2026-11-13 por el agente: patrones API/modelos, contratos TS, calculo, componentes/estados/tokens, imports, estilo, tests y arranque; 23 hallazgos con consecuencias | [Informe elegido por el mantenedor](../validations/04-conventions.md#convenciones-y-hallazgos-por-categoría), en lugar del nombre inicialmente sugerido; [H01-H23](../validations/04-conventions.md#hallazgos-retenidos) | Cada hallazgo tiene fuente y consecuencia concreta |
+| 2.2 Filtrar hallazgos | Completado el 2026-11-13 por el agente: 12 decisiones de descarte/reformulacion; tipos C/L separados de mejoras; corregidas generalizaciones de GroupBy, naming, fixtures y formato | [Decisiones de filtrado](../validations/04-conventions.md#decisiones-de-filtrado-y-consecuencias) | Solo sobreviven hallazgos ligados a archivos, carpetas o comportamientos |
+| 2.3 Agrupar por categoria | Completado el 2026-11-13 por el agente: categorias del informe, alcance y prioridades P1/P2/P3 motivadas por riesgo; diferencias entre reglas relacionadas explicitas | [Categorias](../validations/04-conventions.md#convenciones-y-hallazgos-por-categoría), [matriz R01-R24](../validations/04-conventions.md#alcance-prioridad-y-validación-propuesta-por-regla) | Sin duplicados ni categorias rellenas con generalidades |
+| 2.4 Proponer reglas | Completado el 2026-11-13 por el agente: 24 propuestas con nombre, alcance, justificacion/guia, hecho, tarea pequena y check con resultado requerido; tareas no ejecutadas | [Reglas propuestas](../validations/04-conventions.md#reglas-propuestas), [matriz R01-R24](../validations/04-conventions.md#alcance-prioridad-y-validación-propuesta-por-regla) | Todas las propuestas citan fuentes y son comprobables |
+| 2.5 Cierre de fase (PR) | Completado el 2026-11-13: mantenedor aprobo expresamente las 24 propuestas finales sin observaciones; agente creo `d1f27fa`, exclusivo del contenido y evidencia de fase 2, sin codigo ni reglas activas; PR #2 abierta para integracion | [Commit d1f27fa](https://github.com/EricDevs/ai-eng-financial-dashboard-context-project/commit/d1f27fa3c9b2a83ea32ab3023353fe198e9735fc), [PHASE2-CLOSE-01](../validations/04-conventions.md#phase2-close-01-aprobación-y-evidencia-documental) | PR propio; propuestas claramente diferenciadas de implementacion |
+
+### Estado y evidencia de fase 2
+
+Hitos 2.1-2.5 completados documentalmente el 2026-11-13. El mantenedor eligio [04-conventions.md](../validations/04-conventions.md) como entregable y aprobo en formulario «Aprobar las 24 reglas como propuestas y registrar el cierre documental», sin observaciones. Agente: analisis, comprobacion estructural/enlaces y commit; mantenedor: aprobacion del conjunto. Sin bloqueos documentales pendientes.
+
+PR de cierre: #2 (commit de contenido `d1f27fa3c9b2a83ea32ab3023353fe198e9735fc`, `docs: derive repository engineering rules (phase 2)`), modifica solo el informe de convenciones. `db1285c` es el incremento inicial de la PR y contiene tambien notas de integracion de fase 1; no se usa como unico cierre de estos criterios ampliados. Esta actualizacion del roadmap registra el hash ya comprobado, sin amend ni referencia circular al propio commit.
+
+Validacion documental del agente: 24 reglas numeradas con hecho, 24 filas unicas con alcance/prioridad/tarea/check, 23 hallazgos retenidos; 86 enlaces locales del informe resueltos y `git diff --cached --check` sin errores antes de crear `d1f27fa`. Las tareas/checks de las reglas no se han ejecutado: pertenecen a fase 3. No se repiten ni se atribuyen a esta fase suites, lint/build o resultados runtime historicos de fase 1.
+
+Comprobacion final tras registrar el hash: PowerShell confirma las 12 decisiones de filtrado, los mismos 24 IDs de regla/matriz sin duplicados ni columnas vacias, checklist de fase 2 completo y 148 enlaces locales con sus headings resueltos entre informe y roadmap; `git diff --check` sin errores. Esta comprobacion verifica estructura y referencias documentales, no correccion runtime del producto.
+
+[PR #2](https://github.com/EricDevs/ai-eng-financial-dashboard-context-project/pull/2): abierta para revision e integracion. Cierre documental y aprobacion de propuestas no son merge, limpieza de rama ni activacion. Fases 3 y 4 pendientes; no se corrigen automaticamente riesgos financieros, UI, CORS o despliegue.
+
+### Base inicial de propuestas
+
+Esta tabla conserva la base inicial de candidatos, no un segundo conjunto de reglas. La version refinada y aprobada como propuestas es [R01-R24](../validations/04-conventions.md#reglas-propuestas); aprobarlas no compromete su implementacion ni activa reglas:
+
+| Categoria / candidato | Hecho del repositorio | Guia propuesta | Check que podria refutarla o demostrar cumplimiento |
+| --- | --- | --- | --- |
+| Arquitectura: contratos API | Modelos Pydantic y parametros viven en [routes.py](../../backend/app/routes.py); contrato cliente en [financial-types.ts](../../frontend/src/lib/financial-types.ts) | Si cambia un campo consumido, revisar API, tipo cliente y test en el mismo incremento; no hacer compatibles por suposicion endpoints con filtros distintos | TestClient comprueba respuesta; build y test cliente del campo afectado |
+| Arquitectura: calculo financiero | [App.tsx](../../frontend/src/App.tsx) delega calculo en [financial-utils.ts](../../frontend/src/lib/financial-utils.ts) | Mantener calculo/formato en utilidades y pasar datos a componentes; no duplicar formulas en JSX | Test de utilidades con esperado numerico y revision del componente |
+| Naming e imports | Componentes dashboard usan nombres de archivo kebab-case, exports PascalCase y alias `@`; [vite.config.ts](../../frontend/vite.config.ts) y [tsconfig.app.json](../../frontend/tsconfig.app.json) configuran el alias | Seguir el patron de archivos/exports de la carpeta y usar alias o imports relativos como los vecinos; no imponer reformatting global | Build resuelve imports; inspeccion del archivo tocado |
+| Testing: evidencia local | [test_routes.py](../../backend/tests/test_routes.py) usa TestClient; [financial-utils.test.ts](../../frontend/src/lib/financial-utils.test.ts) usa Vitest con datos pequenos | Reproducir primero un defecto y validar un incremento con el test mas pequeno que pueda fallar; comprobar valores, no solo presencia de campos | Resultado antes/despues del mismo test; no declarar cobertura numerica a partir de un test de forma |
+| Testing: fechas y periodos | Generador usa `date.today()` en [routes.py](../../backend/app/routes.py); agrupacion cliente usa parsing Date/getters locales en [financial-utils.ts](../../frontend/src/lib/financial-utils.ts) | Explicitar calendario y zona horaria en cambios de fechas; no hardcodear ano actual en expectativas ni tratar la semilla como reloj fijo | Fixture controlada y test de borde entre meses/anos; zona horaria si afecta al cambio |
+| UI: reutilizacion y estados | [kpi-card.tsx](../../frontend/src/components/dashboard/kpi-card.tsx) y los graficos usan Card/Skeleton/tokens; [index.css](../../frontend/src/index.css) define tema | Reutilizar primitivas, `cn`, iconos y tokens; preservar carga, vacio y error al cambiar presentacion | Lint/build y comprobacion de los estados de la pieza tocada |
+| Documentacion y DX | [README.md](../../README.md) prescribe Compose; [vite.config.ts](../../frontend/vite.config.ts) apunta a `backend:8000`; [Dockerfile backend](../../backend/Dockerfile) expone Debugpy | Documentar desde la configuracion real; distinguir host/contenedor, API/depuracion, declaracion/runtime y dependencias declaradas/instaladas | `docker compose config`, enlaces y comprobacion HTTP del flujo descrito |
+
+Ejemplos de hallazgos descartables: "usar buenas practicas", "el proyecto usa TypeScript estricto" (no se declara `strict`), "todas las rutas filtran por negocio" (metrics no lo admite), "los datos son reales" o "las reglas markdown se activan automaticamente". Las limitaciones de CORS, periodo fijo, fechas y falta de CI se registran como observaciones, no se arreglan sin un cambio de alcance acordado.
+
+### Checklist de cierre
+
+- [x] Convenciones utiles y patrones arriesgados extraidos con el agente; H01-H23 con fuentes y consecuencias.
+- [x] Solo hallazgos ligados a archivos, carpetas o comportamientos concretos; decisiones de filtrado registradas.
+- [x] Hallazgos supervivientes agrupados por categoria; alcance y prioridad motivada por regla.
+- [x] Reglas propuestas; cada una cita al menos un hecho y tiene tarea pequena/check, sin presentarlos como ejecutados.
+- [x] Conjunto final aprobado por el mantenedor; PR #2 dedicado a fase 2 (commit `d1f27fa`) con hash registrado.
+
+## 5. Fase 3: implementar y probar reglas
+
+Objetivo: crear reglas pequenas, cargables y accionables, demostrando cada una con una tarea real en este repositorio. Depende de propuestas aprobadas en fase 2.
+
+### Hitos y acciones
+
+| Hito | Acciones detalladas | Evidencia / entregable | Criterio de aceptacion |
+| --- | --- | --- | --- |
+| 3.1 Crear ubicacion y routing | Completado el 2026-11-13: `.agents/rules` creada; enrutamiento anadido en [AGENTS.md](../../AGENTS.md) con tabla ID -> cuando leer cada regla | Carpeta y mecanismo de lectura identificados | El agente puede nombrar la regla leida y su alcance antes de trabajar |
+| 3.2 Redactar reglas | Completado el 2026-11-13: seis archivos (WF, FIN, API, CAL, FE, DX) derivados de las 24 propuestas de fase 2, cada uno con alcance, hechos/justificacion, instrucciones, checks y limites | Archivos `.agents/rules/01-workflow-evidence.md` a `06-runtime-configuration.md` | Ninguna regla vaga, duplicada, contradictoria o sin evidencia |
+| 3.3 Validar cada regla | Completado el 2026-11-13: cuatro ejercicios reales con agentes de contexto separado (DX-01, API-01, FIN-CAL-01, FE-01) cubren las seis reglas; WF se valida de forma transversal | [05-rules-checks.md](../validations/05-rules-checks.md), en lugar del nombre inicialmente sugerido `04-rules-validation.md` | Todas las reglas tienen evidencia de carga y de cumplimiento en una tarea real |
+| 3.4 Refinar e iterar | Completado el 2026-11-13: cada ejercicio cumplio los criterios en el primer intento; no fue necesaria ninguna iteracion correctiva | [05-rules-checks.md](../validations/05-rules-checks.md) | No hay reglas pendientes de prueba ni instrucciones imposibles para el entorno |
+| 3.5 Cierre de fase (PR) | Completado el 2026-11-13: commit `767012b`, PR #3 revisado y mergeado por el mantenedor en `ac99882`; main sincronizado y rama `phase-3-agent-rules` eliminada local/remota | `chore: implement and validate agent rules (phase 3)` | PR propio, distinto de propuestas de fase 2 y memoria de fase 4 |
+
+### Activacion y formato
+
+La ubicacion `.agents/rules` es una convencion del proyecto. Un `.md` arbitrario no garantiza autoactivacion en todos los editores: confirmar lectura mediante el routing de `AGENTS.md` y guardar evidencia de la sesion. Si se necesita integracion nativa de VS Code, acordar antes un adaptador minimo en `.github/instructions/*.instructions.md` con `description` y `applyTo` especificos; evitar duplicar todo el contenido o aplicar reglas frontend a todo el repositorio. No crear ese adaptador por rutina.
+
+Plantilla de contenido para cada regla: nombre; archivos/tareas a los que aplica; hecho y enlace; instrucciones imperativas cortas; ejemplo solo si ayuda; comando/check; excepciones relevantes. No exigir que `.agents/rules/*.md` tenga frontmatter de otra herramienta sin decidir primero el consumidor.
+
+No es obligatorio inventar skills para completar el entregable 2: [AGENTS.md](../../AGENTS.md) pide buscar las disponibles, pero la fase 3 exige reglas. Crear un skill solo si aparece un procedimiento repetible que lo justifique.
+
+### Tareas de validacion sugeridas
+
+Elegir tareas necesarias y aceptadas por el mantenedor, no cambios artificiales para simular cumplimiento. Si una regla no puede probarse con una tarea pequena justificada, reducirla o posponerla antes de aprobarla.
+
+| Regla o grupo, si se aprueba | Tarea real pequena sugerida | Check minimo |
+| --- | --- | --- |
+| Documentacion / DX | Aclarar en una guia el destino del proxy o la diferencia entre 8000 y 5678; verificar las dos versiones del README si ambas explican el punto | Contraste con Compose/Vite, enlaces y diff documental |
+| Contratos API | Fortalecer en el test de resumen una asercion de neto con datos controlados, manteniendo el contrato actual | Test backend concreto con TestClient; esperado calculado independientemente |
+| Calculo / fechas / tests frontend | Anadir en la suite existente un caso de movimientos vacios o una frontera de fecha acordada | Vitest sobre la suite tocada; comprobacion antes/despues si se trata de un defecto |
+| Naming / imports / UI | Si se acuerda resolver el periodo fijo, obtener y mostrar el periodo real con la separacion actual de utilidades y componentes, sin anadir un selector no solicitado | Test del calculo de etiqueta, lint/build y revision de carga/vacio/error |
+
+La correccion del periodo es candidata, no autorizacion anticipada de cambio de producto. Una misma tarea puede demostrar varias reglas si el registro explica cual se aplico y cual fue su check; todas deben quedar cubiertas.
+
+Ejemplos de ejecuciones focalizadas desde la raiz, cuando se toque esa pieza:
+
+```sh
+uv run --no-project --python 3.13 --with-requirements backend/requirements.txt pytest backend/tests/test_routes.py::test_metrics_summary_by_month_returns_balances -q
+npm --prefix frontend test -- src/lib/financial-utils.test.ts
+```
+
+Reutilizar suites existentes, no crear herramientas paralelas ni archivos de tests innecesarios. Una regla sobre UI requiere comprobar la UI afectada, no darla por probada solo por un build. El registro debe incluir ID de regla, fuente, tarea, archivos, como se comprobo su carga, comando, resultado, iteracion y veredicto.
+
+### Checklist de cierre
+
+- [x] `.agents/rules` creada si no existia.
+- [x] Reglas con nombre, alcance, justificacion y guia especifica claros.
+- [x] Cada regla validada con una tarea pequena real del repositorio.
+- [x] Refinamiento realizado hasta que la guia sea accionable.
+- [x] PR dedicado a fase 3, con commit y hash registrados.
+
+### Estado y evidencia de fase 3
+
+Hitos 3.1-3.5 completados el 2026-11-13. Seis reglas (WF, FIN, API, CAL, FE,
+DX) creadas en `.agents/rules` y enrutadas desde `AGENTS.md`. Validadas con
+cuatro agentes de contexto separado sobre tareas reales de este repositorio:
+aclaracion bilingue de puertos/proxy en ambos README (DX-01), fortalecimiento
+de un test de `/api/metrics/summary` con dataset controlado via monkeypatch
+(API-01), un test de frontera de fecha fin/inicio de mes en
+`financial-utils.test.ts` que ademas documento sin corregir un riesgo de
+huso horario ya conocido (FIN-CAL-01), y el refactor de un formatter
+porcentual duplicado para reutilizar `formatPercent` (FE-01). Cada ejercicio
+se registro con su prompt exacto, salida, revision independiente del
+coordinador y veredicto en [05-rules-checks.md](../validations/05-rules-checks.md);
+ninguno necesito iteracion correctiva.
+
+Durante la ejecucion se detecto que `docs/04-conventions.md` habia sido
+reubicado a `docs/validations/`; el mantenedor confirmo que fue intencional
+y el agente reparo todos los enlaces relativos afectados, incluidas las
+referencias en este roadmap y en `AGENTS.md`.
+
+PR de cierre: [#3](https://github.com/EricDevs/ai-eng-financial-dashboard-context-project/pull/3)
+(commit `767012b`, `chore: implement and validate agent rules (phase 3)`),
+revisada y mergeada por el mantenedor en `ac99882`; main actualizado y la
+rama `phase-3-agent-rules` eliminada local y remotamente. No se activo
+memoria ni se corrigieron el periodo, zona horaria, RNG, CORS o despliegue:
+esos limites permanecen explicitos para fase 4 o para un cambio de alcance
+futuro acordado aparte.
+
+## 6. Fase 4: construir memoria del proyecto
+
+Objetivo: conservar contexto verificable para la siguiente sesion sin copiar todo el codigo ni convertir deseos de producto en hechos.
+
+### Hitos y acciones
+
+| Hito | Acciones detalladas | Evidencia / entregable | Criterio de aceptacion |
+| --- | --- | --- | --- |
+| 4.1 Crear banco de memoria | Completado el 2026-11-13: `memory-bank` creada en la raiz con tres archivos; enrutamiento anadido en [AGENTS.md](../../AGENTS.md) (seccion "Memory routing") | Carpeta y documentos de abajo | Memoria accesible al siguiente agente sin depender del chat actual |
+| 4.2 Cubrir contenido minimo | Completado el 2026-11-13: overview (producto, flujo, limite de periodo), stack (lenguajes/infra/comandos comprobados) y status (implementado vs probado, gaps, prioridades, commits) redactados con fuentes y fecha de revision; reflejan los cambios reales de fase 3 | `memory-bank/overview.md`, `memory-bank/stack.md`, `memory-bank/status.md` | Cubre producto con evidencia, tecnologias/dependencias y que funciona/gaps/prioridades |
+| 4.3 Auditar y probar handover | Completado el 2026-11-13: agente de contexto separado (MEM-01) dio resumen de producto, arranque y siguiente prioridad usando solo `memory-bank`/`AGENTS.md`/`README.md`; el coordinador contrasto cada afirmacion contra el codigo/evidencia real; ninguna resulto inventada o sin fuente | [06-memory-checks.md](../validations/06-memory-checks.md), en lugar del nombre inicialmente sugerido `05-memory-checks.md` (ya usado por las reglas de fase 3) | Resumen correcto, gaps conservados y propuestas separadas de decisiones |
+| 4.4 Cierre de fase (PR) | Pendiente: seleccionar memoria y evidencia aprobadas, crear el commit dedicado y abrir el PR de cierre tras la revision del mantenedor | Commit sugerido `docs: add evidence-based project memory (phase 4)` | Cuarto PR de cierre propio; sin cambios de producto no aprobados |
+
+### Documentos de memoria
+
+Creados el 2026-11-13 durante esta fase, sin una convencion mas compleja que
+la ya usada en `docs/validations`:
+
+| Archivo futuro | Contenido minimo | Fuentes iniciales |
+| --- | --- | --- |
+| `memory-bank/overview.md` | Que hace el dashboard, usuario/contexto solo si esta demostrado, flujo UI/API, datos sinteticos y limites; no atribuir clientes reales | [App.tsx](../../frontend/src/App.tsx), [routes.py](../../backend/app/routes.py), [README.md](../../README.md) |
+| `memory-bank/stack.md` | Python/imagen base, FastAPI, React/TS, Vite/Tailwind/Recharts, tests, Docker, puertos, proxy, entorno, dependencias declaradas frente a resueltas y comandos ya comprobados | [requirements.txt](../../backend/requirements.txt), [package.json](../../frontend/package.json), [package-lock.json](../../frontend/package-lock.json), [Compose](../../docker-compose.yml), Dockerfiles |
+| `memory-bank/status.md` | Que esta implementado frente a que fue probado; gaps conocidos; bloqueos; siguientes prioridades tecnicas aprobadas; enlaces a validaciones y reglas vigentes | Mapa, registros de fases 1-3 y commits reales |
+
+Mantener la memoria factual y breve. Ejemplos de gaps iniciales: periodo fijo frente a datos relativos al reloj, rutas analiticas no consumidas por la UI, falta de persistencia/CI/E2E en el inventario. Ausencia de una funcionalidad no implica que este plan autorice construirla. La siguiente prioridad propuesta es completar la evidencia pendiente y corregir solo discrepancias acordadas, no inventar una agenda de producto.
+
+Cuando cambien contratos, arranque, stack o estado comprobado, actualizar el documento afectado con fuente y fecha. Una afirmacion de que algo "funciona" requiere enlazar el check que lo demuestra; si solo se vio en codigo, usar "implementado".
+
+### Checklist de cierre
+
+- [x] `memory-bank` creada en la raiz.
+- [x] Overview del producto anclado en evidencia verificable.
+- [x] Stack completo: lenguajes, frameworks, infra/tooling y dependencias clave.
+- [x] Estado actual: que funciona, gaps conocidos y siguientes prioridades justificadas.
+- [x] Claims de producto sin soporte y roadmaps inventados rechazados (MEM-01).
+- [ ] PR dedicado a fase 4, con commit y hash registrados.
+
+### Estado y evidencia de fase 4
+
+Hitos 4.1-4.3 completados el 2026-11-13. `memory-bank/overview.md`,
+`stack.md` y `status.md` redactados con fuentes y fecha de revision,
+reflejando los cambios reales de fase 3 (seis reglas, cuatro ejercicios
+validados, PR #3 mergeada). Auditados con un agente de contexto separado
+(MEM-01 en [06-memory-checks.md](../validations/06-memory-checks.md)):
+dio un resumen de producto, arranque y siguiente prioridad correcto,
+declarando explicitamente los limites de lo que no verifico el mismo. El
+coordinador contrasto cada afirmacion contra el codigo/configuracion real
+(no solo contra la memoria), sin encontrar afirmaciones inventadas o sin
+fuente; no fue necesaria ninguna correccion ni iteracion.
+
+Hito 4.4 (cierre de fase / PR) pendiente de revision y aprobacion del mantenedor.
+
+## 7. Control final y registro de cierre
+
+| Fase | Condicion para avanzar | PR y hash de commit | Estado actual |
+| --- | --- | --- | --- |
+| 1 | Mapa, resumen, checks, aprobacion e integracion por PR | PR #1 (commits `3f31fdd`, `73f8a49`); merge `253b3c6` | Completada: PR #1 merged, main sincronizado y validation-init eliminada local/remota |
+| 2 | Hallazgos y reglas propuestas aprobados con fuentes | PR #2 (commits `db1285c`, `d1f27fa`); merge `43a9cda` | Completada: hitos 2.1-2.5, PR #2 merged, main sincronizado |
+| 3 | Reglas cargadas, tareas reales y validacion de cada una | PR #3 (commit `767012b`); merge `ac99882` | Completada: PR #3 merged, main sincronizado y phase-3-agent-rules eliminada local/remota |
+| 4 | Memoria minima completa y handover contrastado | PR pendiente | Hitos 4.1-4.3 completados: memory-bank creada, auditada con MEM-01, sin afirmaciones sin fuente; 4.4 pendiente de aprobacion del mantenedor |
+
+Al crear cada commit, revisar `git status --short`, seleccionar rutas explicitamente, revisar `git diff --cached` y conservar el hash; abrir despues el PR de esa fase. Al final, confirmar cuatro PRs de cierre distintos y mergeados en orden, cada uno con su commit identificable. Nunca incluir automaticamente documentos preexistentes ni cambios de otro trabajo; no crear commits ni PRs en nombre del mantenedor fuera de una solicitud de ejecucion de la fase.
+
+Definition of Done global: todos los puntos del entregable 2 cubiertos, cuatro PRs de cierre propios e identificables (cada uno con su commit), enlaces validos, cada regla demostrada en una tarea real, memoria verificable y ningun resultado de ejecucion inventado. Una fase bloqueada sigue abierta aunque se haya escrito su documento.

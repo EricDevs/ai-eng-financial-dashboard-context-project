@@ -11,19 +11,6 @@ tests y cambios sin alteracion funcional; pidio aprobar antes del commit.
 No se autorizan correcciones de periodo, zona horaria, RNG, CORS o despliegue.
 No se crea memoria ni se inicia fase 4.
 
-## Reorganizacion documental durante fase 3
-
-El mantenedor movio `docs/04 - Conventions.md` a `docs/validations/04%20-%20Conventions.md`
-durante esta sesion. El coordinador detecto el archivo borrado/duplicado,
-confirmo con el mantenedor que fue intencional y corrigio en consecuencia:
-todos los enlaces relativos internos de ese archivo (antes `../frontend/...`,
-`../backend/...`, `../AGENTS.md`, `../README*.md`, `../.gitignore`, `ROADMAP.md`)
-y las referencias externas en [AGENTS.md](../../AGENTS.md) y
-[ROADMAP.md](../ROADMAP.md) que apuntaban a la ubicacion anterior. Verificado
-con una comprobacion de existencia de cada ruta local resultante: todas
-resuelven. Es la ubicacion vigente de las propuestas de fase 2 para el resto
-de esta fase.
-
 ## Formato y mecanismo de lectura
 
 Las reglas en [.agents/rules](../../.agents/rules) son Markdown con nombre,
@@ -251,14 +238,14 @@ para cerrar el hito 3.3/3.4 y proceder al commit de fase 3 (hito 3.5).
 
 Las 6 reglas tienen ejercicio real, revision del coordinador y veredicto
 "Cumple" sin necesidad de iteracion correctiva (ver DX-01, API-01, FE-01,
-FIN-CAL-01 arriba). Durante la ejecucion se detecto y corrigio una
-reorganizacion documental (ver seccion "Reorganizacion documental durante
-fase 3") que no formaba parte de ninguna tarea asignada; se resolvio
-confirmando intencion con el mantenedor y reparando enlaces, sin perder
-contenido.
+FIN-CAL-01 arriba).
 
-Pendiente de decision del mantenedor: si esta evidencia es suficiente para
-cerrar los hitos 3.3 y 3.4 del roadmap, o si se requiere una iteracion
-adicional sobre alguna regla antes del commit de fase 3 (hito 3.5). Una
-regla escrita no equivale a una regla probada; este documento registra la
-prueba, no una aprobacion de cierre que corresponde al mantenedor.
+El mantenedor aprobo esta evidencia como suficiente para cerrar los hitos
+3.3-3.5: commit `767012b` (`chore: implement and validate agent rules (phase
+3)`), [PR #3](https://github.com/EricDevs/ai-eng-financial-dashboard-context-project/pull/3)
+revisada y mergeada en `ac99882`. Main local sincronizado y la rama
+`phase-3-agent-rules` eliminada local y remotamente, siguiendo el mismo
+patron de integracion que PHASE1-INTEGRATION-01. Una regla escrita no
+equivale a una regla probada; este documento registra la prueba realizada
+antes de esa aprobacion, no una garantia de cobertura exhaustiva o de que
+las reglas se apliquen igual en cualquier cliente o modelo.

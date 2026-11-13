@@ -20,7 +20,7 @@ Fuentes: [App.tsx](../../frontend/src/App.tsx), [financial-utils.ts](../../front
 |-- docs/
 |   |-- ROADMAP.md                  # Documento de planificacion de esta tarea
 |   `-- validations/
-|       |-- verification - resume.md # Informe canonico consolidado
+|       |-- 03-verification-resume.md # Informe canonico consolidado
 |       `-- 01-structure.md         # Este mapa
 |-- backend/
 |   |-- Dockerfile
@@ -130,7 +130,7 @@ FastAPI aporta tambien sus rutas de documentacion por defecto (`/docs`, `/redoc`
 | Area | Archivos y responsabilidad |
 | --- | --- |
 | Guia y orquestacion | [AGENTS.md](../../AGENTS.md): instrucciones; [README.md](../../README.md) y [README.es.md](../../README.es.md): contexto y arranque; [docker-compose.yml](../../docker-compose.yml): servicios; [.gitignore](../../.gitignore): exclusiones |
-| Evidencia de handover | [verification - resume.md](verification%20-%20resume.md): informe canonico consolidado por solicitud del mantenedor, con la estructura del antiguo informe de la raiz y los detalles relevantes del segundo |
+| Evidencia de handover | [03-verification-resume.md](03-verification-resume.md): informe canonico consolidado por solicitud del mantenedor, con la estructura del antiguo informe de la raiz y los detalles relevantes del segundo |
 | Backend | [Dockerfile](../../backend/Dockerfile): Python 3.13-slim, instalacion y arranque; [requirements.txt](../../backend/requirements.txt): dependencias; [__init__.py](../../backend/app/__init__.py): paquete; [main.py](../../backend/app/main.py): app y middleware; [routes.py](../../backend/app/routes.py): modelos, generador, filtros, agregaciones y rutas |
 | Tests API | [conftest.py](../../backend/tests/conftest.py): incorpora la raiz de backend a `sys.path`; [test_routes.py](../../backend/tests/test_routes.py): TestClient, generacion, filtros y endpoints |
 | Herramientas frontend | [package.json](../../frontend/package.json): dependencias/scripts; [package-lock.json](../../frontend/package-lock.json): versiones resueltas; [Dockerfile](../../frontend/Dockerfile): instalacion/arranque; [.gitignore](../../frontend/.gitignore): exclusiones; [.env.example](../../frontend/.env.example): base API |
@@ -162,7 +162,7 @@ Observaciones que deben sobrevivir al handover:
 
 ## 8. Evidencia y siguiente verificacion
 
-Comprobado: inventario de fuentes, lectura de rutas y funciones de calculo, configuracion de servicios y pruebas existentes. Git mostraba inicialmente documentos no versionados en `docs/` y en la raiz. El mantenedor solicito consolidar los dos informes: ahora se conserva solo [verification - resume.md](verification%20-%20resume.md) en validations. No se incluyen documentos automaticamente en commits. `rg` no esta disponible en este entorno; el inventario se obtiene con las herramientas de busqueda del editor.
+Comprobado: inventario de fuentes, lectura de rutas y funciones de calculo, configuracion de servicios y pruebas existentes. Git mostraba inicialmente documentos no versionados en `docs/` y en la raiz. El mantenedor solicito consolidar los dos informes: ahora se conserva solo [03-verification-resume.md](03-verification-resume.md) en validations. No se incluyen documentos automaticamente en commits. `rg` no esta disponible en este entorno; el inventario se obtiene con las herramientas de busqueda del editor.
 
 Se revisaron las fuentes de aplicacion, tests, configuraciones, guias, ambos informes previos y la cabecera del lockfile. El asset PNG se inventario como recurso, sin validar su renderizado; no se auditaron dependencias de terceros ni todos los registros del lockfile. La primera comprobacion documental encontro 66 enlaces locales validos y las nueve rutas GET representadas; no fue una prueba HTTP.
 

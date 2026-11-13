@@ -12,7 +12,7 @@ and proposed work. Implements phase 2 proposals R14, R16, R17, R22 and R24.
 - [Frontend scripts](../../frontend/package.json) provide Vitest, ESLint and
   the TypeScript/Vite build. [Backend tests](../../backend/tests/test_routes.py)
   use pytest and TestClient.
-- [Roadmap](../../docs/ROADMAP.md) separates proposal, validation, approval,
+- [Roadmap](../../docs/entregables/ROADMAP-Project-2.md) separates proposal, validation, approval,
   commit and merge. One is not evidence of another.
 
 ## Instructions
