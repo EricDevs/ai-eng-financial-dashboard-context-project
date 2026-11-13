@@ -821,9 +821,30 @@ Esta nota y la sincronizacion del estado se redactan despues de 3f31fdd; no form
 
 El bloque previsto de API/calidad esta contrastado: nueve rutas con casos concretos, PARAM-OP-01, PARAM-DATES-01, METRICS-FULL-01, 15 tests backend, cinco frontend, lint y build. La [matriz del resumen](verification%20-%20resume.md#matriz-de-contraste-del-resumen) conserva ✅ con alcance, ❌ para la incoherencia del periodo UI y ❓ para exactitud global de KPI, estados UI y parada. No se exige que todas las filas sean ✅ ni se ocultan limites para cerrar el handover.
 
-PHASE1-CLOSE-01 registra aprobacion y commit de los cuatro documentos. Por requisito posterior del mantenedor, falta integrar fase 1 mediante PR antes de iniciar fase 2: incluir notas locales, publicar validation-init, revisar y hacer merge hacia main del fork, sincronizar main y eliminar validation-init local/remota. Vulnerabilidades npm, aviso TestClient y chunk grande siguen pendientes de evaluacion, sin cambios automaticos.
+PHASE1-INTEGRATION-01 confirma el requisito posterior del mantenedor: PR integrado, main sincronizado, validation-init eliminada local/remota y rama nueva preparada. Siguiente hito 2.1: extraer convenciones API/cliente con fuentes. Vulnerabilidades npm, aviso TestClient y chunk grande siguen pendientes de evaluacion, sin cambios automaticos.
+
+## PHASE1-INTEGRATION-01: merge, limpieza y rama de fase 2
+
+Fecha de registro: 2026-11-13. Fuentes: salidas del mantenedor compartidas en el chat y consultas del agente a GitHub/Git; no se inventa hora para las salidas locales.
+
+| Paso | Evidencia y resultado |
+| --- | --- |
+| Notas de cierre | Mantenedor creo 73f8a49: tres documentos modificados, 110 inserciones y 15 eliminaciones; complemento de 3f31fdd |
+| Publicacion | git push -u origin validation-init creo la rama remota y su tracking |
+| PR | Agente creo [PR #1](https://github.com/EricDevs/ai-eng-financial-dashboard-context-project/pull/1), validation-init hacia main del fork EricDevs; dos commits y cuatro documentos, 1629 inserciones netas; enlaces al commit permanentes |
+| Revision | Mantenedor confirmo que reviso el PR y esta OK; consulta previa sin checks GitHub asociados, no equivale a CI aprobada |
+| Merge | GitHub confirma MERGED en 2026-11-13T15:20:31Z; hash 253b3c6ac7c53ad99c971fb1bc66f87b31d44693; commit con dos padres, no squash |
+| Main local | Mantenedor ejecuto git switch main y git pull --ff-only origin main: fast-forward 954f812..253b3c6; git status --short --branch mostro solo main...origin/main |
+| Aviso durante switch | Git no pudo eliminar docs/validations y solicito reintento; mantenedor respondio n; cambio a main y pull terminaron. Causa no demostrada, sin borrado manual ni workaround; estado posterior limpio |
+| Eliminacion local | git branch -d validation-init devolvio Deleted branch validation-init (was 73f8a49) |
+| Eliminacion remota | git push origin --delete validation-init devolvio deleted validation-init |
+| Nueva rama | git switch -c phase-2-engineering-findings devolvio Switched to a new branch; agente comprobo HEAD 253b3c6ac7c53ad99c971fb1bc66f87b31d44693 y estado limpio en esa rama |
+
+Resultado: ✅ hito 1.7 completado y fase 1 integrada; rama de fase 2 preparada, sin hallazgos ni reglas nuevos. Estas notas son posteriores al merge y quedan pendientes de versionar en la rama de fase 2; no se modifica main ni se crea otro commit por el agente.
 
 ## PR de fase 1: borrador y seguimiento de integracion
+
+El destino y cuerpo propuesto siguientes son el borrador historico previo a la apertura. Sus checks reflejan ese momento, no el estado actual. El PR publicado y PHASE1-INTEGRATION-01 registran el cierre real.
 
 Destino comprobado por el agente: origin apunta al fork EricDevs/ai-eng-financial-dashboard-context-project; git ls-remote --symref origin HEAD devuelve refs/heads/main. GitHub CLI esta disponible. Esto no demuestra autenticacion, push, existencia de PR ni merge. Rama actual validation-init; las tres notas posteriores a 3f31fdd estan modificadas y aun deben incluirse en la rama.
 
@@ -878,12 +899,12 @@ Estas son comprobaciones locales registradas, no resultados de CI ni garantia de
 
 | Dato | Estado |
 | --- | --- |
-| URL y numero de PR | Pendientes |
-| Publicacion de validation-init | Pendiente |
-| Revision final y checks GitHub | Pendientes; no se afirma CI configurada |
-| Metodo y hash de merge | Pendientes; conservar identificacion del commit de fase 1 |
-| Sincronizacion de main y eliminacion local/remota | Pendientes |
-| Rama fase 2 | Pendiente; nombre propuesto phase-2-engineering-findings |
+| URL y numero de PR | [PR #1](https://github.com/EricDevs/ai-eng-financial-dashboard-context-project/pull/1), MERGED |
+| Publicacion de validation-init | Completada por el mantenedor; rama remota eliminada despues del merge |
+| Revision final y checks GitHub | Aprobacion del mantenedor; consulta previa sin checks asociados, no CI aprobada |
+| Metodo y hash de merge | Merge commit con dos padres: 253b3c6ac7c53ad99c971fb1bc66f87b31d44693 |
+| Sincronizacion de main y eliminacion local/remota | Completadas por el mantenedor; estado limpio de main contrastado |
+| Rama fase 2 | phase-2-engineering-findings creada desde el merge; HEAD y estado limpio comprobados por el agente |
 
 No hacer push forzado, omitir protecciones ni borrar ramas con cambios no integrados. Si se usa squash, registrar su hash y la relacion con 3f31fdd, que puede no quedar como ancestro de main. No se han ejecutado push, merge, eliminacion ni creacion de ramas por el agente.
 
@@ -919,6 +940,7 @@ No hacer push forzado, omitir protecciones ni borrar ramas con cambios no integr
 - [x] METRICS-FULL-01: 360 movimientos, orden por fecha y extremos coincidentes con facets.
 - [x] GIT-STATUS-01: docs es el unico directorio no versionado mostrado; cuatro documentos identificados, sin staging ni commit.
 - [x] PHASE1-CLOSE-01: contenido aprobado por el mantenedor y commit 3f31fdd creado para los cuatro documentos de fase 1.
+- [x] PHASE1-INTEGRATION-01: PR #1 merged, main sincronizado, validation-init eliminada local/remota y rama de fase 2 preparada.
 
 RUN-01 esta aprobada para el arranque inicial observado. `docker compose up --build` construye imagenes y arranca servidores de desarrollo; el [Dockerfile frontend](../../frontend/Dockerfile) no ejecuta `npm run build`, por lo que no sustituye la comprobacion posterior de compilacion con TypeScript y Vite.
 
