@@ -49,6 +49,21 @@ Si necesitas apuntar a otro backend, copia `frontend/.env.example` como `.env` y
 - Backend: http://localhost:8000
 - Documentación API: http://localhost:8000/docs
 
+**Puerto 8000 vs. puerto 5678**: el puerto 8000 es la API HTTP del backend
+(con la que habla tu navegador, `curl` o el frontend). El puerto 5678 es el
+puerto de depuración de Debugpy, usado por el depurador de un IDE para
+conectarse al contenedor del backend; no es un endpoint HTTP y una petición
+de navegador a ese puerto no funcionará.
+
+**A dónde apunta el proxy `/api` de Vite**: dentro de `docker compose up`,
+el servidor de desarrollo de Vite del frontend reenvía `/api` a
+`http://backend:8000`, el hostname del servicio backend dentro de Compose,
+no a `http://localhost:8000` del host. Esto se resuelve automáticamente
+entre contenedores en la red de Compose. Si ejecutas el frontend fuera de
+Compose y necesitas que apunte a otro origen de backend, este destino del
+proxy no se resolverá para ti; usa en su lugar la variable
+`VITE_API_BASE_URL` descrita arriba.
+
 ---
 
 Este y muchos otros proyectos son construidos por estudiantes como parte de los [Coding Bootcamps](https://4geeksacademy.com/) de 4Geeks Academy. Encuentra más acerca de los [cursos](https://4geeksacademy.com/es/comparar-programas) de [Ingeniería de IA](https://4geeksacademy.com/es/coding-bootcamps/ingenieria-ia), [Data Science & Machine Learning](https://4geeksacademy.com/es/coding-bootcamps/curso-datascience-machine-learning), [Ciberseguridad](https://4geeksacademy.com/es/coding-bootcamps/curso-ciberseguridad) y [Full-Stack Software Developer con IA](https://4geeksacademy.com/es/coding-bootcamps/programador-full-stack).
