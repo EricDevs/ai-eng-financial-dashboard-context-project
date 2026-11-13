@@ -4,7 +4,7 @@ Fecha: 2026-11-12. Objetivo: cumplir las cuatro fases de la imagen adjunta con h
 
 ## 1. Alcance y estado inicial
 
-Esta entrega crea el [mapa de estructura](validations/01-structure.md) y este roadmap; posteriormente se consolidaron los informes en el [informe canonico](validations/verification%20-%20resume.md). No implementa aun reglas ni memoria. Al 2026-11-13, fase 1 integrada mediante PR #1 y merge `253b3c6`: nueve rutas con casos concretos, dos controles negativos, lista completa, ambas suites, lint y build contrastados. Hitos 1.1-1.7 completados; limites y riesgos permanecen explicitos. Las fases solo se cierran cuando sus criterios y su commit estan comprobados.
+Esta entrega crea el [mapa de estructura](validations/01-structure.md) y este roadmap; posteriormente se consolidaron los informes en el [informe canonico](validations/verification%20-%20resume.md). No implementa aun reglas ni memoria. Al 2026-11-13, fase 1 integrada mediante PR #1 y merge `253b3c6`: nueve rutas con casos concretos, dos controles negativos, lista completa, ambas suites, lint y build contrastados. Fase 2 completada documentalmente con propuestas aprobadas y commit propio `d1f27fa`, en PR #2 todavia abierta. Hitos 1.1-1.7 y 2.1-2.5 completados; limites y riesgos permanecen explicitos. Las fases solo se cierran cuando sus criterios y su commit estan comprobados; aprobar propuestas no implica implementarlas ni hacer merge.
 
 | Elemento | Estado observado | Evidencia |
 | --- | --- | --- |
@@ -14,8 +14,9 @@ Esta entrega crea el [mapa de estructura](validations/01-structure.md) y este ro
 | Servicios | Frontend Vite y API FastAPI declarados en Compose | [docker-compose.yml](../docker-compose.yml) |
 | Reglas y skills locales | `.agents` no existe | [AGENTS.md](../AGENTS.md), [README.md](../README.md) |
 | Memoria del proyecto | `memory-bank` no existe | Consulta del directorio indicado por [AGENTS.md](../AGENTS.md) |
+| Hallazgos y propuestas de fase 2 | 23 hallazgos retenidos, 12 decisiones de filtrado y 24 reglas con alcance, prioridad, tarea y check; conjunto aprobado por el mantenedor, no reglas activas | [04 - Conventions.md](04%20-%20Conventions.md), [PHASE2-CLOSE-01](04%20-%20Conventions.md#phase2-close-01-aprobación-y-evidencia-documental) |
 | Validacion ejecutable | Casos de nueve rutas, dos controles negativos, lista completa, 15 tests backend, cinco frontend, lint y build aprobados; historial de bloqueos y avisos conservado. No implica cobertura exhaustiva ni exactitud global de la UI | [Registro de comprobaciones](validations/02-handover-checks.md) |
-| Commits por fase | Fase 1: `3f31fdd`, complemento `73f8a49`, merge `253b3c6` mediante PR #1; fases 2-4 pendientes | [PHASE1-INTEGRATION-01](validations/02-handover-checks.md#phase1-integration-01-merge-limpieza-y-rama-de-fase-2) |
+| Commits por fase | Fase 1: `3f31fdd`, complemento `73f8a49`, merge `253b3c6` mediante PR #1; fase 2: incremento `db1285c` y cierre dedicado `d1f27fa`; fases 3-4 pendientes | [PHASE1-INTEGRATION-01](validations/02-handover-checks.md#phase1-integration-01-merge-limpieza-y-rama-de-fase-2), [PHASE2-CLOSE-01](04%20-%20Conventions.md#phase2-close-01-aprobación-y-evidencia-documental) |
 
 Git mostraba inicialmente `docs/` y el informe de la raiz como no versionados. Por solicitud explicita del mantenedor, los informes se consolidaron y el de la raiz se traslado a validations. Conservar los demas cambios locales y revisar el alcance antes de incluir documentos en un commit. No usar `git add .` para cerrar una fase.
 
@@ -47,13 +48,13 @@ Objetivo: que un contribuidor explique que hace el proyecto, como se conecta y c
 | 1.6 Commit de fase | Completado el 2026-11-13: mantenedor creo `3f31fdd`, cuatro documentos nuevos y 1534 inserciones; alcance staged contrastado previamente | `docs: document verified project handover (phase 1)`; [PHASE1-CLOSE-01](validations/02-handover-checks.md#phase1-close-01-aprobacion-y-commit-de-fase-1) | Commit exclusivo identificable; no contiene reglas/memoria de fases futuras |
 | 1.7 Integrar y limpiar rama | Completado el 2026-11-13: notas incluidas en 73f8a49, PR #1 revisado y merged mediante merge commit 253b3c6, main sincronizado y validation-init eliminada local/remota; nueva rama phase-2-engineering-findings creada desde el merge | [PR #1](https://github.com/EricDevs/ai-eng-financial-dashboard-context-project/pull/1); [PHASE1-INTEGRATION-01](validations/02-handover-checks.md#phase1-integration-01-merge-limpieza-y-rama-de-fase-2) | PR merged; contenido integrado en main; sin cambios locales perdidos; validation-init eliminada antes de crear rama de fase 2 |
 
-Estado al 2026-11-13: fase 1 completada, hitos 1.1-1.7; commits `3f31fdd` y `73f8a49`, PR #1 merged en `253b3c6`, main sincronizado y validation-init eliminada local/remota. Rama phase-2-engineering-findings preparada desde el merge; hitos de fase 2 y fases 3-4 pendientes. Nueve rutas con casos concretos, dos controles negativos, lista completa, 15 tests backend, cinco frontend, ESLint y build contrastados. Discrepancia del periodo UI y limites de exactitud global de KPI/estados UI/parada conservados. Vulnerabilidades npm, aviso TestClient y chunk grande pendientes de evaluacion; no se afirman checks CI aprobados.
+Estado de fase 1 al 2026-11-13: completada, hitos 1.1-1.7; commits `3f31fdd` y `73f8a49`, PR #1 merged en `253b3c6`, main sincronizado y validation-init eliminada local/remota. Rama phase-2-engineering-findings creada desde el merge; su cierre documental se registra en la seccion de fase 2 y fases 3-4 siguen pendientes. Nueve rutas con casos concretos, dos controles negativos, lista completa, 15 tests backend, cinco frontend, ESLint y build contrastados. Discrepancia del periodo UI y limites de exactitud global de KPI/estados UI/parada conservados. Vulnerabilidades npm, aviso TestClient y chunk grande pendientes de evaluacion; no se afirman checks CI aprobados ni se atribuyen estos resultados historicos a fase 2.
 
 ### Seguimiento guiado de fase 1
 
 Trabajar una comprobacion por turno y registrar el resultado antes de avanzar. La configuracion ya se comprobo con `docker compose config`; la salida del mantenedor y sus limites se registran como CONFIG-01 en [02-handover-checks.md](validations/02-handover-checks.md). El comando no construye imagenes ni arranca contenedores y no demuestra compilacion o disponibilidad de la aplicacion.
 
-PHASE1-INTEGRATION-01 confirma integracion, limpieza y rama nueva. Siguiente hito 2.1 en phase-2-engineering-findings: extraer convenciones con fuentes, empezando por modelos API y tipos cliente. Crear una rama no completa ese hito. No crear aun reglas ni memoria ni corregir producto. Mantener visibles los limites de KPI/estados UI/parada, discrepancia del periodo y riesgos de dependencias/tamano.
+PHASE1-INTEGRATION-01 confirma integracion, limpieza y rama nueva. Los hitos 2.1-2.5 de phase-2-engineering-findings se registran ahora en la seccion siguiente con propuestas aprobadas y commit dedicado. No crear aun reglas ni memoria ni corregir producto: seleccionar y validar reglas corresponde a fase 3 cuando se solicite. Mantener visibles los limites de KPI/estados UI/parada, discrepancia del periodo y riesgos de dependencias/tamano.
 
 No repetir construccion ni exigir la salida pendiente de `docker version` solo para confirmar lo que ya demuestra el segundo intento. FRONTEND-BUILD-01 ya comprueba la compilacion completa; el arranque Vite de desarrollo no la sustituye. Los avisos de npm, Debugpy, TestClient y tamano del chunk se conservan sin aplicar cambios automaticos.
 
@@ -101,15 +102,27 @@ Objetivo: convertir patrones demostrables del repositorio en propuestas utiles p
 
 | Hito | Acciones detalladas | Evidencia / entregable | Criterio de aceptacion |
 | --- | --- | --- | --- |
-| 2.1 Extraer convenciones | Revisar patrones observados de API/modelos, contratos TS, ubicacion del calculo, componentes, estilos, tests y arranque; explicar su efecto en una contribucion futura | Registro propuesto `docs/validations/03-engineering-findings.md` | Cada hallazgo tiene fuente y consecuencia concreta |
-| 2.2 Filtrar hallazgos | Rechazar frases vagas; separar convencion, limitacion y mejora propuesta; no deducir reglas de comillas/formatting donde el estilo varia | Tabla retenido/descartado con razon | Solo sobreviven hallazgos ligados a archivos, carpetas o comportamientos |
-| 2.3 Agrupar por categoria | Clasificar en arquitectura/contratos, naming, testing, documentacion y DX; asignar alcance y prioridad segun riesgo observado | Secciones por categoria en el mismo registro | Sin duplicados ni categorias rellenas con generalidades |
-| 2.4 Proponer reglas | Para cada regla: nombre, alcance, justificacion, guia, al menos un hecho verificable, una tarea pequena y check de cumplimiento | Propuestas de reglas en el registro; todavia no reglas activas | Todas las propuestas citan fuentes y son comprobables |
-| 2.5 Commit de fase | Revisar propuestas con el mantenedor; mantener solo las aprobadas; seleccionar notas/propuestas y evidencia de esta fase | Commit sugerido `docs: derive repository engineering rules (phase 2)` | Commit propio; propuestas claramente diferenciadas de implementacion |
+| 2.1 Extraer convenciones | Completado el 2026-11-13 por el agente: patrones API/modelos, contratos TS, calculo, componentes/estados/tokens, imports, estilo, tests y arranque; 23 hallazgos con consecuencias | [Informe elegido por el mantenedor](04%20-%20Conventions.md#convenciones-y-hallazgos-por-categoría), en lugar del nombre inicialmente sugerido; [H01-H23](04%20-%20Conventions.md#hallazgos-retenidos) | Cada hallazgo tiene fuente y consecuencia concreta |
+| 2.2 Filtrar hallazgos | Completado el 2026-11-13 por el agente: 12 decisiones de descarte/reformulacion; tipos C/L separados de mejoras; corregidas generalizaciones de GroupBy, naming, fixtures y formato | [Decisiones de filtrado](04%20-%20Conventions.md#decisiones-de-filtrado-y-consecuencias) | Solo sobreviven hallazgos ligados a archivos, carpetas o comportamientos |
+| 2.3 Agrupar por categoria | Completado el 2026-11-13 por el agente: categorias del informe, alcance y prioridades P1/P2/P3 motivadas por riesgo; diferencias entre reglas relacionadas explicitas | [Categorias](04%20-%20Conventions.md#convenciones-y-hallazgos-por-categoría), [matriz R01-R24](04%20-%20Conventions.md#alcance-prioridad-y-validación-propuesta-por-regla) | Sin duplicados ni categorias rellenas con generalidades |
+| 2.4 Proponer reglas | Completado el 2026-11-13 por el agente: 24 propuestas con nombre, alcance, justificacion/guia, hecho, tarea pequena y check con resultado requerido; tareas no ejecutadas | [Reglas propuestas](04%20-%20Conventions.md#reglas-propuestas), [matriz R01-R24](04%20-%20Conventions.md#alcance-prioridad-y-validación-propuesta-por-regla) | Todas las propuestas citan fuentes y son comprobables |
+| 2.5 Commit de fase | Completado el 2026-11-13: mantenedor aprobo expresamente las 24 propuestas finales sin observaciones; agente creo `d1f27fa`, exclusivo del contenido y evidencia de fase 2, sin codigo ni reglas activas | [Commit d1f27fa](https://github.com/EricDevs/ai-eng-financial-dashboard-context-project/commit/d1f27fa3c9b2a83ea32ab3023353fe198e9735fc), [PHASE2-CLOSE-01](04%20-%20Conventions.md#phase2-close-01-aprobación-y-evidencia-documental) | Commit propio; propuestas claramente diferenciadas de implementacion |
+
+### Estado y evidencia de fase 2
+
+Hitos 2.1-2.5 completados documentalmente el 2026-11-13. El mantenedor eligio [04 - Conventions.md](04%20-%20Conventions.md) como entregable y aprobo en formulario «Aprobar las 24 reglas como propuestas y registrar el cierre documental», sin observaciones. Agente: analisis, comprobacion estructural/enlaces y commit; mantenedor: aprobacion del conjunto. Sin bloqueos documentales pendientes.
+
+Commit de cierre de contenido: `d1f27fa3c9b2a83ea32ab3023353fe198e9735fc`, `docs: derive repository engineering rules (phase 2)`, modifica solo el informe de convenciones. `db1285c` es el incremento inicial de la PR y contiene tambien notas de integracion de fase 1; no se usa como unico cierre de estos criterios ampliados. Esta actualizacion del roadmap registra el hash ya comprobado, sin amend ni referencia circular al propio commit.
+
+Validacion documental del agente: 24 reglas numeradas con hecho, 24 filas unicas con alcance/prioridad/tarea/check, 23 hallazgos retenidos; 86 enlaces locales del informe resueltos y `git diff --cached --check` sin errores antes de crear `d1f27fa`. Las tareas/checks de las reglas no se han ejecutado: pertenecen a fase 3. No se repiten ni se atribuyen a esta fase suites, lint/build o resultados runtime historicos de fase 1.
+
+Comprobacion final tras registrar el hash: PowerShell confirma las 12 decisiones de filtrado, los mismos 24 IDs de regla/matriz sin duplicados ni columnas vacias, checklist de fase 2 completo y 148 enlaces locales con sus headings resueltos entre informe y roadmap; `git diff --check` sin errores. Esta comprobacion verifica estructura y referencias documentales, no correccion runtime del producto.
+
+[PR #2](https://github.com/EricDevs/ai-eng-financial-dashboard-context-project/pull/2): abierta para revision e integracion. Cierre documental y aprobacion de propuestas no son merge, limpieza de rama ni activacion. Fases 3 y 4 pendientes; no se corrigen automaticamente riesgos financieros, UI, CORS o despliegue.
 
 ### Base inicial de propuestas
 
-Estos son candidatos, no reglas aprobadas ni mejoras comprometidas:
+Esta tabla conserva la base inicial de candidatos, no un segundo conjunto de reglas. La version refinada y aprobada como propuestas es [R01-R24](04%20-%20Conventions.md#reglas-propuestas); aprobarlas no compromete su implementacion ni activa reglas:
 
 | Categoria / candidato | Hecho del repositorio | Guia propuesta | Check que podria refutarla o demostrar cumplimiento |
 | --- | --- | --- | --- |
@@ -125,11 +138,11 @@ Ejemplos de hallazgos descartables: "usar buenas practicas", "el proyecto usa Ty
 
 ### Checklist de cierre
 
-- [ ] Convenciones utiles y patrones arraigados extraidos con el agente.
-- [ ] Solo hallazgos ligados a archivos, carpetas o comportamientos concretos.
-- [ ] Hallazgos supervivientes agrupados por categoria.
-- [ ] Reglas propuestas; cada una cita al menos un hecho del repositorio.
-- [ ] Commit dedicado a fase 2 con hash registrado.
+- [x] Convenciones utiles y patrones arriesgados extraidos con el agente; H01-H23 con fuentes y consecuencias.
+- [x] Solo hallazgos ligados a archivos, carpetas o comportamientos concretos; decisiones de filtrado registradas.
+- [x] Hallazgos supervivientes agrupados por categoria; alcance y prioridad motivada por regla.
+- [x] Reglas propuestas; cada una cita al menos un hecho y tiene tarea pequena/check, sin presentarlos como ejecutados.
+- [x] Conjunto final aprobado por el mantenedor y commit dedicado a fase 2 `d1f27fa` con hash registrado; PR #2 aun abierta.
 
 ## 5. Fase 3: implementar y probar reglas
 
@@ -224,7 +237,7 @@ Cuando cambien contratos, arranque, stack o estado comprobado, actualizar el doc
 | Fase | Condicion para avanzar | Hash de commit | Estado actual |
 | --- | --- | --- | --- |
 | 1 | Mapa, resumen, checks, aprobacion e integracion por PR | `3f31fdd`, `73f8a49`; merge `253b3c6` | Completada: PR #1 merged, main sincronizado y validation-init eliminada local/remota |
-| 2 | Hallazgos y reglas propuestas aprobados con fuentes | Pendiente | Rama phase-2-engineering-findings preparada; hitos pendientes |
+| 2 | Hallazgos y reglas propuestas aprobados con fuentes | `d1f27fa` (cierre); `db1285c` (incremento inicial) | Hitos 2.1-2.5 completados documentalmente; propuestas aprobadas, PR #2 abierta; no implementadas ni activadas |
 | 3 | Reglas cargadas, tareas reales y validacion de cada una | Pendiente | Pendiente |
 | 4 | Memoria minima completa y handover contrastado | Pendiente | Pendiente |
 
