@@ -1,6 +1,6 @@
 # 02. Registro de comprobaciones del handover
 
-Cada comprobacion conserva fecha, comando, esperado, observado, resultado y limites. El [roadmap](../ROADMAP.md) muestra el progreso por hito; este registro conserva la evidencia. Ejecutar un comando sin guardar su resultado no completa el rastro exigido por el hito 1.5.
+Cada comprobacion conserva fecha, comando, esperado, observado, resultado y limites. El [roadmap](../entregables/ROADMAP-Project-2.md) muestra el progreso por hito; este registro conserva la evidencia. Ejecutar un comando sin guardar su resultado no completa el rastro exigido por el hito 1.5.
 
 ## CONFIG-01: validar la configuracion Compose
 

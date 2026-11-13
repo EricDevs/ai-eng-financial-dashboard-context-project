@@ -72,4 +72,4 @@ construirla por iniciativa propia; requiere un acuerdo de alcance aparte.
 | 3 | `767012b` | merge `ac99882` via PR #3 |
 | 4 | en curso | pendiente |
 
-Detalle y evidencia completa en [ROADMAP.md](../docs/ROADMAP.md).
+Detalle y evidencia completa en [ROADMAP-Project-2.md](../docs/entregables/ROADMAP-Project-2.md).

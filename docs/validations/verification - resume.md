@@ -163,7 +163,7 @@ No hay autenticacion declarada. Las fechas, literales y limites tienen validacio
 |---|---|
 | [verification - resume.md](verification%20-%20resume.md) | Informe canonico consolidado; mantiene la estructura del antiguo informe de la raiz. |
 | [01-structure.md](01-structure.md) | Mapa de estructura, servicios, entry points, contratos y limites. |
-| [ROADMAP.md](../ROADMAP.md) | Plan de las cuatro fases con hitos, evidencias y commits independientes. |
+| [ROADMAP-Project-2.md](../entregables/ROADMAP-Project-2.md) | Plan de las cuatro fases con hitos, evidencias y commits independientes. |
 
 ### Backend
 
@@ -297,6 +297,6 @@ git status --short, antes de consolidar:
 
 La rama activa se contrasto ademas con `git branch --show-current`, que devolvio `validation-init`. La salida de remotos demuestra la configuracion local de origin; la existencia del fork se registra con la confirmacion del mantenedor, sin atribuir una prueba de red o push que no se ha realizado. No se han creado commits ni revertido cambios locales.
 
-Estado al 2026-11-13: hitos 1.1-1.7 completados; commits `3f31fdd` y `73f8a49`, PR #1 merged en `253b3c6`, limpieza y rama nueva contrastadas en PHASE1-INTEGRATION-01. Hitos de fase 2 pendientes. Nueve rutas con casos concretos, dos controles negativos, lista completa, ambas suites (15 tests backend y cinco frontend), ESLint y build contrastados. Las filas ❓ y la discrepancia ❌ permanecen explicitas; no se afirma cobertura exhaustiva, siguiendo el [roadmap](../ROADMAP.md). Las notas de integracion posteriores al merge quedan pendientes de versionar en la rama de fase 2.
+Estado al 2026-11-13: hitos 1.1-1.7 completados; commits `3f31fdd` y `73f8a49`, PR #1 merged en `253b3c6`, limpieza y rama nueva contrastadas en PHASE1-INTEGRATION-01. Hitos de fase 2 pendientes. Nueve rutas con casos concretos, dos controles negativos, lista completa, ambas suites (15 tests backend y cinco frontend), ESLint y build contrastados. Las filas ❓ y la discrepancia ❌ permanecen explicitas; no se afirma cobertura exhaustiva, siguiendo el [roadmap](../entregables/ROADMAP-Project-2.md). Las notas de integracion posteriores al merge quedan pendientes de versionar en la rama de fase 2.
 
 El 12 de noviembre de 2026 el mantenedor compartio la salida de `docker compose config`, coherente con los servicios, puertos y montajes descritos. Se registra como CONFIG-01 aprobada en [02-handover-checks.md](02-handover-checks.md). Esta comprobacion por si sola no construye imagenes ni demuestra arranque, compilacion frontend o respuestas HTTP; RUN-01, HEALTH-01 y UI-PROXY-01 aportan evidencia posterior de arranque y peticiones, sin sustituir las comprobaciones independientes de suites y build registradas posteriormente.

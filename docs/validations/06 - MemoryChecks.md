@@ -7,7 +7,7 @@ Fase 4 iniciada el 2026-11-13 en `phase-4-project-memory`, desde el merge de
 `ac99882`. La rama de fase 3 se elimino local y remotamente antes de crear esta.
 
 Objetivo: auditar `memory-bank/` con una sesion sin contexto previo, siguiendo
-el hito 3.3/4.3 del [roadmap](../ROADMAP.md): pedir resumen de producto,
+el hito 3.3/4.3 del [roadmap](../entregables/ROADMAP-Project-2.md): pedir resumen de producto,
 arranque y siguiente prioridad, y contrastar la respuesta con codigo/evidencia
 real en vez de aceptarla por declaracion.
 
