@@ -40,3 +40,15 @@ The source proposals are in [04 - Conventions](docs/validations/04%20-%20Convent
 Record rule exercises, exact prompts, observed outputs, checks and limitations
 in [05 - RulesChecks](docs/validations/05%20-%20RulesChecks.md). These files
 define a manual read protocol, not proof that every client discovers AGENTS.md.
+
+## Memory routing
+
+Read these before starting a task that needs more than one turn of context,
+or when asked for a product/status summary: [overview](memory-bank/overview.md)
+(what the product does and its known product-level gap), [stack](memory-bank/stack.md)
+(languages, frameworks, infra and already-verified commands) and
+[status](memory-bank/status.md) (implemented vs. proven, known gaps, next
+priorities and commit/integration history). Memory is factual evidence from
+past phases, not a task queue; absence of a feature here does not authorize
+building it. If a fact here conflicts with the current code or docs, trust
+what you observe now and flag the memory file as stale instead of acting on it.

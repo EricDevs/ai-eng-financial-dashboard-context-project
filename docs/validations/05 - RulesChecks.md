@@ -257,8 +257,12 @@ fase 3") que no formaba parte de ninguna tarea asignada; se resolvio
 confirmando intencion con el mantenedor y reparando enlaces, sin perder
 contenido.
 
-Pendiente de decision del mantenedor: si esta evidencia es suficiente para
-cerrar los hitos 3.3 y 3.4 del roadmap, o si se requiere una iteracion
-adicional sobre alguna regla antes del commit de fase 3 (hito 3.5). Una
-regla escrita no equivale a una regla probada; este documento registra la
-prueba, no una aprobacion de cierre que corresponde al mantenedor.
+El mantenedor aprobo esta evidencia como suficiente para cerrar los hitos
+3.3-3.5: commit `767012b` (`chore: implement and validate agent rules (phase
+3)`), [PR #3](https://github.com/EricDevs/ai-eng-financial-dashboard-context-project/pull/3)
+revisada y mergeada en `ac99882`. Main local sincronizado y la rama
+`phase-3-agent-rules` eliminada local y remotamente, siguiendo el mismo
+patron de integracion que PHASE1-INTEGRATION-01. Una regla escrita no
+equivale a una regla probada; este documento registra la prueba realizada
+antes de esa aprobacion, no una garantia de cobertura exhaustiva o de que
+las reglas se apliquen igual en cualquier cliente o modelo.

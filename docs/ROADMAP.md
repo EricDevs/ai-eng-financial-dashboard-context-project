@@ -4,7 +4,7 @@ Fecha: 2026-11-12. Objetivo: cumplir las cuatro fases de la imagen adjunta con h
 
 ## 1. Alcance y estado inicial
 
-Esta entrega crea el [mapa de estructura](validations/01-structure.md) y este roadmap; posteriormente se consolidaron los informes en el [informe canonico](validations/verification%20-%20resume.md). No implementa aun reglas ni memoria. Al 2026-11-13, fase 1 integrada mediante PR #1 y merge `253b3c6`: nueve rutas con casos concretos, dos controles negativos, lista completa, ambas suites, lint y build contrastados. Fase 2 completada documentalmente con propuestas aprobadas y commit propio `d1f27fa`, en PR #2 todavia abierta. Hitos 1.1-1.7 y 2.1-2.5 completados; limites y riesgos permanecen explicitos. Las fases solo se cierran cuando sus criterios y su commit estan comprobados; aprobar propuestas no implica implementarlas ni hacer merge.
+Esta entrega crea el [mapa de estructura](validations/01-structure.md) y este roadmap; posteriormente se consolidaron los informes en el [informe canonico](validations/verification%20-%20resume.md). Al 2026-11-13, fase 1 integrada mediante PR #1 y merge `253b3c6`: nueve rutas con casos concretos, dos controles negativos, lista completa, ambas suites, lint y build contrastados. Fase 2 completada documentalmente con propuestas aprobadas y commit propio `d1f27fa`, integrada mediante PR #2. Fase 3 implementa y valida seis reglas en `.agents/rules` con tareas reales, integrada mediante PR #3 y merge `ac99882`. Fase 4 crea `memory-bank` (overview, stack, status) y la audita con un agente de contexto separado (MEM-01); commit de cierre pendiente de aprobacion. Hitos 1.1-1.7, 2.1-2.5, 3.1-3.5 y 4.1-4.3 completados; limites y riesgos permanecen explicitos. Las fases solo se cierran cuando sus criterios y su commit estan comprobados; aprobar propuestas no implica implementarlas ni hacer merge.
 
 | Elemento | Estado observado | Evidencia |
 | --- | --- | --- |
@@ -12,11 +12,11 @@ Esta entrega crea el [mapa de estructura](validations/01-structure.md) y este ro
 | Mapa de estructura y entradas | Hito 1.2 completado el 2026-11-13: mapa, servicios/puertos, nueve rutas GET y flujo UI/proxy contrastados | [01-structure.md](validations/01-structure.md), [OPENAPI-01 y UI-PROXY-01](validations/02-handover-checks.md) |
 | Resumen canonico | Hito 1.3 completado mediante sintesis del mantenedor; matriz tecnica clasificada con ✅ / ❌ / ❓ y limites explicitos; contenido final aprobado por el mantenedor | [Informe canonico](validations/verification%20-%20resume.md), [SUMMARY-01](validations/02-handover-checks.md) |
 | Servicios | Frontend Vite y API FastAPI declarados en Compose | [docker-compose.yml](../docker-compose.yml) |
-| Reglas y skills locales | `.agents` no existe | [AGENTS.md](../AGENTS.md), [README.md](../README.md) |
-| Memoria del proyecto | `memory-bank` no existe | Consulta del directorio indicado por [AGENTS.md](../AGENTS.md) |
-| Hallazgos y propuestas de fase 2 | 23 hallazgos retenidos, 12 decisiones de filtrado y 24 reglas con alcance, prioridad, tarea y check; conjunto aprobado por el mantenedor, no reglas activas | [04 - Conventions.md](validations/04%20-%20Conventions.md), [PHASE2-CLOSE-01](validations/04%20-%20Conventions.md#phase2-close-01-aprobación-y-evidencia-documental) |
-| Validacion ejecutable | Casos de nueve rutas, dos controles negativos, lista completa, 15 tests backend, cinco frontend, lint y build aprobados; historial de bloqueos y avisos conservado. No implica cobertura exhaustiva ni exactitud global de la UI | [Registro de comprobaciones](validations/02-handover-checks.md) |
-| Commits por fase | Fase 1: `3f31fdd`, complemento `73f8a49`, merge `253b3c6` mediante PR #1; fase 2: incremento `db1285c` y cierre dedicado `d1f27fa`; fases 3-4 pendientes | [PHASE1-INTEGRATION-01](validations/02-handover-checks.md#phase1-integration-01-merge-limpieza-y-rama-de-fase-2), [PHASE2-CLOSE-01](validations/04%20-%20Conventions.md#phase2-close-01-aprobación-y-evidencia-documental) |
+| Reglas y skills locales | `.agents/rules` creada con seis reglas (WF, FIN, API, CAL, FE, DX), enrutadas desde AGENTS.md y validadas con tareas reales; `.agents/skills` no existe (no requerido por fase 3) | [AGENTS.md](../AGENTS.md), [05 - RulesChecks.md](validations/05%20-%20RulesChecks.md) |
+| Memoria del proyecto | `memory-bank` creada con overview/stack/status, enrutada desde AGENTS.md y auditada con un agente de contexto separado (MEM-01); commit de fase 4 pendiente | [AGENTS.md](../AGENTS.md), [06 - MemoryChecks.md](validations/06%20-%20MemoryChecks.md) |
+| Hallazgos y propuestas de fase 2 | 23 hallazgos retenidos, 12 decisiones de filtrado y 24 reglas con alcance, prioridad, tarea y check; conjunto aprobado por el mantenedor e implementado en fase 3 como seis reglas agrupadas | [04 - Conventions.md](validations/04%20-%20Conventions.md), [PHASE2-CLOSE-01](validations/04%20-%20Conventions.md#phase2-close-01-aprobación-y-evidencia-documental) |
+| Validacion ejecutable | Casos de nueve rutas, dos controles negativos, lista completa, 15 tests backend, cinco frontend, lint y build aprobados; historial de bloqueos y avisos conservado. Fase 3 anade cuatro ejercicios reales de regla (DX-01, API-01, FIN-CAL-01, FE-01). No implica cobertura exhaustiva ni exactitud global de la UI | [Registro de comprobaciones](validations/02-handover-checks.md), [05 - RulesChecks.md](validations/05%20-%20RulesChecks.md) |
+| Commits por fase | Fase 1: `3f31fdd`, complemento `73f8a49`, merge `253b3c6` mediante PR #1; fase 2: incremento `db1285c` y cierre dedicado `d1f27fa`, merge mediante PR #2; fase 3: cierre `767012b`, merge `ac99882` mediante PR #3; fase 4 pendiente | [PHASE1-INTEGRATION-01](validations/02-handover-checks.md#phase1-integration-01-merge-limpieza-y-rama-de-fase-2), [PHASE2-CLOSE-01](validations/04%20-%20Conventions.md#phase2-close-01-aprobación-y-evidencia-documental), [05 - RulesChecks.md](validations/05%20-%20RulesChecks.md) |
 
 Git mostraba inicialmente `docs/` y el informe de la raiz como no versionados. Por solicitud explicita del mantenedor, los informes se consolidaron y el de la raiz se traslado a validations. Conservar los demas cambios locales y revisar el alcance antes de incluir documentos en un commit. No usar `git add .` para cerrar una fase.
 
@@ -152,11 +152,11 @@ Objetivo: crear reglas pequenas, cargables y accionables, demostrando cada una c
 
 | Hito | Acciones detalladas | Evidencia / entregable | Criterio de aceptacion |
 | --- | --- | --- | --- |
-| 3.1 Crear ubicacion y routing | Crear `.agents/rules` si sigue ausente; respetar la estructura del README; revisar como [AGENTS.md](../AGENTS.md) conduce al agente a esas reglas | Carpeta y mecanismo de lectura identificados | El agente puede nombrar la regla leida y su alcance antes de trabajar |
-| 3.2 Redactar reglas | Elegir el minimo conjunto aprobado; un tema por archivo; incluir nombre, alcance, justificacion, fuentes, instrucciones concretas, check y limites | Archivos propuestos `.agents/rules/<nombre-regla>.md` | Ninguna regla vaga, duplicada, contradictoria o sin evidencia |
-| 3.3 Validar cada regla | Asignar una tarea pequena y real a cada archivo, ejecutarla con la regla cargada, observar el diff y correr el check correspondiente antes de continuar | Registro propuesto `docs/validations/04-rules-validation.md`; cambios pequenos de validacion | Todas las reglas tienen evidencia de carga y de cumplimiento en una tarea real |
-| 3.4 Refinar e iterar | Ante ambiguedad o incumplimiento, precisar la guia; repetir la misma tarea/check; agrupar o retirar propuestas que no aporten valor | Version final y registro de iteraciones | No hay reglas pendientes de prueba ni instrucciones imposibles para el entorno |
-| 3.5 Commit de fase | Revisar reglas, routing si se ajusto, cambios reales de validacion y evidencia; incluir solo esta fase | Commit sugerido `chore: implement and validate agent rules (phase 3)` | Commit propio, distinto de propuestas de fase 2 y memoria de fase 4 |
+| 3.1 Crear ubicacion y routing | Completado el 2026-11-13: `.agents/rules` creada; enrutamiento anadido en [AGENTS.md](../AGENTS.md) con tabla ID -> cuando leer cada regla | Carpeta y mecanismo de lectura identificados | El agente puede nombrar la regla leida y su alcance antes de trabajar |
+| 3.2 Redactar reglas | Completado el 2026-11-13: seis archivos (WF, FIN, API, CAL, FE, DX) derivados de las 24 propuestas de fase 2, cada uno con alcance, hechos/justificacion, instrucciones, checks y limites | Archivos `.agents/rules/01-workflow-evidence.md` a `06-runtime-configuration.md` | Ninguna regla vaga, duplicada, contradictoria o sin evidencia |
+| 3.3 Validar cada regla | Completado el 2026-11-13: cuatro ejercicios reales con agentes de contexto separado (DX-01, API-01, FIN-CAL-01, FE-01) cubren las seis reglas; WF se valida de forma transversal | [05 - RulesChecks.md](validations/05%20-%20RulesChecks.md), en lugar del nombre inicialmente sugerido `04-rules-validation.md` | Todas las reglas tienen evidencia de carga y de cumplimiento en una tarea real |
+| 3.4 Refinar e iterar | Completado el 2026-11-13: cada ejercicio cumplio los criterios en el primer intento; no fue necesaria ninguna iteracion correctiva | [05 - RulesChecks.md](validations/05%20-%20RulesChecks.md) | No hay reglas pendientes de prueba ni instrucciones imposibles para el entorno |
+| 3.5 Commit de fase | Completado el 2026-11-13: commit `767012b`, PR #3 revisado y mergeado por el mantenedor en `ac99882`; main sincronizado y rama `phase-3-agent-rules` eliminada local/remota | `chore: implement and validate agent rules (phase 3)` | Commit propio, distinto de propuestas de fase 2 y memoria de fase 4 |
 
 ### Activacion y formato
 
@@ -190,11 +190,39 @@ Reutilizar suites existentes, no crear herramientas paralelas ni archivos de tes
 
 ### Checklist de cierre
 
-- [ ] `.agents/rules` creada si no existia.
-- [ ] Reglas con nombre, alcance, justificacion y guia especifica claros.
-- [ ] Cada regla validada con una tarea pequena real del repositorio.
-- [ ] Refinamiento realizado hasta que la guia sea accionable.
-- [ ] Commit dedicado a fase 3 con hash registrado.
+- [x] `.agents/rules` creada si no existia.
+- [x] Reglas con nombre, alcance, justificacion y guia especifica claros.
+- [x] Cada regla validada con una tarea pequena real del repositorio.
+- [x] Refinamiento realizado hasta que la guia sea accionable.
+- [x] Commit dedicado a fase 3 con hash registrado.
+
+### Estado y evidencia de fase 3
+
+Hitos 3.1-3.5 completados el 2026-11-13. Seis reglas (WF, FIN, API, CAL, FE,
+DX) creadas en `.agents/rules` y enrutadas desde `AGENTS.md`. Validadas con
+cuatro agentes de contexto separado sobre tareas reales de este repositorio:
+aclaracion bilingue de puertos/proxy en ambos README (DX-01), fortalecimiento
+de un test de `/api/metrics/summary` con dataset controlado via monkeypatch
+(API-01), un test de frontera de fecha fin/inicio de mes en
+`financial-utils.test.ts` que ademas documento sin corregir un riesgo de
+huso horario ya conocido (FIN-CAL-01), y el refactor de un formatter
+porcentual duplicado para reutilizar `formatPercent` (FE-01). Cada ejercicio
+se registro con su prompt exacto, salida, revision independiente del
+coordinador y veredicto en [05 - RulesChecks.md](validations/05%20-%20RulesChecks.md);
+ninguno necesito iteracion correctiva.
+
+Durante la ejecucion se detecto que `docs/04 - Conventions.md` habia sido
+reubicado a `docs/validations/`; el mantenedor confirmo que fue intencional
+y el agente reparo todos los enlaces relativos afectados, incluidas las
+referencias en este roadmap y en `AGENTS.md`.
+
+Commit de cierre: `767012b`, `chore: implement and validate agent rules
+(phase 3)`. [PR #3](https://github.com/EricDevs/ai-eng-financial-dashboard-context-project/pull/3)
+revisada y mergeada por el mantenedor en `ac99882`; main actualizado y la
+rama `phase-3-agent-rules` eliminada local y remotamente. No se activo
+memoria ni se corrigieron el periodo, zona horaria, RNG, CORS o despliegue:
+esos limites permanecen explicitos para fase 4 o para un cambio de alcance
+futuro acordado aparte.
 
 ## 6. Fase 4: construir memoria del proyecto
 
@@ -204,14 +232,15 @@ Objetivo: conservar contexto verificable para la siguiente sesion sin copiar tod
 
 | Hito | Acciones detalladas | Evidencia / entregable | Criterio de aceptacion |
 | --- | --- | --- | --- |
-| 4.1 Crear banco de memoria | Crear `memory-bank` en la raiz; usar archivos breves y enlaces a fuentes; revisar que el routing de AGENTS permite encontrarlo | Carpeta y documentos propuestos de abajo | Memoria accesible al siguiente agente sin depender del chat actual |
-| 4.2 Cubrir contenido minimo | Redactar overview, stack e infraestructura y estado actual; reflejar cambios reales de fase 3, no solo el estado inicial de este roadmap | Fuentes, fecha y alcance de revision en cada documento | Cubre producto con evidencia, tecnologias/dependencias y que funciona/gaps/prioridades |
-| 4.3 Auditar y probar handover | Rechazar claims sin soporte y roadmaps inventados; revisar enlaces; pedir a una sesion nueva resumen de producto, arranque y siguiente prioridad; contrastar respuesta con codigo/evidencia | Registro propuesto `docs/validations/05-memory-checks.md` | Resumen correcto, gaps conservados y propuestas separadas de decisiones |
-| 4.4 Commit de fase | Seleccionar memoria y evidencia aprobadas; crear commit independiente; registrar hash y el orden de los cuatro cierres | Commit sugerido `docs: add evidence-based project memory (phase 4)` | Cuarto cierre propio; sin cambios de producto no aprobados |
+| 4.1 Crear banco de memoria | Completado el 2026-11-13: `memory-bank` creada en la raiz con tres archivos; enrutamiento anadido en [AGENTS.md](../AGENTS.md) (seccion "Memory routing") | Carpeta y documentos de abajo | Memoria accesible al siguiente agente sin depender del chat actual |
+| 4.2 Cubrir contenido minimo | Completado el 2026-11-13: overview (producto, flujo, limite de periodo), stack (lenguajes/infra/comandos comprobados) y status (implementado vs probado, gaps, prioridades, commits) redactados con fuentes y fecha de revision; reflejan los cambios reales de fase 3 | `memory-bank/overview.md`, `memory-bank/stack.md`, `memory-bank/status.md` | Cubre producto con evidencia, tecnologias/dependencias y que funciona/gaps/prioridades |
+| 4.3 Auditar y probar handover | Completado el 2026-11-13: agente de contexto separado (MEM-01) dio resumen de producto, arranque y siguiente prioridad usando solo `memory-bank`/`AGENTS.md`/`README.md`; el coordinador contrasto cada afirmacion contra el codigo/evidencia real; ninguna resulto inventada o sin fuente | [06 - MemoryChecks.md](validations/06%20-%20MemoryChecks.md), en lugar del nombre inicialmente sugerido `05-memory-checks.md` (ya usado por las reglas de fase 3) | Resumen correcto, gaps conservados y propuestas separadas de decisiones |
+| 4.4 Commit de fase | Pendiente: seleccionar memoria y evidencia aprobadas y crear el commit dedicado tras la revision del mantenedor | Commit sugerido `docs: add evidence-based project memory (phase 4)` | Cuarto cierre propio; sin cambios de producto no aprobados |
 
-### Documentos propuestos
+### Documentos de memoria
 
-Los siguientes archivos no existen aun; se crearan durante esta fase, sin obligar a una convencion mas compleja:
+Creados el 2026-11-13 durante esta fase, sin una convencion mas compleja que
+la ya usada en `docs/validations`:
 
 | Archivo futuro | Contenido minimo | Fuentes iniciales |
 | --- | --- | --- |
@@ -225,21 +254,36 @@ Cuando cambien contratos, arranque, stack o estado comprobado, actualizar el doc
 
 ### Checklist de cierre
 
-- [ ] `memory-bank` creada en la raiz.
-- [ ] Overview del producto anclado en evidencia verificable.
-- [ ] Stack completo: lenguajes, frameworks, infra/tooling y dependencias clave.
-- [ ] Estado actual: que funciona, gaps conocidos y siguientes prioridades justificadas.
-- [ ] Claims de producto sin soporte y roadmaps inventados rechazados.
+- [x] `memory-bank` creada en la raiz.
+- [x] Overview del producto anclado en evidencia verificable.
+- [x] Stack completo: lenguajes, frameworks, infra/tooling y dependencias clave.
+- [x] Estado actual: que funciona, gaps conocidos y siguientes prioridades justificadas.
+- [x] Claims de producto sin soporte y roadmaps inventados rechazados (MEM-01).
 - [ ] Commit dedicado a fase 4 con hash registrado.
+
+### Estado y evidencia de fase 4
+
+Hitos 4.1-4.3 completados el 2026-11-13. `memory-bank/overview.md`,
+`stack.md` y `status.md` redactados con fuentes y fecha de revision,
+reflejando los cambios reales de fase 3 (seis reglas, cuatro ejercicios
+validados, PR #3 mergeada). Auditados con un agente de contexto separado
+(MEM-01 en [06 - MemoryChecks.md](validations/06%20-%20MemoryChecks.md)):
+dio un resumen de producto, arranque y siguiente prioridad correcto,
+declarando explicitamente los limites de lo que no verifico el mismo. El
+coordinador contrasto cada afirmacion contra el codigo/configuracion real
+(no solo contra la memoria), sin encontrar afirmaciones inventadas o sin
+fuente; no fue necesaria ninguna correccion ni iteracion.
+
+Hito 4.4 (commit de fase) pendiente de revision y aprobacion del mantenedor.
 
 ## 7. Control final y registro de cierre
 
 | Fase | Condicion para avanzar | Hash de commit | Estado actual |
 | --- | --- | --- | --- |
 | 1 | Mapa, resumen, checks, aprobacion e integracion por PR | `3f31fdd`, `73f8a49`; merge `253b3c6` | Completada: PR #1 merged, main sincronizado y validation-init eliminada local/remota |
-| 2 | Hallazgos y reglas propuestas aprobados con fuentes | `d1f27fa` (cierre); `db1285c` (incremento inicial) | Hitos 2.1-2.5 completados documentalmente; propuestas aprobadas, PR #2 abierta; no implementadas ni activadas |
-| 3 | Reglas cargadas, tareas reales y validacion de cada una | Pendiente | Pendiente |
-| 4 | Memoria minima completa y handover contrastado | Pendiente | Pendiente |
+| 2 | Hallazgos y reglas propuestas aprobados con fuentes | `d1f27fa` (cierre); `db1285c` (incremento inicial); merge `43a9cda` mediante PR #2 | Completada: hitos 2.1-2.5, PR #2 merged, main sincronizado |
+| 3 | Reglas cargadas, tareas reales y validacion de cada una | `767012b` (cierre); merge `ac99882` mediante PR #3 | Completada: PR #3 merged, main sincronizado y phase-3-agent-rules eliminada local/remota |
+| 4 | Memoria minima completa y handover contrastado | Pendiente (commit de cierre) | Hitos 4.1-4.3 completados: memory-bank creada, auditada con MEM-01, sin afirmaciones sin fuente; 4.4 pendiente de aprobacion del mantenedor |
 
 Al crear cada commit, revisar `git status --short`, seleccionar rutas explicitamente, revisar `git diff --cached` y conservar el hash. Al final, revisar `git log --oneline` y confirmar cuatro cierres distintos en orden. Nunca incluir automaticamente documentos preexistentes ni cambios de otro trabajo; no crear commits en nombre del mantenedor fuera de una solicitud de ejecucion de la fase.
 
