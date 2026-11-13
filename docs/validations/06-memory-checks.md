@@ -19,7 +19,7 @@ real en vez de aceptarla por declaracion.
    explicitamente cualquier afirmacion no respaldada por lo leido.
 3. El coordinador contrasta cada afirmacion contra el codigo/configuracion
    real (no solo contra `memory-bank`), siguiendo el mismo rigor que
-   [05 - RulesChecks.md](05%20-%20RulesChecks.md).
+   [05-rules-checks.md](05-rules-checks.md).
 4. Si una afirmacion es incorrecta, inventada o sin fuente, corregir el
    documento de memoria afectado y repetir la prueba; no debilitar el
    criterio para obtener un aprobado.
@@ -65,7 +65,7 @@ real en vez de aceptarla por declaracion.
   citados coinciden con [README.md](../../README.md) y
   [docker-compose.yml](../../docker-compose.yml). Las filas `❓` que motivan
   la prioridad existen tal como las describe, en la
-  [matriz de contraste del resumen](verification%20-%20resume.md#matriz-de-contraste-del-resumen).
+  [matriz de contraste del resumen](03-verification-resume.md#matriz-de-contraste-del-resumen).
   Ninguna afirmacion resulto inventada o sin fuente.
 - **Iteracion:** ninguna; no se encontraron afirmaciones incorrectas que
   corregir en `memory-bank`.

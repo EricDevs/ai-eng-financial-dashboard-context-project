@@ -61,4 +61,4 @@ Revision: 2026-11-13, fase 4. Fuentes: [requirements.txt](../backend/requirement
 
 Detalle completo de estas comprobaciones y sus limites en
 [02-handover-checks.md](../docs/validations/02-handover-checks.md) y
-[05 - RulesChecks.md](../docs/validations/05%20-%20RulesChecks.md).
+[05-rules-checks.md](../docs/validations/05-rules-checks.md).

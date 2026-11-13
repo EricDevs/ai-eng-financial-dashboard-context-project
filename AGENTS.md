@@ -36,9 +36,9 @@ referenced instruction cannot be read, report that limitation instead of
 claiming it was loaded. Read `.agents/skills` and `memory-bank` if present;
 their absence does not authorize inventing skills or project memory.
 
-The source proposals are in [04 - Conventions](docs/validations/04%20-%20Conventions.md).
+The source proposals are in [04 - Conventions](docs/validations/04-conventions.md).
 Record rule exercises, exact prompts, observed outputs, checks and limitations
-in [05 - RulesChecks](docs/validations/05%20-%20RulesChecks.md). These files
+in [05 - RulesChecks](docs/validations/05-rules-checks.md). These files
 define a manual read protocol, not proof that every client discovers AGENTS.md.
 
 ## Memory routing

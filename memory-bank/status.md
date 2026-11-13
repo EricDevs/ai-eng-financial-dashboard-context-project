@@ -1,9 +1,9 @@
 # Status
 
 Revision: 2026-11-13, fase 4. Fuentes: [01-structure.md](../docs/validations/01-structure.md),
-[verification - resume.md](../docs/validations/verification%20-%20resume.md),
+[03-verification-resume.md](../docs/validations/03-verification-resume.md),
 [02-handover-checks.md](../docs/validations/02-handover-checks.md),
-[05 - RulesChecks.md](../docs/validations/05%20-%20RulesChecks.md) y commits
+[05-rules-checks.md](../docs/validations/05-rules-checks.md) y commits
 reales de fases 1-3. "Implementado" significa visto en codigo; "probado"
 enlaza el check que lo demuestra.
 
@@ -13,7 +13,7 @@ enlaza el check que lo demuestra.
   `/categories/top`, `/comparison`, `/alerts`, `/b2b`, `/b2c`) con casos
   concretos y dos controles negativos (parametro invalido, fechas requeridas
   ausentes); ver matriz de contraste en
-  [verification - resume.md](../docs/validations/verification%20-%20resume.md#matriz-de-contraste-del-resumen).
+  [03-verification-resume.md](../docs/validations/03-verification-resume.md#matriz-de-contraste-del-resumen).
 - UI con cuatro KPI y dos series mensuales, consumiendo `/api/metrics` vía el
   proxy de Vite; observado en ejecucion real (UI-PROXY-01).
 - 15 tests backend y 6 tests frontend (5 originales + 1 de frontera de mes
@@ -21,7 +21,7 @@ enlaza el check que lo demuestra.
   [stack.md](stack.md) para los comandos.
 - Seis reglas de agente (`WF`, `FIN`, `API`, `CAL`, `FE`, `DX`) en
   [.agents/rules](../.agents/rules), cada una validada con una tarea real y
-  registrada en [05 - RulesChecks.md](../docs/validations/05%20-%20RulesChecks.md).
+  registrada en [05-rules-checks.md](../docs/validations/05-rules-checks.md).
 
 ## Gaps conocidos (no corregidos; fuera de alcance sin acuerdo explicito)
 
@@ -51,7 +51,7 @@ enlaza el check que lo demuestra.
 ## Siguientes prioridades propuestas (no autorizan cambios de producto)
 
 1. Completar las filas marcadas `❓` en la
-   [matriz de contraste del resumen](../docs/validations/verification%20-%20resume.md#matriz-de-contraste-del-resumen)
+   [matriz de contraste del resumen](../docs/validations/03-verification-resume.md#matriz-de-contraste-del-resumen)
    (estados UI completos, exactitud global de KPI/graficas, efecto real de
    los comandos de parada).
 2. Si se acuerda un cambio de alcance: aislar el RNG, corregir el calendario

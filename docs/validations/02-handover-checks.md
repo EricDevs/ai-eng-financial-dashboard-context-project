@@ -341,7 +341,7 @@ La captura del dashboard muestra `2024 - Full Year`, mientras que el extracto in
 | Campo | Evidencia |
 | --- | --- |
 | Fecha | 2026-11-13 |
-| Ejecutor y fuente | Mantenedor; sintesis escrita compartida en el chat tras revisar el [informe canonico](verification%20-%20resume.md) |
+| Ejecutor y fuente | Mantenedor; sintesis escrita compartida en el chat tras revisar el [informe canonico](03-verification-resume.md) |
 | Esperado | Explicar funcionalidad, origen de datos, conexion UI/API y arranque/parada |
 | Funcionalidad explicada | Dashboard financiero con cuatro KPI y series mensuales de ingresos/egresos y margen |
 | Datos explicados | Movimientos sinteticos generados en memoria, sin base de datos configurada en los archivos inspeccionados |
@@ -819,7 +819,7 @@ Esta nota y la sincronizacion del estado se redactan despues de 3f31fdd; no form
 
 ## Siguiente paso: clasificacion del resumen del hito 1.4
 
-El bloque previsto de API/calidad esta contrastado: nueve rutas con casos concretos, PARAM-OP-01, PARAM-DATES-01, METRICS-FULL-01, 15 tests backend, cinco frontend, lint y build. La [matriz del resumen](verification%20-%20resume.md#matriz-de-contraste-del-resumen) conserva ✅ con alcance, ❌ para la incoherencia del periodo UI y ❓ para exactitud global de KPI, estados UI y parada. No se exige que todas las filas sean ✅ ni se ocultan limites para cerrar el handover.
+El bloque previsto de API/calidad esta contrastado: nueve rutas con casos concretos, PARAM-OP-01, PARAM-DATES-01, METRICS-FULL-01, 15 tests backend, cinco frontend, lint y build. La [matriz del resumen](03-verification-resume.md#matriz-de-contraste-del-resumen) conserva ✅ con alcance, ❌ para la incoherencia del periodo UI y ❓ para exactitud global de KPI, estados UI y parada. No se exige que todas las filas sean ✅ ni se ocultan limites para cerrar el handover.
 
 PHASE1-INTEGRATION-01 confirma el requisito posterior del mantenedor: PR integrado, main sincronizado, validation-init eliminada local/remota y rama nueva preparada. Siguiente hito 2.1: extraer convenciones API/cliente con fuentes. Vulnerabilidades npm, aviso TestClient y chunk grande siguen pendientes de evaluacion, sin cambios automaticos.
 
@@ -944,4 +944,4 @@ No hacer push forzado, omitir protecciones ni borrar ramas con cambios no integr
 
 RUN-01 esta aprobada para el arranque inicial observado. `docker compose up --build` construye imagenes y arranca servidores de desarrollo; el [Dockerfile frontend](../../frontend/Dockerfile) no ejecuta `npm run build`, por lo que no sustituye la comprobacion posterior de compilacion con TypeScript y Vite.
 
-El hito 1.5 queda completado tras la aprobacion del contenido: los resultados previstos estan conservados con ejecutor, comando, esperado, observado y alcance, incluidos el intento frontend bloqueado, su resolucion y los avisos. PHASE1-CLOSE-01 registra el cierre con commit. Los limites restantes permanecen en el [informe canonico](verification%20-%20resume.md); este registro no autoriza cambios de producto ni remediaciones de dependencias.
+El hito 1.5 queda completado tras la aprobacion del contenido: los resultados previstos estan conservados con ejecutor, comando, esperado, observado y alcance, incluidos el intento frontend bloqueado, su resolucion y los avisos. PHASE1-CLOSE-01 registra el cierre con commit. Los limites restantes permanecen en el [informe canonico](03-verification-resume.md); este registro no autoriza cambios de producto ni remediaciones de dependencias.

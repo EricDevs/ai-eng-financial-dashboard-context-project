@@ -161,7 +161,7 @@ No hay autenticacion declarada. Las fechas, literales y limites tienen validacio
 
 | Archivo | Funcion |
 |---|---|
-| [verification - resume.md](verification%20-%20resume.md) | Informe canonico consolidado; mantiene la estructura del antiguo informe de la raiz. |
+| [03-verification-resume.md](03-verification-resume.md) | Informe canonico consolidado; mantiene la estructura del antiguo informe de la raiz. |
 | [01-structure.md](01-structure.md) | Mapa de estructura, servicios, entry points, contratos y limites. |
 | [ROADMAP-Project-2.md](../entregables/ROADMAP-Project-2.md) | Plan de las cuatro fases con hitos, evidencias y commits independientes. |
 

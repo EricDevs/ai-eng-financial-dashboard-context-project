@@ -11,44 +11,6 @@ tests y cambios sin alteracion funcional; pidio aprobar antes del commit.
 No se autorizan correcciones de periodo, zona horaria, RNG, CORS o despliegue.
 No se crea memoria ni se inicia fase 4.
 
-## Reorganizacion documental durante fase 3
-
-El mantenedor movio `docs/04 - Conventions.md` a `docs/validations/04%20-%20Conventions.md`
-durante esta sesion. El coordinador detecto el archivo borrado/duplicado,
-confirmo con el mantenedor que fue intencional y corrigio en consecuencia:
-todos los enlaces relativos internos de ese archivo (antes `../frontend/...`,
-`../backend/...`, `../AGENTS.md`, `../README*.md`, `../.gitignore`, `ROADMAP.md`)
-y las referencias externas en [AGENTS.md](../../AGENTS.md) y
-[ROADMAP-Project-2.md](../entregables/ROADMAP-Project-2.md) que apuntaban a la ubicacion anterior. Verificado
-con una comprobacion de existencia de cada ruta local resultante: todas
-resuelven. Es la ubicacion vigente de las propuestas de fase 2 para el resto
-de esta fase.
-
-## Renombrado y reubicacion del roadmap durante fase 4
-
-El mantenedor pidio renombrar `docs/ROADMAP.md` a `ROADMAP-Project-2.md` y
-moverlo a `docs/entregables/`, y sustituir las referencias a "la imagen
-adjunta" por "el entregable 2" en su texto. El coordinador aplico ambos
-cambios de contenido antes de mover el archivo, migro todos sus enlaces
-relativos internos a la nueva profundidad (un nivel bajo `docs/`, igual que
-`docs/entregables` es hermano de `docs/validations`) y actualizo cada
-referencia externa activa en
-[.agents/rules/01-workflow-evidence.md](../../.agents/rules/01-workflow-evidence.md),
-[memory-bank/status.md](../../memory-bank/status.md),
-[02-handover-checks.md](02-handover-checks.md),
-[04 - Conventions.md](04%20-%20Conventions.md),
-[verification - resume.md](verification%20-%20resume.md) y este mismo
-archivo. Las menciones puramente historicas de `docs/ROADMAP.md` dentro de
-citas literales de salidas de comandos pasados (fase 1, commit `3f31fdd` en
-`02-handover-checks.md`) y la prosa aprobada de fase 2 que solo nombra el
-archivo sin enlazarlo (`04 - Conventions.md`) se dejaron intactas: describen
-hechos de un momento anterior, no enlaces de navegacion activos. El unico
-"imagen" que se sustituyo fue el que se referia a la imagen adjunta del
-encargo original; las menciones a imagenes Docker (`Python/imagen base`,
-"no construye imagenes") no se tocaron por ser un uso distinto de la misma
-palabra. Verificado con una comprobacion de enlaces de todo el repositorio
-tras el cambio: cero enlaces rotos.
-
 ## Formato y mecanismo de lectura
 
 Las reglas en [.agents/rules](../../.agents/rules) son Markdown con nombre,
@@ -276,11 +238,7 @@ para cerrar el hito 3.3/3.4 y proceder al commit de fase 3 (hito 3.5).
 
 Las 6 reglas tienen ejercicio real, revision del coordinador y veredicto
 "Cumple" sin necesidad de iteracion correctiva (ver DX-01, API-01, FE-01,
-FIN-CAL-01 arriba). Durante la ejecucion se detecto y corrigio una
-reorganizacion documental (ver seccion "Reorganizacion documental durante
-fase 3") que no formaba parte de ninguna tarea asignada; se resolvio
-confirmando intencion con el mantenedor y reparando enlaces, sin perder
-contenido.
+FIN-CAL-01 arriba).
 
 El mantenedor aprobo esta evidencia como suficiente para cerrar los hitos
 3.3-3.5: commit `767012b` (`chore: implement and validate agent rules (phase

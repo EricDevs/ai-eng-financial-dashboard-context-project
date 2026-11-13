@@ -2,7 +2,7 @@
 
 Revision: 2026-11-13, fase 4. Fuentes primarias: [App.tsx](../frontend/src/App.tsx),
 [routes.py](../backend/app/routes.py), [README.md](../README.md) y el
-[informe canonico](../docs/validations/verification%20-%20resume.md) de fase 1.
+[informe canonico](../docs/validations/03-verification-resume.md) de fase 1.
 
 ## Que hace
 
