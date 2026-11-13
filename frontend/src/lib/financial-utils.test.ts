@@ -101,6 +101,44 @@ describe("computeMonthlyData", () => {
       profitPercent: 100,
     });
   });
+
+  it("keeps a first-of-month movement separate from the previous month's last day", () => {
+    const monthBoundaryMovements: FinancialMovement[] = [
+      {
+        create_date: "2024-02-01",
+        amount: 10,
+        operation_type: "income",
+        category: "sales",
+        business_type: "B2C",
+      },
+      {
+        create_date: "2024-01-31",
+        amount: 7,
+        operation_type: "outcome",
+        category: "operational",
+        business_type: "B2B",
+      },
+    ];
+
+    const monthlyData = computeMonthlyData(monthBoundaryMovements);
+
+    // Expected by hand from the movements above (no formula copied from financial-utils.ts):
+    // Jan 2024: income 0, outcome 7, profit = 0 - 7 = -7, profitPercent = 0 (no income)
+    // Feb 2024: income 10, outcome 0, profit = 10 - 0 = 10, profitPercent = (10 / 10) * 100 = 100
+    expect(monthlyData).toHaveLength(2);
+    expect(monthlyData[0]).toEqual({
+      month: "Jan 2024",
+      income: 0,
+      outcome: 7,
+      profitPercent: 0,
+    });
+    expect(monthlyData[1]).toEqual({
+      month: "Feb 2024",
+      income: 10,
+      outcome: 0,
+      profitPercent: 100,
+    });
+  });
 });
 
 describe("formatters", () => {

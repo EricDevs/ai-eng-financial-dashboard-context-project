@@ -2,8 +2,9 @@ from datetime import date
 
 from fastapi.testclient import TestClient
 
+from app import routes
 from app.main import app
-from app.routes import filter_movements_by_date, generate_mock_movements
+from app.routes import FinancialMovement, filter_movements_by_date, generate_mock_movements
 
 
 client = TestClient(app)
@@ -118,16 +119,74 @@ def test_metrics_facets_returns_filter_options_and_date_range():
     assert payload["min_date"] <= payload["max_date"]
 
 
-def test_metrics_summary_by_month_returns_balances():
+def test_metrics_summary_by_month_returns_balances(monkeypatch):
+    controlled_movements = [
+        FinancialMovement(
+            create_date=date(2024, 1, 5),
+            amount=200.0,
+            operation_type="income",
+            category="sales",
+            business_type="B2B",
+        ),
+        FinancialMovement(
+            create_date=date(2024, 1, 20),
+            amount=50.0,
+            operation_type="outcome",
+            category="suppliers",
+            business_type="B2B",
+        ),
+        FinancialMovement(
+            create_date=date(2024, 2, 10),
+            amount=100.0,
+            operation_type="income",
+            category="sales",
+            business_type="B2C",
+        ),
+        FinancialMovement(
+            create_date=date(2024, 2, 15),
+            amount=40.0,
+            operation_type="outcome",
+            category="operational",
+            business_type="B2C",
+        ),
+        FinancialMovement(
+            create_date=date(2024, 2, 20),
+            amount=25.0,
+            operation_type="income",
+            category="others",
+            business_type="B2B",
+        ),
+    ]
+    monkeypatch.setattr(
+        routes, "generate_mock_movements", lambda seed=None: controlled_movements
+    )
+
     response = client.get("/api/metrics/summary", params={"group_by": "month"})
 
     assert response.status_code == 200
     payload = response.json()
-    assert payload
-    first = payload[0]
-    assert set(first.keys()) == {"period", "income", "outcome", "net"}
-    assert all(item["income"] >= 0 for item in payload)
-    assert all(item["outcome"] >= 0 for item in payload)
+
+    # Expected values computed independently from controlled_movements, not by
+    # calling any backend helper:
+    # 2024-01 -> income = 200.0 (movement 1 only)
+    #            outcome = 50.0 (movement 2 only)
+    #            net = 200.0 - 50.0 = 150.0
+    # 2024-02 -> income = 100.0 + 25.0 = 125.0 (movements 3 and 5)
+    #            outcome = 40.0 (movement 4 only)
+    #            net = 125.0 - 40.0 = 85.0
+    expected_by_period = {
+        "2024-01": {"income": 200.0, "outcome": 50.0, "net": 150.0},
+        "2024-02": {"income": 125.0, "outcome": 40.0, "net": 85.0},
+    }
+
+    periods = [item["period"] for item in payload]
+    assert periods == ["2024-01", "2024-02"]
+
+    for item in payload:
+        expected = expected_by_period[item["period"]]
+        assert item["income"] == expected["income"]
+        assert item["outcome"] == expected["outcome"]
+        assert item["net"] == expected["net"]
 
 
 def test_metrics_summary_by_week_honors_business_type_filter():
