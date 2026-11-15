@@ -103,7 +103,7 @@ Rama: `feature/frontend-specs-fase4-data-contract`. PR hacia `feature/frontend-s
 | 4.3 Compilar tipos | Ejecutar `npx tsc --noEmit` desde `frontend/` (pedido por el enunciado) y ademas la comprobacion explicita `tsc --ignoreConfig --noEmit --strict ... specs/*.ts`, porque el primero no cubre `specs` (hallazgo en [verification.md](../../frontend/specs/verification.md)). No se modifica la configuracion del proyecto | Salida del comando | completado 2026-11-16: ambos comandos con exit 0 (`npx tsc --noEmit` y la comprobacion estricta sobre specs), registrados en verification.md |
 | 4.4 Revision de alcance | Confirmar: sin componentes React, sin `fetch`, sin cambios de backend (`git diff --stat` contra `main`) | Salida de `git diff --stat` | completado 2026-11-16: `git diff --stat origin/main...HEAD` muestra 6 archivos, todos en `docs/` y `frontend/specs/`; sin cambios en `backend/` ni `frontend/src/`; sin `fetch(` en las specs |
 | 4.5 Commit y PR de fase | Commit `docs: add data contract README for frontend specs`; PR a la rama de integracion | Hash y numero de PR | completado 2026-11-16: PR #8, merge `977376e` |
-| 4.6 PR final a `main` | Abrir PR `feature/frontend-specs` -> `main` con resumen de las cuatro fases; merge solo con aprobacion del mantenedor | Numero de PR y merge | pendiente |
+| 4.6 PR final a `main` | Abrir PR `feature/frontend-specs` -> `main` con resumen de las cuatro fases; merge solo con aprobacion del mantenedor | Numero de PR y merge | completado 2026-11-16: PR #9, merge `24884e1` en `main` con merge commit |
 
 Checklist de cierre:
 
@@ -111,7 +111,7 @@ Checklist de cierre:
 - [x] Revisado como handover a sesion nueva.
 - [x] `npx tsc --noEmit` sin errores.
 - [x] Sin componentes React, llamadas `fetch` ni cambios de backend.
-- [ ] PR de fase 4 y PR final a `main` abiertos y aprobados.
+- [x] PR de fase 4 y PR final a `main` abiertos y aprobados.
 
 ## 7. Criterios de evaluacion (checklist global)
 
@@ -134,6 +134,6 @@ Checklist de cierre:
 | 2 Tipos | `feature/frontend-specs-fase2-types` | PR #6 | `c3968a0`, `d3ac183`, `7a99a78` (merge `96a0fc7`) | completada 2026-11-15 |
 | 3 Componentes | `feature/frontend-specs-fase3-components` | PR #7 | `d17300f`, `cba0443`, `b5e94c3` (merge `4d307ba`) | completada 2026-11-16 |
 | 4 Contrato de datos | `feature/frontend-specs-fase4-data-contract` | PR #8 | `7c5ddfc`, `127bed9`, `18e1c37` (merge `977376e`) | completada 2026-11-16 |
-| Final | `feature/frontend-specs` -> `main` | pendiente | n/a | pendiente |
+| Final | `feature/frontend-specs` -> `main` | PR #9 | n/a (merge `24884e1`) | completada 2026-11-16 |
 
 Definition of Done: las cuatro fases cerradas con su PR y commits identificables, la rama de integracion mergeada en `main`, todas las afirmaciones de API verificadas (✅) o explicitamente marcadas (❓), y ningun resultado inventado. Una fase bloqueada sigue abierta aunque se haya escrito su documento.
