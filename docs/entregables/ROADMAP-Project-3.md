@@ -58,19 +58,19 @@ Rama: `feature/frontend-specs-fase2-types`. PR hacia `feature/frontend-specs`. L
 
 | Hito | Acciones | Evidencia | Estado |
 | --- | --- | --- | --- |
-| 2.1 `api-types.ts` | El agente redacta `FacetsResponse`, `AlertEntry`, `AlertsResponse`, `CategoryEntry`, `TopCategoriesResponse`. Sin `any`, sin `object`; TypeScript estricto | `frontend/specs/api-types.ts` | pendiente |
-| 2.2 `param-types.ts` | `DateRangeFilter` (inicio/fin opcionales, `string`, JSDoc `YYYY-MM-DD`); `AlertsParams` y `TopCategoriesParams` extienden o incluyen `DateRangeFilter` | `frontend/specs/param-types.ts` | pendiente |
-| 2.3 JSDoc completo | Cada propiedad: significado, valores validos, formato cuando aplique | Revision del archivo | pendiente |
-| 2.4 Verificar contra OpenAPI | El mantenedor contrasta cada nombre y tipo con `/openapi.json` en vivo; marca ✅/❌/❓ y se corrige con el agente | Tabla de verificacion en `verification.md` | pendiente |
-| 2.5 Commit y PR de fase | Commits separados (api-types, param-types) o uno por archivo; mensaje `docs: add API response and param types verified against OpenAPI`; PR | Hashes y numero de PR | pendiente |
+| 2.1 `api-types.ts` | El agente redacta `FacetsResponse`, `AlertEntry`, `AlertsResponse`, `CategoryEntry`, `TopCategoriesResponse`. Sin `any`, sin `object`; TypeScript estricto | `frontend/specs/api-types.ts` | completado 2026-11-15: commit `c3968a0` (api-types), `d3ac183` (param-types) |
+| 2.2 `param-types.ts` | `DateRangeFilter` (inicio/fin opcionales, `string`, JSDoc `YYYY-MM-DD`); `AlertsParams` y `TopCategoriesParams` extienden o incluyen `DateRangeFilter` | `frontend/specs/param-types.ts` | completado 2026-11-15: commit `c3968a0` (api-types), `d3ac183` (param-types) |
+| 2.3 JSDoc completo | Cada propiedad: significado, valores validos, formato cuando aplique | Revision del archivo | completado 2026-11-15: commit `c3968a0` (api-types), `d3ac183` (param-types) |
+| 2.4 Verificar contra OpenAPI | El mantenedor contrasta cada nombre y tipo con `/openapi.json` en vivo; marca ✅/❌/❓ y se corrige con el agente | Tabla de verificacion en `verification.md` | completado 2026-11-15: 6 comprobaciones contra Swagger por el mantenedor, todas ✅ (seccion "Verificacion de tipos contra OpenAPI" en `verification.md`, commit `7a99a78`) |
+| 2.5 Commit y PR de fase | Commits separados (api-types, param-types) o uno por archivo; mensaje `docs: add API response and param types verified against OpenAPI`; PR | Hashes y numero de PR | completado 2026-11-15: PR #6, merge `96a0fc7` |
 
 Checklist de cierre:
 
-- [ ] Todas las interfaces de respuesta coinciden con OpenAPI en vivo; sin `any` ni `object`.
-- [ ] `DateRangeFilter` con ambos campos opcionales, `string`, JSDoc `YYYY-MM-DD`.
-- [ ] `AlertsParams` y `TopCategoriesParams` incluyen `DateRangeFilter`.
-- [ ] Cada propiedad con JSDoc.
-- [ ] PR de fase 2 mergeado en la rama de integracion.
+- [x] Todas las interfaces de respuesta coinciden con OpenAPI en vivo; sin `any` ni `object`.
+- [x] `DateRangeFilter` con ambos campos opcionales, `string`, JSDoc `YYYY-MM-DD`.
+- [x] `AlertsParams` y `TopCategoriesParams` incluyen `DateRangeFilter`.
+- [x] Cada propiedad con JSDoc.
+- [x] PR de fase 2 mergeado en la rama de integracion.
 
 ## 5. Fase 3: especificacion de componentes
 
@@ -115,10 +115,10 @@ Checklist de cierre:
 
 ## 7. Criterios de evaluacion (checklist global)
 
-- [ ] Exploracion de API trazable a `/docs`, sin nombres de campo inventados.
-- [ ] Interfaces de respuesta coinciden con OpenAPI en vivo; sin `any`.
-- [ ] `DateRangeFilter`: ambos campos opcionales, `string`, JSDoc `YYYY-MM-DD`.
-- [ ] `AlertsParams` y `TopCategoriesParams` extienden o incluyen `DateRangeFilter`.
+- [x] Exploracion de API trazable a `/docs`, sin nombres de campo inventados.
+- [x] Interfaces de respuesta coinciden con OpenAPI en vivo; sin `any`.
+- [x] `DateRangeFilter`: ambos campos opcionales, `string`, JSDoc `YYYY-MM-DD`.
+- [x] `AlertsParams` y `TopCategoriesParams` extienden o incluyen `DateRangeFilter`.
 - [ ] `components.md`: componentes, props tipadas y renderizado condicional por funcionalidad.
 - [ ] Estado vacio de anomalias, comportamiento con un solo input de fecha y top-5 vacio B2B/B2C especificados.
 - [ ] `README.md` con endpoints, tipos, parametros y >= 2 casos limite por funcionalidad.
@@ -131,7 +131,7 @@ Checklist de cierre:
 | Fase | Rama | PR | Commits | Estado |
 | --- | --- | --- | --- | --- |
 | 1 Exploracion | `feature/frontend-specs-fase1-api-exploration` | PR #5 | `8700ece` (merge `68969c3`) | completada 2026-11-15 |
-| 2 Tipos | `feature/frontend-specs-fase2-types` | pendiente | pendiente | pendiente |
+| 2 Tipos | `feature/frontend-specs-fase2-types` | PR #6 | `c3968a0`, `d3ac183`, `7a99a78` (merge `96a0fc7`) | completada 2026-11-15 |
 | 3 Componentes | `feature/frontend-specs-fase3-components` | pendiente | pendiente | pendiente |
 | 4 Contrato de datos | `feature/frontend-specs-fase4-data-contract` | pendiente | pendiente | pendiente |
 | Final | `feature/frontend-specs` -> `main` | pendiente | n/a | pendiente |
