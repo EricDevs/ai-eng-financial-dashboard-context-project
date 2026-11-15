@@ -48,7 +48,11 @@ Endpoint: `GET /api/metrics/alerts`. Parametros (OpenAPI): `threshold` (number, 
 
 Desajustes PM vs API y resolucion en la spec:
 
-1. **Media movil de 3 periodos (PM) vs promedio de todos los anteriores (API).** El frontend no recalcula la base. Resolucion: la columna se etiqueta como "Promedio de periodos anteriores" y la spec documenta la formula real; si el PM exige 3 periodos, es un cambio de backend fuera de alcance.
+1. **Media movil de 3 periodos (PM) vs promedio de todos los anteriores (API).** Decision de la spec: se usa `/api/metrics/alerts` tal cual; la columna se etiqueta `Avg. of previous periods` y la spec documenta la formula real. **Pendiente de confirmar con el PM.** Para cumplir literalmente "3 periodos" hay dos caminos:
+   - **Cambiar el backend** (`detect_outcome_alerts`): fuera de alcance de esta entrega.
+   - **Calcular en el cliente** con `GET /api/metrics/summary` (gasto por mes; verificado en `/openapi.json`): viable sin tocar la API, pero deja de usar `/alerts` y sus tipos `AlertEntry` / `AlertsResponse`, duplica en el cliente la logica de anomalias y abre decisiones que el PM no definio (que hacer con los primeros periodos, que tienen menos de tres anteriores).
+
+   Se eligio mantener `/alerts` por alinearse con el endpoint que nombra el PM y con los tipos que pide el enunciado. Comprobacion del impacto de la alternativa (2026-11-16, umbral 0.3, dataset completo, calculada a partir de `/summary`): con el promedio de todos los anteriores (API) hay alertas en 2025-12, 2026-03, 2026-06 y 2026-08; con la media de hasta 3 previos, las mismas cuatro fechas pero con otros valores (2026-03: base 59977.58 e incremento 0.4685, frente a 55334.29 y 0.5917); con exactamente 3 previos desaparece 2025-12, que no tiene tres periodos anteriores.
 2. **Rango del umbral.** PM: `0.01` a `1.0`; API: `>= 0` sin maximo. Resolucion: la restriccion `0.01-1.0` es validacion de la UI (input `min=0.01`, `max=1`, `step=0.01`), no del backend.
 3. **"Incremento porcentual".** La API devuelve un ratio (`increase_ratio`), no un porcentaje. Resolucion: la UI multiplica por 100 y formatea (ej. `59,17 %`); el tipo conserva el ratio sin transformar.
 4. **"Outcome registrado".** El campo real se llama `outcome_total`.
@@ -128,3 +132,12 @@ Fecha: 2026-11-15. El mantenedor comparo cada tipo con Swagger (`/docs`, seccion
 | 6 | `TopCategoriesParams`, `TopCategoriesResponse` | `GET /api/metrics/categories/top` | `operation_type` (defecto `outcome`), `limit` 1-20 (defecto 5), `business_type`, fechas; respuesta 200 es array de `TopCategoryItem` | ✅ |
 
 Nota: Swagger UI bloquea en el navegador los valores fuera de rango (por ejemplo `threshold=-0.1`) antes de enviar la peticion, asi que no muestra el 422 del servidor. El 422 real se comprobo con curl en la fase 1 y queda registrado arriba.
+
+### Ejecucion final de los dos comandos (2026-11-16)
+
+Desde `frontend/`, con `api-types.ts` y `param-types.ts` juntos:
+
+| Comando | Resultado |
+| --- | --- |
+| `npx tsc --noEmit` | exit 0 (no compila `specs`; ver hallazgo arriba) |
+| `npx tsc --ignoreConfig --noEmit --strict ... specs/api-types.ts specs/param-types.ts` | exit 0 |
