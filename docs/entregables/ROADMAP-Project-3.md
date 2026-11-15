@@ -37,20 +37,20 @@ Rama: `feature/frontend-specs-fase1-api-exploration`. PR hacia `feature/frontend
 
 | Hito | Acciones | Evidencia | Estado |
 | --- | --- | --- | --- |
-| 1.1 Preparar repo | Confirmar `memory-bank/` y `.agents/rules` commiteados (hoy hay `.gitignore` modificado sin commitear: decidir con el mantenedor); `git switch -c feature/frontend-specs`; crear `frontend/specs/` | `git status`, rama creada | pendiente |
-| 1.2 Levantar backend y abrir `/docs` | `docker compose up --build`; abrir `http://localhost:8000/docs` y `/openapi.json` | Captura o salida de `/openapi.json` | pendiente |
-| 1.3 Mapear endpoints F1-F3 | Por funcionalidad: ruta, metodo, parametros de query (tipo, obligatorio, rango), forma de respuesta, campos. Probar con peticiones reales, incluidos casos limite (sin datos, umbral fuera de rango, una sola fecha) | `frontend/specs/verification.md` (rastro corto) | pendiente |
-| 1.4 Contrastar con el frontend | Revisar patrones de fetch/tipos existentes en [financial-types.ts](../../frontend/src/lib/financial-types.ts), [vite.config.ts](../../frontend/vite.config.ts) y componentes dashboard | Notas en `verification.md` | pendiente |
-| 1.5 Anotar desajustes PM vs API | Listar diferencias entre el wording del PM y los campos reales (p. ej. nombres de campo, formato de `outcome`, semantica del umbral, si `/metrics` admite filtros de fecha, de donde salen las categorias B2B/B2C). Resolverlas en la spec | Tabla de desajustes con resolucion y marca ✅/❌/❓ | pendiente |
-| 1.6 Commit y PR de fase | Commit `docs: record API exploration for frontend specs`; PR a la rama de integracion | Hash y numero de PR | pendiente |
+| 1.1 Preparar repo | Confirmar `memory-bank/` y `.agents/rules` commiteados (hoy hay `.gitignore` modificado sin commitear: decidir con el mantenedor); `git switch -c feature/frontend-specs`; crear `frontend/specs/` | `git status`, rama creada | completado 2026-11-15: rama de integracion `feature/frontend-specs`, `.gitignore` commiteado (`92f3c74`) y `frontend/specs/` creada |
+| 1.2 Levantar backend y abrir `/docs` | `docker compose up --build`; abrir `http://localhost:8000/docs` y `/openapi.json` | Captura o salida de `/openapi.json` | completado 2026-11-15: backend con Compose y `/openapi.json` consultado |
+| 1.3 Mapear endpoints F1-F3 | Por funcionalidad: ruta, metodo, parametros de query (tipo, obligatorio, rango), forma de respuesta, campos. Probar con peticiones reales, incluidos casos limite (sin datos, umbral fuera de rango, una sola fecha) | `frontend/specs/verification.md` (rastro corto) | completado 2026-11-15: F1, F2 y F3 con llamadas reales y casos limite |
+| 1.4 Contrastar con el frontend | Revisar patrones de fetch/tipos existentes en [financial-types.ts](../../frontend/src/lib/financial-types.ts), [vite.config.ts](../../frontend/vite.config.ts) y componentes dashboard | Notas en `verification.md` | completado 2026-11-15: patron de fetch de `App.tsx` resumido en la cabecera de `verification.md`; proxy tomado de 01-structure.md. No se reviso `financial-types.ts` en detalle: pendiente para la fase 2 |
+| 1.5 Anotar desajustes PM vs API | Listar diferencias entre el wording del PM y los campos reales (p. ej. nombres de campo, formato de `outcome`, semantica del umbral, si `/metrics` admite filtros de fecha, de donde salen las categorias B2B/B2C). Resolverlas en la spec | Tabla de desajustes con resolucion y marca ✅/❌/❓ | completado 2026-11-15: 6 desajustes de F2 y 6 de F3 resueltos en la spec; 3 de F1 |
+| 1.6 Commit y PR de fase | Commit `docs: record API exploration for frontend specs`; PR a la rama de integracion | Hash y numero de PR | completado 2026-11-15: commit `8700ece`, PR #5, merge `68969c3` |
 
 Checklist de cierre:
 
-- [ ] Rama de integracion y `frontend/specs/` creadas.
-- [ ] Endpoints, parametros y respuestas de F1-F3 trazables a `/docs`.
-- [ ] Desajustes PM vs API anotados y con resolucion propuesta.
-- [ ] Rastro de verificacion guardado.
-- [ ] PR de fase 1 abierto, revisado y mergeado en la rama de integracion.
+- [x] Rama de integracion y `frontend/specs/` creadas.
+- [x] Endpoints, parametros y respuestas de F1-F3 trazables a `/docs`.
+- [x] Desajustes PM vs API anotados y con resolucion propuesta.
+- [x] Rastro de verificacion guardado.
+- [x] PR de fase 1 abierto, revisado y mergeado en la rama de integracion.
 
 ## 4. Fase 2: tipos TypeScript
 
@@ -130,7 +130,7 @@ Checklist de cierre:
 
 | Fase | Rama | PR | Commits | Estado |
 | --- | --- | --- | --- | --- |
-| 1 Exploracion | `feature/frontend-specs-fase1-api-exploration` | pendiente | pendiente | pendiente |
+| 1 Exploracion | `feature/frontend-specs-fase1-api-exploration` | PR #5 | `8700ece` (merge `68969c3`) | completada 2026-11-15 |
 | 2 Tipos | `feature/frontend-specs-fase2-types` | pendiente | pendiente | pendiente |
 | 3 Componentes | `feature/frontend-specs-fase3-components` | pendiente | pendiente | pendiente |
 | 4 Contrato de datos | `feature/frontend-specs-fase4-data-contract` | pendiente | pendiente | pendiente |
