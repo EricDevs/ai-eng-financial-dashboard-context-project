@@ -100,7 +100,7 @@ Rama: `feature/frontend-specs-fase4-data-contract`. PR hacia `feature/frontend-s
 | --- | --- | --- | --- |
 | 4.1 Redactar `README.md` | Por funcionalidad: endpoint(s) con rutas verificadas en `/docs`; tipos de peticion y respuesta; valores validos y restricciones de cada parametro; **al menos 2 casos limite** y que debe mostrar la UI | `frontend/specs/README.md` | pendiente |
 | 4.2 Prueba de handover | Leerlo como si se entregara a una sesion nueva del agente; corregir lo que provocaria preguntas de seguimiento (opcional: sesion limpia que lo resuma sin ayuda) | Notas de la revision | pendiente |
-| 4.3 Compilar tipos | `npx tsc --noEmit` desde `frontend/` y corregir errores. Comprobar antes que `tsconfig` incluya `frontend/specs/`; si no, validarlos con una invocacion explicita sin tocar la configuracion del proyecto sin acuerdo | Salida del comando | pendiente |
+| 4.3 Compilar tipos | Ejecutar `npx tsc --noEmit` desde `frontend/` (pedido por el enunciado) y ademas la comprobacion explicita `tsc --ignoreConfig --noEmit --strict ... specs/*.ts`, porque el primero no cubre `specs` (hallazgo en [verification.md](../../frontend/specs/verification.md)). No se modifica la configuracion del proyecto | Salida del comando | pendiente |
 | 4.4 Revision de alcance | Confirmar: sin componentes React, sin `fetch`, sin cambios de backend (`git diff --stat` contra `main`) | Salida de `git diff --stat` | pendiente |
 | 4.5 Commit y PR de fase | Commit `docs: add data contract README for frontend specs`; PR a la rama de integracion | Hash y numero de PR | pendiente |
 | 4.6 PR final a `main` | Abrir PR `feature/frontend-specs` -> `main` con resumen de las cuatro fases; merge solo con aprobacion del mantenedor | Numero de PR y merge | pendiente |
