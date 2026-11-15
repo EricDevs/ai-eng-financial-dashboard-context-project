@@ -77,7 +77,7 @@ Endpoints: `GET /api/metrics/categories/top` y `GET /api/metrics/facets`. Parame
 
 Desajustes PM vs API y resolucion en la spec:
 
-1. **Categorias por grupo desde facets.** Facets no tiene categorias por grupo. Resolucion: las filas de cada tabla se toman de la respuesta de `top` con `business_type`; de facets solo se usa `business_types` (los grupos) y `min_date` / `max_date` (rango). La spec no pinta categorias fijas.
+1. **Categorias por grupo desde facets.** Facets no tiene categorias por grupo. Resolucion: las filas de cada tabla se toman de la respuesta de `top` con `business_type`; de facets solo se usan `min_date` / `max_date` (rango del filtro compartido). `business_types` confirma los dos grupos `B2B` y `B2C`, pero la vista no lo consulta: las dos secciones son siempre B2B y B2C. La spec no pinta categorias fijas.
 2. **"5 categorias principales".** `limit=5` es un maximo, no una garantia. Resolucion: cada tabla renderiza de 0 a 5 filas segun la respuesta, sin rellenar filas vacias; con `[]` muestra estado vacio propio por panel.
 3. **Porcentaje sobre el total del grupo.** La API no lo devuelve. Resolucion: el cliente calcula `total_amount / suma(total_amount del grupo)`. Es valido porque solo existen 5 categorias y `limit=5` las cubre todas, asi que la suma del top es el total del grupo (comprobado: 615540.72 y 642606.15). Si el catalogo creciera por encima de 5, habria que subir `limit` (maximo 20).
 4. **Grafico unico B2B vs B2C.** No hay endpoint con totales por grupo. Resolucion: el total de cada grupo es la suma de `total_amount` de su respuesta `top`; se pintan dos barras.
