@@ -1,0 +1,139 @@
+# Roadmap proyecto 3: desarrollo guiado por especificaciones
+
+Fecha de creacion: 2026-11-15. Objetivo: entregar las especificaciones de la capa frontend (tipos TypeScript, componentes y contrato de datos) para tres funcionalidades del dashboard, verificadas contra `/docs` en vivo. **No se implementa nada**: ni componentes React, ni llamadas `fetch`, ni cambios de backend.
+
+Este archivo es el registro de seguimiento. Se actualiza al cerrar cada hito, con fecha y evidencia. Formato y disciplina heredados de [ROADMAP-Project-2.md](ROADMAP-Project-2.md).
+
+## 1. Alcance
+
+Funcionalidades pedidas por el PM (se resuelven en la spec, no en codigo):
+
+| # | Funcionalidad | Endpoints relevantes |
+| --- | --- | --- |
+| F1 | Filtro de rango de fechas (inicio/fin opcionales, `YYYY-MM-DD`) en el dashboard principal; mostrar fecha minima y maxima del dataset junto a los inputs | `GET /api/metrics/facets` + filtros sobre `GET /api/metrics` |
+| F2 | Tabla de alertas de anomalias: periodo, outcome, media movil de 3 periodos previos, incremento porcentual; umbral configurable (0.01 a 1.0, por defecto 0.3); estado vacio explicito; respeta el rango de F1 | `GET /api/metrics/alerts?threshold=<ratio>` |
+| F3 | Pagina comparativa B2B vs B2C: dos tablas top-5 de categorias de ingreso (nombre, total, % del grupo) y un grafico unico de totales; filtro por rango de fechas; categorias por grupo obtenidas de facets | `GET /api/metrics/categories/top?operation_type=income&limit=5` y `GET /api/metrics/facets` |
+
+Entregables finales: `frontend/specs/api-types.ts`, `frontend/specs/param-types.ts`, `frontend/specs/components.md`, `frontend/specs/README.md`.
+
+Reglas de trabajo aplicables: [WF](../../.agents/rules/01-workflow-evidence.md) (todas las tareas). FIN, API, CAL y FE se leen cuando una fase toque su dominio (tipos de API, fechas/periodos, convenciones TS). Metodo: el agente explora y redacta; el mantenedor verifica cada afirmacion contra `/docs` y marca con ✅ verificada / ❌ incorrecta / ❓ sin verificar; se corrige con el agente antes de commitear.
+
+## 2. Estrategia de ramas y PR
+
+La rama `feature/frontend-specs` es obligatoria en el entregable. Para cumplir tambien un PR por fase:
+
+- `feature/frontend-specs` es la **rama de integracion**, creada desde `main` actualizado.
+- Cada fase trabaja en su propia rama `feature/frontend-specs-faseN-<tema>` creada desde la rama de integracion y se integra con un **PR hacia `feature/frontend-specs`**.
+- Al cerrar la fase 4, un **PR final de `feature/frontend-specs` hacia `main`** entrega el conjunto.
+- Commits separados para tipos, componentes y contrato de datos. Antes de cada commit: `git status --short`, rutas explicitas (nunca `git add .`), revisar `git diff --cached`, conservar el hash aqui.
+- Todos los PRs (de fase y final) se integran con **merge commit, sin squash ni rebase**, para conservar en el historial el desglose por fase y el nombre de cada subrama. La descripcion del PR final lista los PRs de fase.
+- No eliminar ramas antes del merge; no commitear ni hacer merge sin aprobacion del mantenedor.
+
+Estados de hito: pendiente, en curso, bloqueado, en revision, completado.
+
+## 3. Fase 1: exploracion de la API y preparacion
+
+Rama: `feature/frontend-specs-fase1-api-exploration`. PR hacia `feature/frontend-specs`.
+
+| Hito | Acciones | Evidencia | Estado |
+| --- | --- | --- | --- |
+| 1.1 Preparar repo | Confirmar `memory-bank/` y `.agents/rules` commiteados (hoy hay `.gitignore` modificado sin commitear: decidir con el mantenedor); `git switch -c feature/frontend-specs`; crear `frontend/specs/` | `git status`, rama creada | pendiente |
+| 1.2 Levantar backend y abrir `/docs` | `docker compose up --build`; abrir `http://localhost:8000/docs` y `/openapi.json` | Captura o salida de `/openapi.json` | pendiente |
+| 1.3 Mapear endpoints F1-F3 | Por funcionalidad: ruta, metodo, parametros de query (tipo, obligatorio, rango), forma de respuesta, campos. Probar con peticiones reales, incluidos casos limite (sin datos, umbral fuera de rango, una sola fecha) | `frontend/specs/verification.md` (rastro corto) | pendiente |
+| 1.4 Contrastar con el frontend | Revisar patrones de fetch/tipos existentes en [financial-types.ts](../../frontend/src/lib/financial-types.ts), [vite.config.ts](../../frontend/vite.config.ts) y componentes dashboard | Notas en `verification.md` | pendiente |
+| 1.5 Anotar desajustes PM vs API | Listar diferencias entre el wording del PM y los campos reales (p. ej. nombres de campo, formato de `outcome`, semantica del umbral, si `/metrics` admite filtros de fecha, de donde salen las categorias B2B/B2C). Resolverlas en la spec | Tabla de desajustes con resolucion y marca ✅/❌/❓ | pendiente |
+| 1.6 Commit y PR de fase | Commit `docs: record API exploration for frontend specs`; PR a la rama de integracion | Hash y numero de PR | pendiente |
+
+Checklist de cierre:
+
+- [ ] Rama de integracion y `frontend/specs/` creadas.
+- [ ] Endpoints, parametros y respuestas de F1-F3 trazables a `/docs`.
+- [ ] Desajustes PM vs API anotados y con resolucion propuesta.
+- [ ] Rastro de verificacion guardado.
+- [ ] PR de fase 1 abierto, revisado y mergeado en la rama de integracion.
+
+## 4. Fase 2: tipos TypeScript
+
+Rama: `feature/frontend-specs-fase2-types`. PR hacia `feature/frontend-specs`. Lee la regla API antes de empezar.
+
+| Hito | Acciones | Evidencia | Estado |
+| --- | --- | --- | --- |
+| 2.1 `api-types.ts` | El agente redacta `FacetsResponse`, `AlertEntry`, `AlertsResponse`, `CategoryEntry`, `TopCategoriesResponse`. Sin `any`, sin `object`; TypeScript estricto | `frontend/specs/api-types.ts` | pendiente |
+| 2.2 `param-types.ts` | `DateRangeFilter` (inicio/fin opcionales, `string`, JSDoc `YYYY-MM-DD`); `AlertsParams` y `TopCategoriesParams` extienden o incluyen `DateRangeFilter` | `frontend/specs/param-types.ts` | pendiente |
+| 2.3 JSDoc completo | Cada propiedad: significado, valores validos, formato cuando aplique | Revision del archivo | pendiente |
+| 2.4 Verificar contra OpenAPI | El mantenedor contrasta cada nombre y tipo con `/openapi.json` en vivo; marca ✅/❌/❓ y se corrige con el agente | Tabla de verificacion en `verification.md` | pendiente |
+| 2.5 Commit y PR de fase | Commits separados (api-types, param-types) o uno por archivo; mensaje `docs: add API response and param types verified against OpenAPI`; PR | Hashes y numero de PR | pendiente |
+
+Checklist de cierre:
+
+- [ ] Todas las interfaces de respuesta coinciden con OpenAPI en vivo; sin `any` ni `object`.
+- [ ] `DateRangeFilter` con ambos campos opcionales, `string`, JSDoc `YYYY-MM-DD`.
+- [ ] `AlertsParams` y `TopCategoriesParams` incluyen `DateRangeFilter`.
+- [ ] Cada propiedad con JSDoc.
+- [ ] PR de fase 2 mergeado en la rama de integracion.
+
+## 5. Fase 3: especificacion de componentes
+
+Rama: `feature/frontend-specs-fase3-components`. PR hacia `feature/frontend-specs`. Lee la regla FE antes de empezar.
+
+| Hito | Acciones | Evidencia | Estado |
+| --- | --- | --- | --- |
+| 3.1 Componentes F1 | Selector de rango de fechas: props con tipos de fase 2, referencia de rango min/max cerca de los inputs, comportamiento con **un solo input** de fecha, estados vacio/carga/error | Seccion F1 de `components.md` | pendiente |
+| 3.2 Componentes F2 | Tabla de alertas + input de umbral (0.01 a 1.0, defecto 0.3): cuatro columnas, **estado vacio explicito**, respeto del rango de F1, validacion del umbral | Seccion F2 | pendiente |
+| 3.3 Componentes F3 | Pagina B2B vs B2C: dos paneles de tabla top-5 y un grafico unico; **renderizado vacio de top-5 en cada panel**; filtro de fechas; categorias desde facets | Seccion F3 | pendiente |
+| 3.4 Alinear y resolver ambiguedades | Props alineadas con `api-types.ts`/`param-types.ts`; ambiguedades del PM resueltas y listadas; renderizado condicional por funcionalidad; reutilizar primitivas existentes (Card, Skeleton, tokens) | `components.md` completo | pendiente |
+| 3.5 Verificar y commit/PR | El mantenedor verifica nombres de props y tipos contra la fase 2; commit `docs: add component specs for the three features`; PR | Hash y numero de PR | pendiente |
+
+Checklist de cierre:
+
+- [ ] `components.md` nombra cada componente, sus props con tipos y su renderizado condicional, por funcionalidad.
+- [ ] Estado vacio de la tabla de anomalias especificado.
+- [ ] Comportamiento con un solo input de fecha especificado.
+- [ ] Ambos paneles B2B/B2C especifican renderizado vacio del top-5.
+- [ ] PR de fase 3 mergeado en la rama de integracion.
+
+## 6. Fase 4: contrato de datos y cierre
+
+Rama: `feature/frontend-specs-fase4-data-contract`. PR hacia `feature/frontend-specs`, y despues PR final a `main`.
+
+| Hito | Acciones | Evidencia | Estado |
+| --- | --- | --- | --- |
+| 4.1 Redactar `README.md` | Por funcionalidad: endpoint(s) con rutas verificadas en `/docs`; tipos de peticion y respuesta; valores validos y restricciones de cada parametro; **al menos 2 casos limite** y que debe mostrar la UI | `frontend/specs/README.md` | pendiente |
+| 4.2 Prueba de handover | Leerlo como si se entregara a una sesion nueva del agente; corregir lo que provocaria preguntas de seguimiento (opcional: sesion limpia que lo resuma sin ayuda) | Notas de la revision | pendiente |
+| 4.3 Compilar tipos | `npx tsc --noEmit` desde `frontend/` y corregir errores. Comprobar antes que `tsconfig` incluya `frontend/specs/`; si no, validarlos con una invocacion explicita sin tocar la configuracion del proyecto sin acuerdo | Salida del comando | pendiente |
+| 4.4 Revision de alcance | Confirmar: sin componentes React, sin `fetch`, sin cambios de backend (`git diff --stat` contra `main`) | Salida de `git diff --stat` | pendiente |
+| 4.5 Commit y PR de fase | Commit `docs: add data contract README for frontend specs`; PR a la rama de integracion | Hash y numero de PR | pendiente |
+| 4.6 PR final a `main` | Abrir PR `feature/frontend-specs` -> `main` con resumen de las cuatro fases; merge solo con aprobacion del mantenedor | Numero de PR y merge | pendiente |
+
+Checklist de cierre:
+
+- [ ] `README.md` cubre las tres funcionalidades con endpoints, tipos, parametros y al menos 2 casos limite cada una.
+- [ ] Revisado como handover a sesion nueva.
+- [ ] `npx tsc --noEmit` sin errores.
+- [ ] Sin componentes React, llamadas `fetch` ni cambios de backend.
+- [ ] PR de fase 4 y PR final a `main` abiertos y aprobados.
+
+## 7. Criterios de evaluacion (checklist global)
+
+- [ ] Exploracion de API trazable a `/docs`, sin nombres de campo inventados.
+- [ ] Interfaces de respuesta coinciden con OpenAPI en vivo; sin `any`.
+- [ ] `DateRangeFilter`: ambos campos opcionales, `string`, JSDoc `YYYY-MM-DD`.
+- [ ] `AlertsParams` y `TopCategoriesParams` extienden o incluyen `DateRangeFilter`.
+- [ ] `components.md`: componentes, props tipadas y renderizado condicional por funcionalidad.
+- [ ] Estado vacio de anomalias, comportamiento con un solo input de fecha y top-5 vacio B2B/B2C especificados.
+- [ ] `README.md` con endpoints, tipos, parametros y >= 2 casos limite por funcionalidad.
+- [ ] `npx tsc --noEmit` compila.
+- [ ] Trabajo en `feature/frontend-specs` con commits significativos que se lean como trabajo asistido y verificado.
+- [ ] Sin componentes React, `fetch` ni cambios de backend.
+
+## 8. Control de cierre
+
+| Fase | Rama | PR | Commits | Estado |
+| --- | --- | --- | --- | --- |
+| 1 Exploracion | `feature/frontend-specs-fase1-api-exploration` | pendiente | pendiente | pendiente |
+| 2 Tipos | `feature/frontend-specs-fase2-types` | pendiente | pendiente | pendiente |
+| 3 Componentes | `feature/frontend-specs-fase3-components` | pendiente | pendiente | pendiente |
+| 4 Contrato de datos | `feature/frontend-specs-fase4-data-contract` | pendiente | pendiente | pendiente |
+| Final | `feature/frontend-specs` -> `main` | pendiente | n/a | pendiente |
+
+Definition of Done: las cuatro fases cerradas con su PR y commits identificables, la rama de integracion mergeada en `main`, todas las afirmaciones de API verificadas (✅) o explicitamente marcadas (❓), y ningun resultado inventado. Una fase bloqueada sigue abierta aunque se haya escrito su documento.
