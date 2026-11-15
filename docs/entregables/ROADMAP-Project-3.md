@@ -98,19 +98,19 @@ Rama: `feature/frontend-specs-fase4-data-contract`. PR hacia `feature/frontend-s
 
 | Hito | Acciones | Evidencia | Estado |
 | --- | --- | --- | --- |
-| 4.1 Redactar `README.md` | Por funcionalidad: endpoint(s) con rutas verificadas en `/docs`; tipos de peticion y respuesta; valores validos y restricciones de cada parametro; **al menos 2 casos limite** y que debe mostrar la UI | `frontend/specs/README.md` | pendiente |
-| 4.2 Prueba de handover | Leerlo como si se entregara a una sesion nueva del agente; corregir lo que provocaria preguntas de seguimiento (opcional: sesion limpia que lo resuma sin ayuda) | Notas de la revision | pendiente |
-| 4.3 Compilar tipos | Ejecutar `npx tsc --noEmit` desde `frontend/` (pedido por el enunciado) y ademas la comprobacion explicita `tsc --ignoreConfig --noEmit --strict ... specs/*.ts`, porque el primero no cubre `specs` (hallazgo en [verification.md](../../frontend/specs/verification.md)). No se modifica la configuracion del proyecto | Salida del comando | pendiente |
-| 4.4 Revision de alcance | Confirmar: sin componentes React, sin `fetch`, sin cambios de backend (`git diff --stat` contra `main`) | Salida de `git diff --stat` | pendiente |
-| 4.5 Commit y PR de fase | Commit `docs: add data contract README for frontend specs`; PR a la rama de integracion | Hash y numero de PR | pendiente |
+| 4.1 Redactar `README.md` | Por funcionalidad: endpoint(s) con rutas verificadas en `/docs`; tipos de peticion y respuesta; valores validos y restricciones de cada parametro; **al menos 2 casos limite** y que debe mostrar la UI | `frontend/specs/README.md` | completado 2026-11-16: `README.md` con F1, F2 y F3 (commit `18e1c37`) |
+| 4.2 Prueba de handover | Leerlo como si se entregara a una sesion nueva del agente; corregir lo que provocaria preguntas de seguimiento (opcional: sesion limpia que lo resuma sin ayuda) | Notas de la revision | completado 2026-11-16: lectura del mantenedor como sesion nueva; una duda (media movil de 3 periodos) resuelta con una correccion de redaccion en verification.md y README (commit `127bed9`) |
+| 4.3 Compilar tipos | Ejecutar `npx tsc --noEmit` desde `frontend/` (pedido por el enunciado) y ademas la comprobacion explicita `tsc --ignoreConfig --noEmit --strict ... specs/*.ts`, porque el primero no cubre `specs` (hallazgo en [verification.md](../../frontend/specs/verification.md)). No se modifica la configuracion del proyecto | Salida del comando | completado 2026-11-16: ambos comandos con exit 0 (`npx tsc --noEmit` y la comprobacion estricta sobre specs), registrados en verification.md |
+| 4.4 Revision de alcance | Confirmar: sin componentes React, sin `fetch`, sin cambios de backend (`git diff --stat` contra `main`) | Salida de `git diff --stat` | completado 2026-11-16: `git diff --stat origin/main...HEAD` muestra 6 archivos, todos en `docs/` y `frontend/specs/`; sin cambios en `backend/` ni `frontend/src/`; sin `fetch(` en las specs |
+| 4.5 Commit y PR de fase | Commit `docs: add data contract README for frontend specs`; PR a la rama de integracion | Hash y numero de PR | completado 2026-11-16: PR #8, merge `977376e` |
 | 4.6 PR final a `main` | Abrir PR `feature/frontend-specs` -> `main` con resumen de las cuatro fases; merge solo con aprobacion del mantenedor | Numero de PR y merge | pendiente |
 
 Checklist de cierre:
 
-- [ ] `README.md` cubre las tres funcionalidades con endpoints, tipos, parametros y al menos 2 casos limite cada una.
-- [ ] Revisado como handover a sesion nueva.
-- [ ] `npx tsc --noEmit` sin errores.
-- [ ] Sin componentes React, llamadas `fetch` ni cambios de backend.
+- [x] `README.md` cubre las tres funcionalidades con endpoints, tipos, parametros y al menos 2 casos limite cada una.
+- [x] Revisado como handover a sesion nueva.
+- [x] `npx tsc --noEmit` sin errores.
+- [x] Sin componentes React, llamadas `fetch` ni cambios de backend.
 - [ ] PR de fase 4 y PR final a `main` abiertos y aprobados.
 
 ## 7. Criterios de evaluacion (checklist global)
@@ -121,10 +121,10 @@ Checklist de cierre:
 - [x] `AlertsParams` y `TopCategoriesParams` extienden o incluyen `DateRangeFilter`.
 - [x] `components.md`: componentes, props tipadas y renderizado condicional por funcionalidad.
 - [x] Estado vacio de anomalias, comportamiento con un solo input de fecha y top-5 vacio B2B/B2C especificados.
-- [ ] `README.md` con endpoints, tipos, parametros y >= 2 casos limite por funcionalidad.
-- [ ] `npx tsc --noEmit` compila.
-- [ ] Trabajo en `feature/frontend-specs` con commits significativos que se lean como trabajo asistido y verificado.
-- [ ] Sin componentes React, `fetch` ni cambios de backend.
+- [x] `README.md` con endpoints, tipos, parametros y >= 2 casos limite por funcionalidad.
+- [x] `npx tsc --noEmit` compila.
+- [x] Trabajo en `feature/frontend-specs` con commits significativos que se lean como trabajo asistido y verificado.
+- [x] Sin componentes React, `fetch` ni cambios de backend.
 
 ## 8. Control de cierre
 
@@ -133,7 +133,7 @@ Checklist de cierre:
 | 1 Exploracion | `feature/frontend-specs-fase1-api-exploration` | PR #5 | `8700ece` (merge `68969c3`) | completada 2026-11-15 |
 | 2 Tipos | `feature/frontend-specs-fase2-types` | PR #6 | `c3968a0`, `d3ac183`, `7a99a78` (merge `96a0fc7`) | completada 2026-11-15 |
 | 3 Componentes | `feature/frontend-specs-fase3-components` | PR #7 | `d17300f`, `cba0443`, `b5e94c3` (merge `4d307ba`) | completada 2026-11-16 |
-| 4 Contrato de datos | `feature/frontend-specs-fase4-data-contract` | pendiente | pendiente | pendiente |
+| 4 Contrato de datos | `feature/frontend-specs-fase4-data-contract` | PR #8 | `7c5ddfc`, `127bed9`, `18e1c37` (merge `977376e`) | completada 2026-11-16 |
 | Final | `feature/frontend-specs` -> `main` | pendiente | n/a | pendiente |
 
 Definition of Done: las cuatro fases cerradas con su PR y commits identificables, la rama de integracion mergeada en `main`, todas las afirmaciones de API verificadas (✅) o explicitamente marcadas (❓), y ningun resultado inventado. Una fase bloqueada sigue abierta aunque se haya escrito su documento.
