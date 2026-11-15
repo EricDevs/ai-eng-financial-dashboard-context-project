@@ -43,5 +43,9 @@ backend/venv/
 *.out
 *.err
 
+# Local agent tooling state
+.claude/
+.claude-flow/
+
 # Docker
 *.tar
