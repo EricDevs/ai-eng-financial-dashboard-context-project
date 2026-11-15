@@ -83,3 +83,48 @@ Desajustes PM vs API y resolucion en la spec:
 4. **Grafico unico B2B vs B2C.** No hay endpoint con totales por grupo. Resolucion: el total de cada grupo es la suma de `total_amount` de su respuesta `top`; se pintan dos barras.
 5. **`operation_type=income` obligatorio** en ambas llamadas (el defecto es `outcome`); es un valor fijo de la vista, no un filtro de usuario.
 6. **Dos llamadas independientes**, una por `business_type`. El filtro de fechas se envia a ambas con los mismos `start_date` / `end_date`.
+
+## Verificacion de tipos de las specs (hallazgo)
+
+`npx tsc --noEmit` (desde `frontend/`) termina con exit 0 pero **no compila `frontend/specs/`**: `tsconfig.json` tiene `"files": []` y solo referencias, y `tsconfig.app.json` incluye unicamente `src`. Su exito no prueba nada sobre las specs. Ademas el proyecto no declara `strict`. Marca: ✅ (comprobado el 2026-11-15).
+
+Decision: no modificar la configuracion del proyecto. Se ejecutan los dos comandos y se registran ambos resultados:
+
+```sh
+# 1. Comando del enunciado (no cubre specs)
+npx tsc --noEmit
+
+# 2. Comprobacion real de las specs, en modo estricto
+npx tsc --ignoreConfig --noEmit --strict --target es2023 --module esnext --moduleResolution bundler --verbatimModuleSyntax --skipLibCheck specs/api-types.ts specs/param-types.ts
+```
+
+Control negativo (2026-11-15): un archivo temporal con `period: 1` sobre `AlertEntry` falla con `TS2322`, asi que el comando 2 detecta errores de tipo. El archivo se borro tras la prueba.
+
+| Archivo | Comando 2 | Resultado |
+| --- | --- | --- |
+| `api-types.ts` | `--strict` | exit 0 (2026-11-15) |
+| `param-types.ts` | `--strict` | exit 0 (2026-11-15); control negativo con `threshold: "0.3"`, `operation_type: "revenue"`, `limit: "5"` falla con TS2322 |
+
+## Parametros vacios (comprobado al redactar param-types.ts)
+
+| Afirmacion | Marca | Evidencia |
+| --- | --- | --- |
+| `start_date=` o `end_date=` con cadena vacia -> 422 (`date_from_datetime_parsing`, "input is too short") | ✅ | `GET /api/metrics?start_date=&end_date=` |
+| `threshold=` vacio -> 422 (`float_parsing`) | ✅ | `GET /api/metrics/alerts?threshold=` |
+
+Resolucion en la spec: un input vacio se traduce en **omitir el parametro** de la query string, nunca en enviarlo vacio. Aplica a `start_date`, `end_date` y `threshold`.
+
+## Verificacion de tipos contra OpenAPI (fase 2)
+
+Fecha: 2026-11-15. El mantenedor comparo cada tipo con Swagger (`/docs`, seccion Schemas y Parameters) y confirmo la coincidencia. Marca ✅ en todas las filas.
+
+| # | Tipo de la spec | Fuente en `/docs` | Que se comprobo | Marca |
+| --- | --- | --- | --- | --- |
+| 1 | `FacetsResponse` | Schema `MetricsFacets` | 5 campos obligatorios; `min_date` y `max_date` string `date`; enums | ✅ |
+| 2 | `AlertEntry` | Schema `MetricsAlert` | 4 campos obligatorios, `period` string, tres number; sin campos extra | ✅ |
+| 3 | `CategoryEntry` | Schema `TopCategoryItem` | 3 campos obligatorios; sin campo de porcentaje | ✅ |
+| 4 | `DateRangeFilter` | `GET /api/metrics`, parametros `start_date` y `end_date` | string `date`, ambos opcionales | ✅ |
+| 5 | `AlertsParams`, `AlertsResponse` | `GET /api/metrics/alerts` | `threshold` number, minimo 0, defecto 0.3, sin maximo; respuesta 200 es array de `MetricsAlert`; `group_by` y `business_type` existen y quedan fuera de la spec | ✅ |
+| 6 | `TopCategoriesParams`, `TopCategoriesResponse` | `GET /api/metrics/categories/top` | `operation_type` (defecto `outcome`), `limit` 1-20 (defecto 5), `business_type`, fechas; respuesta 200 es array de `TopCategoryItem` | ✅ |
+
+Nota: Swagger UI bloquea en el navegador los valores fuera de rango (por ejemplo `threshold=-0.1`) antes de enviar la peticion, asi que no muestra el 422 del servidor. El 422 real se comprobo con curl en la fase 1 y queda registrado arriba.
