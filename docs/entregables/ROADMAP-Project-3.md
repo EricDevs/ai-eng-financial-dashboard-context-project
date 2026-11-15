@@ -78,19 +78,19 @@ Rama: `feature/frontend-specs-fase3-components`. PR hacia `feature/frontend-spec
 
 | Hito | Acciones | Evidencia | Estado |
 | --- | --- | --- | --- |
-| 3.1 Componentes F1 | Selector de rango de fechas: props con tipos de fase 2, referencia de rango min/max cerca de los inputs, comportamiento con **un solo input** de fecha, estados vacio/carga/error | Seccion F1 de `components.md` | pendiente |
-| 3.2 Componentes F2 | Tabla de alertas + input de umbral (0.01 a 1.0, defecto 0.3): cuatro columnas, **estado vacio explicito**, respeto del rango de F1, validacion del umbral | Seccion F2 | pendiente |
-| 3.3 Componentes F3 | Pagina B2B vs B2C: dos paneles de tabla top-5 y un grafico unico; **renderizado vacio de top-5 en cada panel**; filtro de fechas; categorias desde facets | Seccion F3 | pendiente |
-| 3.4 Alinear y resolver ambiguedades | Props alineadas con `api-types.ts`/`param-types.ts`; ambiguedades del PM resueltas y listadas; renderizado condicional por funcionalidad; reutilizar primitivas existentes (Card, Skeleton, tokens) | `components.md` completo | pendiente |
-| 3.5 Verificar y commit/PR | El mantenedor verifica nombres de props y tipos contra la fase 2; commit `docs: add component specs for the three features`; PR | Hash y numero de PR | pendiente |
+| 3.1 Componentes F1 | Selector de rango de fechas: props con tipos de fase 2, referencia de rango min/max cerca de los inputs, comportamiento con **un solo input** de fecha, estados vacio/carga/error | Seccion F1 de `components.md` | completado 2026-11-16: seccion en `components.md` con componentes, props, estados y criterios EARS (commit `b5e94c3`) |
+| 3.2 Componentes F2 | Tabla de alertas + input de umbral (0.01 a 1.0, defecto 0.3): cuatro columnas, **estado vacio explicito**, respeto del rango de F1, validacion del umbral | Seccion F2 | completado 2026-11-16: seccion en `components.md` con componentes, props, estados y criterios EARS (commit `b5e94c3`) |
+| 3.3 Componentes F3 | Pagina B2B vs B2C: dos paneles de tabla top-5 y un grafico unico; **renderizado vacio de top-5 en cada panel**; filtro de fechas; categorias desde facets | Seccion F3 | completado 2026-11-16: seccion en `components.md` con componentes, props, estados y criterios EARS (commit `b5e94c3`) |
+| 3.4 Alinear y resolver ambiguedades | Props alineadas con `api-types.ts`/`param-types.ts`; ambiguedades del PM resueltas y listadas; renderizado condicional por funcionalidad; reutilizar primitivas existentes (Card, Skeleton, tokens) | `components.md` completo | completado 2026-11-16: 5 decisiones de producto resueltas con el mantenedor y registradas (pestanas por estado, filtro compartido, estado vacio de alertas, umbral al cambiar, top vacio por panel y grafico de dos barras) |
+| 3.5 Verificar y commit/PR | El mantenedor verifica nombres de props y tipos contra la fase 2; commit `docs: add component specs for the three features`; PR | Hash y numero de PR | completado 2026-11-16: verificado por el mantenedor; PR #7, merge `4d307ba` |
 
 Checklist de cierre:
 
-- [ ] `components.md` nombra cada componente, sus props con tipos y su renderizado condicional, por funcionalidad.
-- [ ] Estado vacio de la tabla de anomalias especificado.
-- [ ] Comportamiento con un solo input de fecha especificado.
-- [ ] Ambos paneles B2B/B2C especifican renderizado vacio del top-5.
-- [ ] PR de fase 3 mergeado en la rama de integracion.
+- [x] `components.md` nombra cada componente, sus props con tipos y su renderizado condicional, por funcionalidad.
+- [x] Estado vacio de la tabla de anomalias especificado.
+- [x] Comportamiento con un solo input de fecha especificado.
+- [x] Ambos paneles B2B/B2C especifican renderizado vacio del top-5.
+- [x] PR de fase 3 mergeado en la rama de integracion.
 
 ## 6. Fase 4: contrato de datos y cierre
 
@@ -119,8 +119,8 @@ Checklist de cierre:
 - [x] Interfaces de respuesta coinciden con OpenAPI en vivo; sin `any`.
 - [x] `DateRangeFilter`: ambos campos opcionales, `string`, JSDoc `YYYY-MM-DD`.
 - [x] `AlertsParams` y `TopCategoriesParams` extienden o incluyen `DateRangeFilter`.
-- [ ] `components.md`: componentes, props tipadas y renderizado condicional por funcionalidad.
-- [ ] Estado vacio de anomalias, comportamiento con un solo input de fecha y top-5 vacio B2B/B2C especificados.
+- [x] `components.md`: componentes, props tipadas y renderizado condicional por funcionalidad.
+- [x] Estado vacio de anomalias, comportamiento con un solo input de fecha y top-5 vacio B2B/B2C especificados.
 - [ ] `README.md` con endpoints, tipos, parametros y >= 2 casos limite por funcionalidad.
 - [ ] `npx tsc --noEmit` compila.
 - [ ] Trabajo en `feature/frontend-specs` con commits significativos que se lean como trabajo asistido y verificado.
@@ -132,7 +132,7 @@ Checklist de cierre:
 | --- | --- | --- | --- | --- |
 | 1 Exploracion | `feature/frontend-specs-fase1-api-exploration` | PR #5 | `8700ece` (merge `68969c3`) | completada 2026-11-15 |
 | 2 Tipos | `feature/frontend-specs-fase2-types` | PR #6 | `c3968a0`, `d3ac183`, `7a99a78` (merge `96a0fc7`) | completada 2026-11-15 |
-| 3 Componentes | `feature/frontend-specs-fase3-components` | pendiente | pendiente | pendiente |
+| 3 Componentes | `feature/frontend-specs-fase3-components` | PR #7 | `d17300f`, `cba0443`, `b5e94c3` (merge `4d307ba`) | completada 2026-11-16 |
 | 4 Contrato de datos | `feature/frontend-specs-fase4-data-contract` | pendiente | pendiente | pendiente |
 | Final | `feature/frontend-specs` -> `main` | pendiente | n/a | pendiente |
 
