@@ -93,14 +93,14 @@ Rama: `feature/agent-skills-fase2-accessibility`. PR hacia `feature/agent-skills
 | 2.2 Revision de propuestas | Aceptar solo cambios ligados a un archivo real y a una instruccion de la skill; registrar rechazados y por que | Tabla aceptado/rechazado | completado 2026-11-16: 10 propuestas aceptadas por el mantenedor; 2 cambios descartados antes de proponer, con motivo |
 | 2.3 Implementar | Correcciones minimas: etiquetas `aria-*`/`role` (p. ej. graficas Recharts, iconos Lucide decorativos con `aria-hidden`), `alt`, estados de carga/error anunciables, foco visible, contraste de tokens | Diff | completado 2026-11-16: 9 archivos del frontend, cambios minimos por hallazgo |
 | 2.4 Verificar | Navegacion por teclado en elementos interactivos; `aria-*`/`role` correctos; `alt` presente; contraste basico de textos y controles (ratio medido). Lint, tests y build sin avisos nuevos | Notas de la pasada manual + salidas de comandos | completado 2026-11-16: A1 3.14->5.18:1, A2 2.04->4.69:1, nombres de graficas y h2 en el arbol de Chrome, alert/lang/aria-busy observados; lint, 6 tests y build sin avisos nuevos. Hallazgo: Vite en Docker no recarga modulos (bind mount de Windows) |
-| 2.5 Commit y PR | Commit que referencia la skill `accessibility`; PR | Hash y numero de PR | pendiente |
+| 2.5 Commit y PR | Commit que referencia la skill `accessibility`; PR | Hash y numero de PR | completado 2026-11-16: commits `ff050ce` (fix(a11y), A1-A10) y `e83eb48` (evidencia), PR #12, merge `98e6bc5` |
 
 Checklist de cierre:
 
 - [x] Cada cambio trazable a una instruccion de `accessibility`.
 - [x] Teclado, `aria-*`/`role`, `alt` y contraste verificados en la app en ejecucion.
 - [x] Build sin advertencias nuevas injustificadas.
-- [ ] PR de fase 2 mergeado.
+- [x] PR de fase 2 mergeado.
 
 ## 7. Fase 3: skill `vercel-react-best-practices`
 
@@ -108,16 +108,16 @@ Rama: `feature/agent-skills-fase3-react-best-practices`. PR hacia `feature/agent
 
 | Hito | Acciones | Evidencia | Estado |
 | --- | --- | --- | --- |
-| 3.1 Auditoria | El agente audita patrones orientados a despliegue: metadatos (`title`, `description`, `lang` de `index.html`), layout shift (alturas de skeleton/graficas, dimensiones de imagen), fuentes, tamano de bundle, re-renders y anti-patrones de Lighthouse | Lista de hallazgos con instruccion de la skill | pendiente |
-| 3.2 Adaptar a Vite | Para cada regla de Next (`next/image`, `next/font`, metadata) decidir: equivalente en Vite o N/A justificado | Tabla regla -> aplicacion/N/A | pendiente |
-| 3.3 Implementar | Correcciones minimas aceptadas (p. ej. metadatos reales en `index.html`, reservar espacio de graficas, carga diferida de Recharts si reduce el chunk) | Diff | pendiente |
-| 3.4 Verificar | `npm --prefix frontend run build` sin advertencias nuevas (comparar con la linea base); lint y tests; observar la app (sin saltos de layout en carga) | Salidas de comandos + notas | pendiente |
+| 3.1 Auditoria | El agente audita patrones orientados a despliegue: metadatos (`title`, `description`, `lang` de `index.html`), layout shift (alturas de skeleton/graficas, dimensiones de imagen), fuentes, tamano de bundle, re-renders y anti-patrones de Lighthouse | Lista de hallazgos con instruccion de la skill | completado 2026-11-16: bundle medido (Recharts + deps 60 % del JS), Lighthouse de rendimiento x3 en build de produccion; hallazgos R1-R4 ([evidencia](../validations/07-agent-skills-checks.md#31-auditoria-antes-de-cambios)) |
+| 3.2 Adaptar a Vite | Para cada regla de Next (`next/image`, `next/font`, metadata) decidir: equivalente en Vite o N/A justificado | Tabla regla -> aplicacion/N/A | completado 2026-11-16: tabla de aplicabilidad (server/hidratacion N/A, `next/dynamic` -> `React.lazy`, SWR innecesario) |
+| 3.3 Implementar | Correcciones minimas aceptadas (p. ej. metadatos reales en `index.html`, reservar espacio de graficas, carga diferida de Recharts si reduce el chunk) | Diff | completado 2026-11-16: R1 aceptado (graficas con `React.lazy` + `Suspense` en `App.tsx`); R2 aplazado y luego descartado (ver 3.4); R3 y R4 descartados por impacto no medible |
+| 3.4 Verificar | `npm --prefix frontend run build` sin advertencias nuevas (comparar con la linea base); lint y tests; observar la app (sin saltos de layout en carga) | Salidas de comandos + notas | completado 2026-11-16: build sin avisos (chunk principal 584.60 -> 187.76 kB); lint y 6 tests OK; Lighthouse sin mejora de LCP fuera del ruido; sin regresiones de accesibilidad ni de layout. R2 descartado tras medir (el retraso del LCP es CPU de render, no red) |
 | 3.5 Commit y PR | Commit que referencia `vercel-react-best-practices`; PR | Hash y numero de PR | pendiente |
 
 Checklist de cierre:
 
-- [ ] Cada cambio trazable a una instruccion de la skill; reglas de Next marcadas N/A con motivo.
-- [ ] Build pasa sin advertencias nuevas injustificadas.
+- [x] Cada cambio trazable a una instruccion de la skill; reglas de Next marcadas N/A con motivo.
+- [x] Build pasa sin advertencias nuevas injustificadas.
 - [ ] PR de fase 3 mergeado.
 
 ## 8. Fase 4: explorar el ecosistema
@@ -189,8 +189,8 @@ Checklist de cierre:
 
 | Fase | Rama | PR | Commits | Estado |
 | --- | --- | --- | --- | --- |
-| 1 Preparacion y descubrimiento | `feature/agent-skills-fase1-setup` | - | - | pendiente |
-| 2 Accessibility | `feature/agent-skills-fase2-accessibility` | - | - | pendiente |
+| 1 Preparacion y descubrimiento | `feature/agent-skills-fase1-setup` | PR #11 | `442f11d`, `4b9af5b` (merge `3ed7ade`) | completada 2026-11-16 |
+| 2 Accessibility | `feature/agent-skills-fase2-accessibility` | PR #12 | `ff050ce`, `e83eb48` (merge `98e6bc5`) | completada 2026-11-16 |
 | 3 React best practices | `feature/agent-skills-fase3-react-best-practices` | - | - | pendiente |
 | 4 Ecosistema | `feature/agent-skills-fase4-ecosystem` | - | - | pendiente |
 | 5 Skill interna | `feature/agent-skills-fase5-internal-skill` | - | - | pendiente |
