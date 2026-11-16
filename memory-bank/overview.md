@@ -1,6 +1,6 @@
 # Overview
 
-Revision: 2026-11-13, fase 4. Fuentes primarias: [App.tsx](../frontend/src/App.tsx),
+Revision: 2026-11-16, cierre del proyecto 3. Fuentes primarias: [App.tsx](../frontend/src/App.tsx),
 [routes.py](../backend/app/routes.py), [README.md](../README.md) y el
 [informe canonico](../docs/validations/03-verification-resume.md) de fase 1.
 
@@ -25,7 +25,9 @@ agregacion mensual ocurren en el navegador, en
 backend. El backend expone ademas ocho rutas analiticas (facetas, resumen,
 top categorias, comparacion, alertas, B2B, B2C) que la UI actual no consume;
 ver [routes.py](../backend/app/routes.py) y el
-[mapa de estructura](../docs/validations/01-structure.md).
+[mapa de estructura](../docs/validations/01-structure.md). Tres de ellas
+(facets, alertas, top categorias) ya estan especificadas para la UI en
+[frontend/specs](../frontend/specs/README.md) (proyecto 3), sin implementar.
 
 ## Datos
 
