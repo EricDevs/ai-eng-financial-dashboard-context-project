@@ -73,7 +73,7 @@ Rama: `feature/agent-skills-fase1-setup`. PR hacia `feature/agent-skills`.
 | 1.4 Linea base de calidad | Ejecutar build, lint y tests del frontend; registrar avisos existentes (chunk > 500 kB). Pasada manual inicial de teclado sobre la app | Salidas en el archivo de evidencia (D4) | completado 2026-11-16: build exit 0 con aviso preexistente (JS 584.25 kB), lint limpio, 6 tests passed. La pasada de teclado se movio al inicio de la fase 2 (2.1) |
 | 1.5 Descubrir skills proporcionadas | `npx skills find accessibility` y `npx skills find vercel-react-best-practices`; revisar que cubre cada una antes de instalar | Salida de ambos comandos | completado 2026-11-16: elegidas `addyosmani/web-quality-skills@accessibility` y `vercel-labs/agent-skills@vercel-react-best-practices` |
 | 1.6 Cargar las skills | Instalar ambas (D1) y cargarlas en el agente; resumir que instrucciones dan y cuales aplican a Vite (marcar N/A las de Next) | Resumen por skill en el archivo de evidencia | completado 2026-11-16: instaladas en `.agents/skills/`, leidas por el agente; tabla de aplicabilidad registrada |
-| 1.7 Commit y PR de fase | Commit de memory bank, skills instaladas y roadmap; PR a la rama de integracion | Hash y numero de PR | pendiente |
+| 1.7 Commit y PR de fase | Commit de memory bank, skills instaladas y roadmap; PR a la rama de integracion | Hash y numero de PR | completado 2026-11-16: commits `442f11d` (skills) y `4b9af5b` (evidencia), PR #11, merge `3ed7ade` |
 
 Checklist de cierre:
 
@@ -81,7 +81,7 @@ Checklist de cierre:
 - [x] Memory bank refleja el estado real tras el proyecto 3.
 - [x] Linea base de build/lint/tests registrada, avisos incluidos.
 - [x] Ambas skills encontradas, revisadas, instaladas y cargadas.
-- [ ] PR de fase 1 mergeado en la rama de integracion.
+- [x] PR de fase 1 mergeado en la rama de integracion.
 
 ## 6. Fase 2: skill `accessibility`
 
@@ -89,17 +89,17 @@ Rama: `feature/agent-skills-fase2-accessibility`. PR hacia `feature/agent-skills
 
 | Hito | Acciones | Evidencia | Estado |
 | --- | --- | --- | --- |
-| 2.1 Auditoria | Pasada manual de teclado inicial (movida desde 1.4) y auditoria Lighthouse de accesibilidad sobre la app en ejecucion, como pide el flujo de la skill. Con la skill cargada, el agente audita `App.tsx`, `dashboard/`, `ui/`, `index.css` e `index.html` y lista hallazgos con archivo, linea e instruccion de la skill | Lista de hallazgos | pendiente |
-| 2.2 Revision de propuestas | Aceptar solo cambios ligados a un archivo real y a una instruccion de la skill; registrar rechazados y por que | Tabla aceptado/rechazado | pendiente |
-| 2.3 Implementar | Correcciones minimas: etiquetas `aria-*`/`role` (p. ej. graficas Recharts, iconos Lucide decorativos con `aria-hidden`), `alt`, estados de carga/error anunciables, foco visible, contraste de tokens | Diff | pendiente |
-| 2.4 Verificar | Navegacion por teclado en elementos interactivos; `aria-*`/`role` correctos; `alt` presente; contraste basico de textos y controles (ratio medido). Lint, tests y build sin avisos nuevos | Notas de la pasada manual + salidas de comandos | pendiente |
+| 2.1 Auditoria | Pasada manual de teclado inicial (movida desde 1.4) y auditoria Lighthouse de accesibilidad sobre la app en ejecucion, como pide el flujo de la skill. Con la skill cargada, el agente audita `App.tsx`, `dashboard/`, `ui/`, `index.css` e `index.html` y lista hallazgos con archivo, linea e instruccion de la skill | Lista de hallazgos | completado 2026-11-16: Lighthouse 100 sin fallos; 10 hallazgos manuales A1-A10 ([evidencia](../validations/07-agent-skills-checks.md#21-auditoria-antes-de-cambios)) |
+| 2.2 Revision de propuestas | Aceptar solo cambios ligados a un archivo real y a una instruccion de la skill; registrar rechazados y por que | Tabla aceptado/rechazado | completado 2026-11-16: 10 propuestas aceptadas por el mantenedor; 2 cambios descartados antes de proponer, con motivo |
+| 2.3 Implementar | Correcciones minimas: etiquetas `aria-*`/`role` (p. ej. graficas Recharts, iconos Lucide decorativos con `aria-hidden`), `alt`, estados de carga/error anunciables, foco visible, contraste de tokens | Diff | completado 2026-11-16: 9 archivos del frontend, cambios minimos por hallazgo |
+| 2.4 Verificar | Navegacion por teclado en elementos interactivos; `aria-*`/`role` correctos; `alt` presente; contraste basico de textos y controles (ratio medido). Lint, tests y build sin avisos nuevos | Notas de la pasada manual + salidas de comandos | completado 2026-11-16: A1 3.14->5.18:1, A2 2.04->4.69:1, nombres de graficas y h2 en el arbol de Chrome, alert/lang/aria-busy observados; lint, 6 tests y build sin avisos nuevos. Hallazgo: Vite en Docker no recarga modulos (bind mount de Windows) |
 | 2.5 Commit y PR | Commit que referencia la skill `accessibility`; PR | Hash y numero de PR | pendiente |
 
 Checklist de cierre:
 
-- [ ] Cada cambio trazable a una instruccion de `accessibility`.
-- [ ] Teclado, `aria-*`/`role`, `alt` y contraste verificados en la app en ejecucion.
-- [ ] Build sin advertencias nuevas injustificadas.
+- [x] Cada cambio trazable a una instruccion de `accessibility`.
+- [x] Teclado, `aria-*`/`role`, `alt` y contraste verificados en la app en ejecucion.
+- [x] Build sin advertencias nuevas injustificadas.
 - [ ] PR de fase 2 mergeado.
 
 ## 7. Fase 3: skill `vercel-react-best-practices`
