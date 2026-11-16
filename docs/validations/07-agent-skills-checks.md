@@ -157,3 +157,97 @@ Misma auditoria sobre la app en ejecucion con el codigo nuevo:
 Teclado (tras dar foco a la pagina; una primera pasada no llego a la pagina porque `document.hasFocus()` era `false`): Tab -> grafica "Income vs. Outcome" con `:focus-visible`; flecha derecha mueve el tooltip; Tab -> "Profit Margin %"; Tab -> fuera de `#root`. Sin trampas de foco.
 
 Limites: no se probo con un lector de pantalla real (NVDA/VoiceOver), zoom al 200 % ni modo de alto contraste de Windows; el arbol de accesibilidad de Chrome es la evidencia de nombres y roles. Lighthouse no evalua texto SVG ni contraste del foco: esos valores salen del calculo manual.
+
+## Fase 3: skill `vercel-react-best-practices`
+
+Fecha: 2026-11-16. Rama: `feature/agent-skills-fase3-react-best-practices` (desde `feature/agent-skills` en `98e6bc5`). Reglas leidas: WF, FE, DX. Skill cargada con `Skill(vercel-react-best-practices)`; se leyeron los archivos de regla candidatos en `.agents/skills/vercel-react-best-practices/rules/`.
+
+### 3.1 Auditoria (antes de cambios)
+
+Mediciones (todo fuera del repo, en el scratchpad de la sesion):
+
+- **Composicion del bundle**: `npx vite build --sourcemap --outDir <scratch>` + `npx -y source-map-explorer <js> --json`. Total atribuido 570.9 KiB: `recharts` 213.2 KiB (37.3 %), `react-dom` 174.3 KiB (30.5 %); **Recharts y sus dependencias** (`@reduxjs/toolkit`, `es-toolkit`, `d3-*`, `decimal.js-light`, `immer`, `react-redux`, `redux`, `reselect`...) **344.4 KiB (60.3 %)**. `lucide-react` 2.07 KiB. Recharts solo se importa en `income-outcome-chart.tsx` y `profit-percent-chart.tsx`.
+- **Rendimiento en build de produccion**: `VITE_API_BASE_URL=http://localhost:8000 npx vite build --outDir <scratch>` + `npx vite preview --port 4173`, `npx -y lighthouse@12 http://localhost:4173 --only-categories=performance` (movil simulado por defecto), 3 pasadas:
+
+| Pasada | Score | FCP | LCP | TBT | CLS |
+| --- | --- | --- | --- | --- | --- |
+| 1 | 86 | 1.9 s | 2.6 s | 400 ms | 0 |
+| 2 | 85 | 2.5 s | 3.0 s | 290 ms | 0 |
+| 3 | 90 | 1.9 s | 2.4 s | 320 ms | 0.014 |
+
+- Elemento LCP: el valor del primer KPI (`p.text-3xl`, "$1,258,147"). Fases del LCP (pasada 1): TTFB 456 ms, **render delay 2161 ms (83 %)**. Cadena de red: HTML -> `index-*.js` (174 KB transferidos) -> `/api/metrics`: la peticion de datos no empieza hasta que el JS completo se descarga y ejecuta (bootup del JS 2.0 s, 1.9 s de scripting simulado). `unused-javascript`: 70 KiB sin usar del chunk principal.
+
+Hallazgos:
+
+| ID | Regla (impacto en la skill) | Hallazgo y evidencia | Archivo |
+| --- | --- | --- | --- |
+| R1 | `bundle-dynamic-imports` (CRITICAL) | Las graficas (Recharts + dependencias, 60 % del JS) van en el chunk principal aunque el LCP (KPI) no las necesita. Retrasan la ejecucion del JS, y con ello el `fetch` y el LCP; causan el aviso de chunk > 500 kB | [App.tsx:4-5](../../frontend/src/App.tsx) |
+| R2 | `rendering-resource-hints` (HIGH) | Cascada HTML -> JS -> API: `/api/metrics` solo se pide tras ejecutar todo el JS (render delay 83 % del LCP). Un `preload` de los datos empezaria la peticion en paralelo con el JS | [index.html](../../frontend/index.html), [App.tsx:15-21](../../frontend/src/App.tsx) |
+| R3 | `js-combine-iterations` (LOW-MEDIUM) | `computeKPIs` recorre los movimientos con dos `filter` + dos `reduce`. Con 360 movimientos el coste no es medible | [financial-utils.ts:21-34](../../frontend/src/lib/financial-utils.ts) |
+| R4 | `js-cache-function-results` (LOW-MEDIUM) | `formatCurrency` crea un `Intl.NumberFormat` por llamada; se llama ~4 veces por render y en cada tooltip. Coste no medible | [financial-utils.ts:69-76](../../frontend/src/lib/financial-utils.ts) |
+
+Cumple ya (sin cambios): `rendering-conditional-render` (ternarios con `: null` en `App.tsx` y graficas); `rerender-no-inline-components` (`CustomTooltip` a nivel de modulo); `rerender-derived-state-no-effect` (el efecto solo trae datos; los `setState` del `then` se agrupan en un render); `rendering-script-defer-async` (`<script type="module">` es diferido por defecto); `async-parallel`/`async-dependencies` (una sola peticion, sin cascada entre peticiones).
+
+No hay problema medible: layout shift (CLS 0-0.014; skeletons de graficas con la misma altura, 280 px, que la grafica); `bundle-barrel-imports` (`lucide-react` aporta 2 KiB: Vite ya elimina iconos sin usar en produccion; el coste de la regla es de arranque en desarrollo).
+
+Fuera del codigo (no se proponen): `uses-text-compression` (`vite preview` no comprime; lo hace el servidor de despliegue), `uses-rel-preconnect` (artefacto de la medicion con la API en otro origen; en Compose va por el proxy en el mismo origen), CSS bloqueante 156 ms (CSS unico de Vite; ninguna regla de la skill lo cubre), reflow forzado de 45 ms dentro del bundle (codigo de libreria), puntuacion SEO / `meta description` (no lo cubre esta skill; candidato para la fase 4).
+
+### 3.2 Aplicabilidad de reglas a Vite (sin Next.js ni servidor)
+
+| Reglas | Aplica | Motivo / equivalente en Vite |
+| --- | --- | --- |
+| `server-*` (10 reglas), `async-api-routes`, `rendering-hydration-*`, `bundle-defer-third-party` (cuando habla de hidratacion) | No | No hay SSR, RSC, server actions ni rutas API en el frontend; no hay hidratacion (`createRoot`) ni scripts de terceros |
+| `async-suspense-boundaries` | No (streaming) | Habla de streaming de servidor; en cliente la parte util es la `Suspense` de R1 |
+| `bundle-dynamic-imports` | Si, con equivalente | `next/dynamic` -> `React.lazy(() => import(...))` + `<Suspense>`; Vite crea el chunk aparte |
+| `bundle-barrel-imports` | Equivalente sin impacto | `optimizePackageImports` es de Next; en Vite el tree-shaking de produccion ya reduce `lucide-react` a 2 KiB |
+| `rendering-resource-hints` | Si | `preload` de `react-dom` o `<link rel="preload" as="fetch">` en `index.html` |
+| `client-swr-dedup` | No necesario | Una sola peticion en un solo componente; SWR seria una dependencia nueva sin beneficio (regla DX) |
+| `rendering-activity`, `rerender-transitions`, `rerender-use-deferred-value` | No | No hay mostrar/ocultar, inputs ni actualizaciones no urgentes |
+| `rerender-*`, `rendering-*`, `js-*` restantes | Revisadas | Sin hallazgos salvo R3 y R4 |
+| `next/image`, `next/font`, metadatos por pagina | N/A | No estan en esta skill (ver fase 1); no hay `<img>` renderizadas; `Inter` se declara en `--font-sans` pero no se descarga ninguna fuente web (se usa la del sistema), asi que no hay coste de carga de fuentes |
+
+### Decision del mantenedor
+
+R1 aceptado. R2 aplazado hasta medir el efecto de R1. R3 y R4 descartados: impacto no medible.
+
+### 3.3 Cambio implementado (R1, `bundle-dynamic-imports`)
+
+Solo [App.tsx](../../frontend/src/App.tsx): las dos graficas pasan de import estatico a `React.lazy(() => import(...).then((m) => ({ default: m.X })))` (equivalente Vite de `next/dynamic`), cada una dentro de `<Suspense>`. El `fallback` (`ChartFallback`) repite el marcado `Card` + `Skeleton` del estado de carga de las graficas para que el cambio de uno a otro no mueva el layout.
+
+### 3.4 Verificacion
+
+| Comando | Resultado |
+| --- | --- |
+| `npm --prefix frontend run lint` | exit 0 |
+| `npm --prefix frontend test` | 6 passed |
+| `npm --prefix frontend run build` | exit 0, **sin avisos**: el aviso de chunk > 500 kB desaparece. Chunk principal 584.60 kB -> **187.76 kB** (gzip 175.34 -> 59.83 kB); Recharts en `LineChart-*.js` 342.30 kB; graficas 9.86 y 6.68 kB; compartido `financial-utils-*.js` 40.47 kB (con `modulepreload` en `index.html`) |
+
+Lighthouse de rendimiento repetido igual que en 3.1 (build de produccion en el scratchpad, `vite preview` 4173, 3 pasadas):
+
+| | Score | FCP | LCP | TBT | CLS |
+| --- | --- | --- | --- | --- | --- |
+| Antes (3.1) | 85 / 86 / 90 | 1.9-2.5 s | 2.4-3.0 s | 290-400 ms | 0-0.014 |
+| Despues | 87 / 88 / 89 | 1.9 s | 2.7-2.8 s | 280-340 ms | 0.014 |
+
+**Iteracion real de la medicion**: la primera tanda "despues" se descarto. `curl` mostro que el puerto 4173 servia `index-Di_3C-O9.js` (bundle anterior): el `vite preview` de la auditoria seguia vivo (PID 15532, `--outDir .../dist-prod`) porque `TaskStop` cierra el shell pero no el proceso `node` hijo; el preview nuevo fallo con `--strictPort`. Se termino ese proceso, se comprobo que se servia `index-B7QkJpr-.js` y se repitieron las 3 pasadas. Al terminar se reprodujo el mismo comportamiento (PID 23964) y se paro igual.
+
+Por que el LCP no mejora de forma medible (pasada 1 de cada tanda):
+
+| | Antes | Despues |
+| --- | --- | --- |
+| Scripting simulado por archivo | `index` 1939 ms | `index` 1670 ms + `LineChart` 226 ms |
+| Peticion de las graficas (observado) | en el chunk principal | `income-outcome-chart` y `LineChart` empiezan a los 116-117 ms |
+| `/api/metrics` (observado) | 199 -> 510 ms | 156 -> 193 ms |
+| LCP render delay (simulado) | 2161 ms | 2288 ms |
+
+El tiempo de CPU lo domina React renderizando (chunk principal, ~1.7 s con la CPU simulada 4x), no la evaluacion de Recharts (226 ms). Ademas las graficas se ven al cargar, asi que su chunk se pide nada mas montar la app. Resultado: R1 cumple su objetivo de bundle (chunk principal -68 %, aviso eliminado) y no empeora nada, pero no mejora el LCP mas alla del ruido entre pasadas.
+
+App en ejecucion (`docker compose`, tras `docker compose restart frontend` y comprobar que Vite servia `lazy(`):
+
+- Accesibilidad sin regresiones: Lighthouse 100, 0 fallos; arbol de Chrome por CDP: `h1` + 6 `h2`, las dos graficas `application` con nombre y descripcion, igual que tras la fase 2.
+- Layout: altura de las tarjetas de grafica muestreada cada 25 ms durante la carga (segunda instancia con `fetch` que no resuelve): **414 px constante** entre el `fallback` de `Suspense` y el estado de carga propio de la grafica. Con datos: 422 px; esos 8 px ya existian antes de R1 y corresponden al CLS 0.014 medido antes y despues.
+- Las dos graficas se renderizan (2 `svg[role=application]`).
+
+### R2 tras medir R1
+
+No se recomienda. R2 adelantaria la peticion de `/api/metrics`, pero tras R1 la peticion termina a los ~193 ms observados, mientras que el retraso del LCP (~2.3 s simulados) es tiempo de CPU del render de React. Adelantar la red no acorta ese tiempo, y R2 anade riesgo (peticion duplicada si el `preload` no coincide con el `fetch`, y respetar `VITE_API_BASE_URL` en `index.html`). **Descartado por el mantenedor** el 2026-11-16 con este motivo.
