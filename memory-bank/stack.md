@@ -1,6 +1,6 @@
 # Stack
 
-Revision: 2026-11-13, fase 4. Fuentes: [requirements.txt](../backend/requirements.txt),
+Revision: 2026-11-16, cierre del proyecto 3. Fuentes: [requirements.txt](../backend/requirements.txt),
 [package.json](../frontend/package.json), [package-lock.json](../frontend/package-lock.json),
 [docker-compose.yml](../docker-compose.yml), ambos Dockerfiles.
 
@@ -58,6 +58,11 @@ Revision: 2026-11-13, fase 4. Fuentes: [requirements.txt](../backend/requirement
 - Build: `npm --prefix frontend run build` (`tsc -b && vite build`) -> exitoso;
   aviso persistente de chunk JS superior a 500 kB, no resuelto
   (FRONTEND-BUILD-01).
+- Specs (proyecto 3, desde `frontend/`): `npx tsc --noEmit` -> exit 0, pero
+  **no compila `specs/`** (`tsconfig.app.json` solo incluye `src`). La
+  comprobacion real es
+  `npx tsc --ignoreConfig --noEmit --strict --target es2023 --module esnext --moduleResolution bundler --verbatimModuleSyntax --skipLibCheck specs/api-types.ts specs/param-types.ts`
+  -> exit 0 (2026-11-16, ver [verification.md](../frontend/specs/verification.md)).
 
 Detalle completo de estas comprobaciones y sus limites en
 [02-handover-checks.md](../docs/validations/02-handover-checks.md) y

@@ -1,6 +1,6 @@
 # Status
 
-Revision: 2026-11-13, fase 4. Fuentes: [01-structure.md](../docs/validations/01-structure.md),
+Revision: 2026-11-16, cierre del proyecto 3. Fuentes: [01-structure.md](../docs/validations/01-structure.md),
 [03-verification-resume.md](../docs/validations/03-verification-resume.md),
 [02-handover-checks.md](../docs/validations/02-handover-checks.md),
 [05-rules-checks.md](../docs/validations/05-rules-checks.md) y commits
@@ -22,6 +22,16 @@ enlaza el check que lo demuestra.
 - Seis reglas de agente (`WF`, `FIN`, `API`, `CAL`, `FE`, `DX`) en
   [.agents/rules](../.agents/rules), cada una validada con una tarea real y
   registrada en [05-rules-checks.md](../docs/validations/05-rules-checks.md).
+
+## Especificado, no implementado (proyecto 3)
+
+- Specs frontend de tres funcionalidades en [frontend/specs](../frontend/specs/README.md):
+  F1 filtro de rango de fechas (`/facets` + `/api/metrics`), F2 tabla de
+  alertas de anomalias (`/alerts?threshold=`) y F3 comparativa B2B vs B2C
+  (`/categories/top`). Tipos verificados contra `/openapi.json` en vivo;
+  evidencia en [verification.md](../frontend/specs/verification.md).
+- Sin componentes React, `fetch` ni cambios de backend: la UI sigue
+  consumiendo solo `/api/metrics`.
 
 ## Gaps conocidos (no corregidos; fuera de alcance sin acuerdo explicito)
 
@@ -65,11 +75,24 @@ construirla por iniciativa propia; requiere un acuerdo de alcance aparte.
 
 ## Commits y cierres por fase
 
+Proyecto 2 (contexto, reglas y memoria):
+
 | Fase | Commit(s) | Integracion |
 | --- | --- | --- |
 | 1 | `3f31fdd`, `73f8a49` | merge `253b3c6` via PR #1 |
 | 2 | `db1285c` (incremento), `bb53ea6` (cierre) | merge `43a9cda` via PR #2 |
 | 3 | `767012b` | merge `ac99882` via PR #3 |
-| 4 | en curso | pendiente |
+| 4 | `d678e22`, `fadda3d`, `898af46` | merge `b09dbfa` via PR #4 |
 
-Detalle y evidencia completa en [ROADMAP-Project-2.md](../docs/entregables/ROADMAP-Project-2.md).
+Proyecto 3 (specs frontend), ramas de fase hacia `feature/frontend-specs`:
+
+| Fase | Commit(s) | Integracion |
+| --- | --- | --- |
+| 1 Exploracion API | `8700ece` | merge `68969c3` via PR #5 |
+| 2 Tipos | `c3968a0`, `d3ac183`, `7a99a78` | merge `96a0fc7` via PR #6 |
+| 3 Componentes | `d17300f`, `cba0443`, `b5e94c3` | merge `4d307ba` via PR #7 |
+| 4 Contrato de datos | `7c5ddfc`, `127bed9`, `18e1c37` | merge `977376e` via PR #8 |
+| Final | `feature/frontend-specs` -> `main` | merge `24884e1` via PR #9 |
+
+Detalle y evidencia en [ROADMAP-Project-2.md](../docs/entregables/ROADMAP-Project-2.md)
+y [ROADMAP-Project-3.md](../docs/entregables/ROADMAP-Project-3.md).
