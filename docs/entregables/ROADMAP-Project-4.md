@@ -166,7 +166,7 @@ Rama: `feature/agent-skills-fase6-memory-bank`. PR hacia `feature/agent-skills`,
 | 6.2 Actualizar linea base | `stack.md` (comandos y avisos de build tras los cambios), `status.md` (gaps cerrados/abiertos) y `AGENTS.md` si cambio el flujo | Diff | completado 2026-11-17: `stack.md` (jsdom, 8 tests, build sin avisos, trampas de Vite y preview, skills instaladas), `status.md` (gaps cerrados y abiertos, CLS de PROFIT, commits del proyecto 4), `overview.md` (carga diferida) y `AGENTS.md` (enrutado a `progress.md`) |
 | 6.3 Verificacion final | Build, lint y tests en la rama de integracion; `git diff --stat main...feature/agent-skills` para confirmar que no hay reescritura masiva | Salidas | completado 2026-11-17: lint OK, 8/8 tests frontend, build sin avisos (187.77 kB), 15/15 tests backend; frente a `main` el codigo de la app cambia 8 archivos (+72/-23 en `src`), sin reescritura ([evidencia](../validations/07-agent-skills-checks.md#63-verificacion-final)) |
 | 6.4 Commit y PR de fase | Commit del memory bank; PR | Hash y numero de PR | completado 2026-11-17: commits `c8a29a8` (memory bank) y `1b8e111` (verificacion final); PR #16, merge `95ab9e0` |
-| 6.5 PR final a `main` | PR `feature/agent-skills` -> `main` con resumen por skill y lista de PRs de fase; compartir la URL con el instructor | Numero y URL del PR | PR #17 abierto 2026-11-17 (https://github.com/EricDevs/ai-eng-financial-dashboard-context-project/pull/17); falta que el mantenedor comparta la URL con el instructor |
+| 6.5 PR final a `main` | PR `feature/agent-skills` -> `main` con resumen por skill y lista de PRs de fase; compartir la URL con el instructor | Numero y URL del PR | PR #17 (https://github.com/EricDevs/ai-eng-financial-dashboard-context-project/pull/17), merge `3b98558` en `main` 2026-11-17; compartir la URL con el instructor: mantenedor |
 
 Checklist de cierre:
 
@@ -195,6 +195,6 @@ Checklist de cierre:
 | 4 Ecosistema | `feature/agent-skills-fase4-ecosystem` | PR #14 | `2b7f444`, `99e7066`, `7e13588` (merge `894c4eb`) | completada 2026-11-17 |
 | 5 Skill interna | `feature/agent-skills-fase5-internal-skill` | PR #15 | `97bce11`, `ce66108`, `04d13bb` (merge `1c25a99`) | completada 2026-11-17 |
 | 6 Memory bank | `feature/agent-skills-fase6-memory-bank` | PR #16 | `c8a29a8`, `1b8e111` (merge `95ab9e0`) | completada 2026-11-17 |
-| Final | `feature/agent-skills` -> `main` | PR #17 | `241efe4` (cierre del roadmap) | abierto 2026-11-17 |
+| Final | `feature/agent-skills` -> `main` | PR #17 | `241efe4`, `88f4669` (merge `3b98558`) | completada 2026-11-17 |
 
 Definition of Done: las seis fases cerradas con su PR y commits identificables, la rama de integracion con PR abierto contra `main`, cada cambio de codigo trazable a una instruccion de skill y verificado en la app o con los comandos documentados, y ningun resultado inventado. Una fase con un check bloqueado sigue abierta aunque se haya escrito su codigo.

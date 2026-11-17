@@ -3,7 +3,7 @@
 Revision: 2026-11-17, proyecto 4 (mejora guiada por agent skills). Fuentes:
 [07-agent-skills-checks.md](../docs/validations/07-agent-skills-checks.md)
 (evidencia por fase), [ROADMAP-Project-4.md](../docs/entregables/ROADMAP-Project-4.md)
-y los commits de las PR #11-#15. Cada cifra sale de una medicion registrada alli.
+y los commits de las PR #11-#17. Cada cifra sale de una medicion registrada alli.
 
 ## Skills aplicadas
 

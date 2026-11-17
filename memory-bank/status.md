@@ -117,6 +117,8 @@ Proyecto 4 (agent skills), ramas de fase hacia `feature/agent-skills`:
 | 3 `vercel-react-best-practices` | `c06ede3`, `cd45cd2` | merge `23f4da1` via PR #13 |
 | 4 Ecosistema (`vitest`) | `2b7f444`, `99e7066`, `7e13588` | merge `894c4eb` via PR #14 |
 | 5 Skill interna | `97bce11`, `ce66108`, `04d13bb` | merge `1c25a99` via PR #15 |
+| 6 Memory bank y verificacion final | `c8a29a8`, `1b8e111` | merge `95ab9e0` via PR #16 |
+| Final | `feature/agent-skills` -> `main` | merge `3b98558` via PR #17 |
 
 Detalle y evidencia en [ROADMAP-Project-2.md](../docs/entregables/ROADMAP-Project-2.md),
 [ROADMAP-Project-3.md](../docs/entregables/ROADMAP-Project-3.md) y

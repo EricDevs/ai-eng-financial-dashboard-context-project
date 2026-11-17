@@ -34,7 +34,12 @@ _Dashboard de métricas financieras con frontend en React + TypeScript y backend
 └─ /skills
    └─ /<nombre-skill>
       └─ /SKILL.md
+./.skills
+└─ /<nombre-skill>
+   └─ /SKILL.md
 ```
+
+Las skills de la comunidad (`npx skills add`) van en `.agents/skills`; las escritas para este proyecto, en `.skills`.
 
 ## Cómo ejecutar en local
 

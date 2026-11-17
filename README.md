@@ -34,7 +34,12 @@ _Financial metrics dashboard with a React + TypeScript frontend and a FastAPI ba
 └─ /skills
    └─ /<skill-name>
       └─ /SKILL.md
+./.skills
+└─ /<skill-name>
+   └─ /SKILL.md
 ```
+
+Community skills (`npx skills add`) go in `.agents/skills`; skills written for this project go in `.skills`.
 
 ## How to run locally
 
