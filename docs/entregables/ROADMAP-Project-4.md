@@ -56,7 +56,7 @@ Estados de hito: pendiente, en curso, bloqueado, en revision, completado.
 | ID | Decision | Propuesta | Estado |
 | --- | --- | --- | --- |
 | D1 | Donde se instalan las skills comunitarias y si se commitean | Instalacion a nivel proyecto con `npx skills add`, commiteada para que el equipo las recargue; registrar la ruta real que crea la CLI | resuelta 2026-11-16: copia canonica versionada en `.agents/skills/` (ruta que esperan README y `AGENTS.md`) + `skills-lock.json`; symlink local en `.claude/skills/` (ignorado) |
-| D2 | `.skills/` (enunciado) vs `.agents/skills` (AGENTS.md) | Skill interna en `.skills/` como pide el enunciado y anadir esa ruta al enrutado de `AGENTS.md` | pendiente |
+| D2 | `.skills/` (enunciado) vs `.agents/skills` (AGENTS.md) | Skill interna en `.skills/` como pide el enunciado y anadir esa ruta al enrutado de `AGENTS.md` | resuelta 2026-11-17: `.skills/` para skills del proyecto, `.agents/skills` para comunitarias; ambas en `AGENTS.md` |
 | D3 | Anadir lint de accesibilidad (`eslint-plugin-jsx-a11y`) | Solo si la skill lo recomienda y el mantenedor lo aprueba (regla DX) | pendiente |
 | D4 | Archivo de evidencia | `docs/validations/07-agent-skills-checks.md` con prompts, propuestas aceptadas/rechazadas, comandos y salidas | resuelta 2026-11-16: [07-agent-skills-checks.md](../validations/07-agent-skills-checks.md) |
 | D5 | Ramas por fase o rama unica | Ramas por fase, como en el proyecto 3 | resuelta 2026-11-16: ramas por fase |
@@ -129,13 +129,13 @@ Rama: `feature/agent-skills-fase4-ecosystem`. PR hacia `feature/agent-skills`.
 | 4.1 Buscar | `npx skills find <tema>` sobre >= 2 temas relevantes (candidatos: `performance`, `testing`, `typescript`, `seo`, `forms`) | Salidas de los comandos | completado 2026-11-17: `testing`, `seo` y `typescript` buscados; 6 candidatas revisadas leyendo su `SKILL.md` ([evidencia](../validations/07-agent-skills-checks.md#fase-4-explorar-el-ecosistema)) |
 | 4.2 Elegir | Comparar candidatas contra gaps reales del repo ([status.md](../../memory-bank/status.md): sin E2E, chunk grande, riesgo de huso horario sin corregir) y elegir >= 1 | Justificacion escrita | completado 2026-11-17: gaps medidos (SEO 82/100, `strict` con 0 errores, 1 archivo de tests). Primera recomendacion `seo`; el mantenedor cuestiono su valor en un dashboard interno, se busco `vitest` y se eligio `antfu/skills@vitest`. `seo` y `typescript` descartados con motivo |
 | 4.3 Aplicar | Instalar, cargar, auditar y aplicar con el mismo metodo (propuestas trazables, verificacion) | Diff + salidas | completado 2026-11-17: T0-T2 aceptadas y `jsdom` autorizado; `App.test.tsx` con 2 tests (8 en total); 4 roturas provocadas detectadas; lint y build sin avisos; `npm audit` sin vulnerabilidades nuevas |
-| 4.4 Commit y PR | Commit que referencia la skill elegida; PR | Hash y numero de PR | pendiente |
+| 4.4 Commit y PR | Commit que referencia la skill elegida; PR | Hash y numero de PR | completado 2026-11-17: commits `2b7f444` (skill), `99e7066` (jsdom + tests) y `7e13588` (evidencia), PR #14, merge `894c4eb` |
 
 Checklist de cierre:
 
 - [x] >= 2 temas buscados con `npx skills find`.
 - [x] >= 1 skill adicional aplicada con justificacion escrita.
-- [ ] PR de fase 4 mergeado.
+- [x] PR de fase 4 mergeado.
 
 ## 9. Fase 5: skill interna del proyecto
 
@@ -143,17 +143,17 @@ Rama: `feature/agent-skills-fase5-internal-skill`. PR hacia `feature/agent-skill
 
 | Hito | Acciones | Evidencia | Estado |
 | --- | --- | --- | --- |
-| 5.1 Identificar el gap | Con el agente, elegir un gap especifico de este repo que las skills comunitarias no cubren. Candidatos con base en el repo: checks de QA antes del merge (pytest via `uv`, tests/lint/build frontend, `git diff --check`, registro de evidencia), flujo de ramas por fase con merge commit, o convenciones UI del dashboard (Card/Skeleton/tokens, formateadores `en-US`/USD) | Gap elegido y motivo | pendiente |
-| 5.2 Redactar | El agente redacta `.skills/<nombre>/SKILL.md`; el mantenedor lo refina a la estructura de clase: objetivo, inputs, outputs, criterios de aceptacion. Corta y precisa | `SKILL.md` | pendiente |
-| 5.3 Enrutar | Anadir `.skills/` a `AGENTS.md` (D2) | Diff de `AGENTS.md` | pendiente |
-| 5.4 Probar en tarea real | Cargar la skill en una sesion y aplicarla a una tarea real del repo; confirmar que produce guia accionable y ajustar si no | Prompt, salida y ajustes | pendiente |
+| 5.1 Identificar el gap | Con el agente, elegir un gap especifico de este repo que las skills comunitarias no cubren. Candidatos con base en el repo: checks de QA antes del merge (pytest via `uv`, tests/lint/build frontend, `git diff --check`, registro de evidencia), flujo de ramas por fase con merge commit, o convenciones UI del dashboard (Card/Skeleton/tokens, formateadores `en-US`/USD) | Gap elegido y motivo | completado 2026-11-17: elegido por el mantenedor "verificar un cambio del frontend en este entorno" (QA antes del merge), frente a "flujo de ramas y PRs" (mas generico, ya documentado en la seccion 3) |
+| 5.2 Redactar | El agente redacta `.skills/<nombre>/SKILL.md`; el mantenedor lo refina a la estructura de clase: objetivo, inputs, outputs, criterios de aceptacion. Corta y precisa | `SKILL.md` | completado 2026-11-17: `.skills/verify-frontend-change/SKILL.md` v2 (65 lineas). Refinado del mantenedor (sin referencias a la maquina local; disparador "al terminar el cambio") y pruebas de activacion en sesiones nuevas: v1 6/6 y v2 8/8 casos como se esperaba; la v2 anade paso 0 y "Cuando no usarla" ([evidencia](../validations/07-agent-skills-checks.md#pruebas-de-activacion-antes-de-la-tarea-real)) |
+| 5.3 Enrutar | Anadir `.skills/` a `AGENTS.md` (D2) | Diff de `AGENTS.md` | completado 2026-11-17: `AGENTS.md` lista `.agents/skills` y `.skills` y anade la tabla "Skill routing" ([evidencia](../validations/07-agent-skills-checks.md#53-enrutado-en-agentsmd)) |
+| 5.4 Probar en tarea real | Cargar la skill en una sesion y aplicarla a una tarea real del repo; confirmar que produce guia accionable y ajustar si no | Prompt, salida y ajustes | completado 2026-11-17: salto de 8 px de las tarjetas de grafica (causa: `text-base` anula `leading-none` en `CardTitle`); skeletons ajustados, 422 px en ambos estados. La skill detecto Vite sirviendo el modulo viejo y el preview vivo; el CLS 0.014 resulto ser de la tarjeta KPI PROFIT (atribucion de la fase 3 corregida). Sin ajustes a la skill ([evidencia](../validations/07-agent-skills-checks.md#54-tarea-real-salto-de-8-px-en-las-tarjetas-de-grafica)) |
 | 5.5 Commit y PR | Commit de la skill; PR | Hash y numero de PR | pendiente |
 
 Checklist de cierre:
 
-- [ ] Skill en `.skills/` con objetivo, inputs, outputs y criterios de aceptacion.
-- [ ] Guia especifica del proyecto, no relleno generico.
-- [ ] Probada en una tarea real con resultado registrado.
+- [x] Skill en `.skills/` con objetivo, inputs, outputs y criterios de aceptacion.
+- [x] Guia especifica del proyecto, no relleno generico.
+- [x] Probada en una tarea real con resultado registrado.
 - [ ] PR de fase 5 mergeado.
 
 ## 10. Fase 6: memory bank y cierre
@@ -192,7 +192,7 @@ Checklist de cierre:
 | 1 Preparacion y descubrimiento | `feature/agent-skills-fase1-setup` | PR #11 | `442f11d`, `4b9af5b` (merge `3ed7ade`) | completada 2026-11-16 |
 | 2 Accessibility | `feature/agent-skills-fase2-accessibility` | PR #12 | `ff050ce`, `e83eb48` (merge `98e6bc5`) | completada 2026-11-16 |
 | 3 React best practices | `feature/agent-skills-fase3-react-best-practices` | PR #13 | `c06ede3`, `cd45cd2` (merge `23f4da1`) | completada 2026-11-16 |
-| 4 Ecosistema | `feature/agent-skills-fase4-ecosystem` | - | - | pendiente |
+| 4 Ecosistema | `feature/agent-skills-fase4-ecosystem` | PR #14 | `2b7f444`, `99e7066`, `7e13588` (merge `894c4eb`) | completada 2026-11-17 |
 | 5 Skill interna | `feature/agent-skills-fase5-internal-skill` | - | - | pendiente |
 | 6 Memory bank | `feature/agent-skills-fase6-memory-bank` | - | - | pendiente |
 | Final | `feature/agent-skills` -> `main` | - | - | pendiente |

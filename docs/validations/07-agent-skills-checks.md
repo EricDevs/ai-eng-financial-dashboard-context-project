@@ -245,7 +245,7 @@ El tiempo de CPU lo domina React renderizando (chunk principal, ~1.7 s con la CP
 App en ejecucion (`docker compose`, tras `docker compose restart frontend` y comprobar que Vite servia `lazy(`):
 
 - Accesibilidad sin regresiones: Lighthouse 100, 0 fallos; arbol de Chrome por CDP: `h1` + 6 `h2`, las dos graficas `application` con nombre y descripcion, igual que tras la fase 2.
-- Layout: altura de las tarjetas de grafica muestreada cada 25 ms durante la carga (segunda instancia con `fetch` que no resuelve): **414 px constante** entre el `fallback` de `Suspense` y el estado de carga propio de la grafica. Con datos: 422 px; esos 8 px ya existian antes de R1 y corresponden al CLS 0.014 medido antes y despues.
+- Layout: altura de las tarjetas de grafica muestreada cada 25 ms durante la carga (segunda instancia con `fetch` que no resuelve): **414 px constante** entre el `fallback` de `Suspense` y el estado de carga propio de la grafica. Con datos: 422 px; esos 8 px ya existian antes de R1. **Corregido en la fase 5 (5.4)**: el CLS 0.014 no viene de estas tarjetas sino de la tarjeta KPI PROFIT (audit `layout-shifts` de las pasadas de esta fase); ver [5.4](#54-tarea-real-salto-de-8-px-en-las-tarjetas-de-grafica).
 - Las dos graficas se renderizan (2 `svg[role=application]`).
 
 ### R2 tras medir R1
@@ -400,3 +400,93 @@ Archivos que se tocarian: `frontend/package.json` y `frontend/package-lock.json`
 | M4 exportacion inexistente en el `lazy` de `IncomeOutcomeChart` | R1 | falla el test de error (la grafica cargada en diferido no aparece) |
 
 Limite: M4 comprueba que las graficas cargadas en diferido llegan a renderizarse, no que esten en un chunk aparte; eso lo comprueba la salida del build.
+
+## Fase 5: skill interna del proyecto
+
+Fecha: 2026-11-17. Rama: `feature/agent-skills-fase5-internal-skill` (desde `feature/agent-skills` en `894c4eb`). Reglas leidas: WF, FE, DX.
+
+### 5.1 Gap elegido
+
+Candidatas presentadas al mantenedor, todas con evidencia de esta sesion:
+
+| Candidata | Problema real que la motiva | Especificidad |
+| --- | --- | --- |
+| **Verificar un cambio del frontend en este entorno** | Fase 2: Vite en Docker servia modulos viejos (bind mount Windows/OneDrive) y una pasada de Lighthouse se descarto. Fase 3: un `vite preview` huerfano ocupaba el puerto 4173 y la primera tanda "despues" midio el bundle anterior. Fase 4: Lighthouse con la app caida dio `CHROME_INTERSTITIAL_ERROR` (puntuacion `null`); los tests nuevos se validaron rompiendo el codigo | Alta: conocimiento que solo se aprende en este repo y entorno |
+| Flujo de ramas por fase y PRs | Ritual repetido en cada fase (rama de integracion, roadmap con hashes, merge commit); un paso 0 sin registrar el cierre anterior; token de `gh` caducado | Media: convencion generica, ya escrita en la seccion 3 del roadmap |
+| Convenciones de UI del dashboard | — | Baja: cubierta en gran parte por la regla FE |
+
+Decision del mantenedor: la primera ("checks de testing/QA antes del merge" en el enunciado).
+
+### 5.2 Borrador
+
+[.skills/verify-frontend-change/SKILL.md](../../.skills/verify-frontend-change/SKILL.md), 57 lineas: objetivo, inputs, 5 pasos (checks de comandos, confirmar el codigo servido, mediciones de produccion, demostrar que los tests detectan roturas, registrar), outputs, criterios de aceptacion y "no hacer". Cada paso cita el fallo real que lo motiva; solo usa comandos ejecutados en esta sesion. Pendiente de refinado del mantenedor.
+
+### Pruebas de activacion (antes de la tarea real)
+
+Pedidas por el mantenedor: comprobar que la skill se activa cuando debe y **no** cuando no debe, y mejorarla si falla.
+
+Metodo: la skill se hizo visible a Claude Code con una junction local `.claude/skills/verify-frontend-change` -> `.skills/verify-frontend-change` (`.claude/` esta ignorado; `ln -s` fallo por permisos de Windows y se uso `New-Item -ItemType Junction`, como hace `npx skills`). Cada caso se ejecuto en una **sesion nueva e independiente**, sin el contexto de esta conversacion:
+
+```bash
+claude -p "<caso>" --output-format stream-json --verbose \
+  --disallowedTools Bash Edit Write NotebookEdit PowerShell \
+  --max-budget-usd 0.60 --no-session-persistence
+```
+
+Las herramientas que cambian o ejecutan cosas estaban bloqueadas: solo se observa si la sesion invoca `Skill(verify-frontend-change)` (detectado en el `stream-json`). En todas las sesiones la skill aparecia listada, asi que no activarla fue una decision del agente.
+
+| Caso | Solicitud | Esperado | v1 | v2 |
+| --- | --- | --- | --- | --- |
+| P1 | "Acabo de cambiar el color del texto de los ejes en `.../income-outcome-chart.tsx`. Comprueba que el cambio funciona." | Activar | Activada | Activada |
+| P2 | "Termine de anadir un tooltip a la tarjeta de KPI del dashboard. Puedes confirmar que no rompi nada?" | Activar | Activada | Activada |
+| P3 | "Ya termine de anadir la meta description en `frontend/index.html`. Esta listo?" | Activar | — | Activada |
+| N1 | "Explicame que hace `computeKPIs` en `frontend/src/lib/financial-utils.ts`." | No | No | No |
+| N2 | "Acabo de cambiar `backend/app/routes.py`. Verifica que funciona." | No | No | No |
+| N3 | "Que comando uso para hacer el build del frontend?" | No | No | No |
+| N4 | "Actualice `frontend/specs/README.md` con una aclaracion. Revisa que este bien." | No | No | No |
+| N5 | "Revisa si `.../kpi-card.tsx` sigue las convenciones del proyecto." | No | — | No |
+
+Fallos de la v1 detectados leyendo las respuestas (no en la activacion):
+
+1. Los casos P eran ficticios (no habia cambio en el codigo). P1 y P2 lo detectaron mirando `git status` y se negaron a dar un "todo pasa", pero **por iniciativa propia**: la skill no pedia confirmar que el cambio existe. Mejora v2: **paso 0** (`git diff --stat -- frontend/` y `git status --short frontend/`; si no aparece el cambio, decirlo y parar) y criterio de aceptacion correspondiente. En v2, P1-P3 aplicaron ese paso.
+2. La descripcion v1 ("cualquier cambio en `frontend/`") incluia tecnicamente documentacion como `frontend/specs/README.md`. N4 acerto por criterio del agente, no por la skill. Mejora v2: la descripcion acota a codigo (`frontend/src`, `frontend/index.html`, configuracion) y dice cuando no usarla; nueva seccion "Cuando no usarla" con ejemplos (preguntas, documentacion bajo `frontend/`, backend).
+
+Refinado previo del mantenedor (sobre el borrador): se quitaron las referencias a Windows/OneDrive (describian la maquina local, no el proyecto; la causa no se aislo) y el paso de reinicio paso a ser condicional ("si el modulo servido no contiene el cambio"); la descripcion dejo de decir "antes de commit o merge" (el disparador es terminar el cambio).
+
+Limites: una sola pasada por caso (el modelo no es determinista); misma configuracion de modelo y plugins que el entorno del mantenedor; estas pruebas no ejecutan los pasos de la skill (herramientas bloqueadas). La ejecucion real es el hito 5.4.
+
+### 5.3 Enrutado en AGENTS.md
+
+[AGENTS.md](../../AGENTS.md) ahora lista `./.agents/skills` (comunitarias) y `./.skills` (del proyecto) y tiene una tabla "Skill routing" que apunta a `verify-frontend-change` con su disparador. Decision D2 resuelta: la skill vive en `.skills/` como pide el enunciado. Para que Claude Code la descubra en una maquina hace falta un enlace local `.claude/skills/verify-frontend-change` -> `.skills/verify-frontend-change` (`.claude/` esta ignorado por git); otros agentes la encuentran via `AGENTS.md`.
+
+### 5.4 Tarea real: salto de 8 px en las tarjetas de grafica
+
+Tarea: el gap de layout anotado en la fase 3 (tarjeta de grafica 414 px cargando, 422 px con datos). Se cargo la skill con `Skill(verify-frontend-change)` en esta sesion, con herramientas habilitadas, y se siguieron sus pasos.
+
+**Causa (medida antes de editar, app en Docker, viewport 1280x900, script CDP `card-heights.mjs`):** el contenido mide 280 px en ambos estados; la diferencia esta en la cabecera (60 -> 68 px). `CardTitle` declara `leading-none`, pero las graficas le pasan `text-base` y `cn()` (tailwind-merge) descarta `leading-none`: el titulo queda con interlineado de 24 px. Skeleton: 20 + 8 (gap) + 4 (`mt-1`) + 12 = 44 px; texto: 24 + 8 + 20 = 52 px.
+
+**Cambio:** en los tres skeletons de cabecera de grafica ([App.tsx](../../frontend/src/App.tsx) `ChartFallback`, [income-outcome-chart.tsx](../../frontend/src/components/dashboard/income-outcome-chart.tsx), [profit-percent-chart.tsx](../../frontend/src/components/dashboard/profit-percent-chart.tsx)) `h-5 w-52` -> `h-5 w-52 my-0.5` (caja de 24 px) y `h-3 w-64 mt-1` -> `h-3 w-64 my-1` (caja de 20 px). No cambia lo que se ve con datos.
+
+| Paso de la skill | Resultado |
+| --- | --- |
+| 0 Cambio en el diff | `git diff --stat -- frontend/`: 3 archivos, 6+/6- |
+| 1 Lint, tests, build | Lint OK; 8/8 tests; build sin avisos; chunk principal 187.76 -> 187.77 kB |
+| 2 Codigo servido | **Trampa reproducida**: el archivo del contenedor tenia `my-0.5` pero `curl /src/App.tsx` (y las dos graficas) servia `h-5 w-52` / `mt-1`. `docker compose restart frontend` -> los tres modulos sirven el cambio |
+| 2 Medicion en la app | Tarjeta de grafica: cargando 414 -> **422 px**, con datos 422 px; tambien el `fallback` de `Suspense` (modulos de grafica retenidos): 422 px |
+| 3 Produccion | Build fuera del repo; preview sirve `index-BF9UIaRF.js` (el del build). Lighthouse rendimiento x3, ninguna con `runtimeError` |
+| 3 Puerto 4173 | **Trampa reproducida**: tras `TaskStop` el puerto seguia en LISTEN (PID con `vite.js preview`); detenido por PID, puerto libre |
+| 4 Tests nuevos | No aplica: el cambio no anade tests |
+
+Lighthouse rendimiento (mismo metodo que la fase 3):
+
+| Pasada | Puntuacion | FCP | LCP | TBT | CLS | Nodo desplazado |
+| --- | --- | --- | --- | --- | --- | --- |
+| 1 | 87 | 1.9 s | 2.7 s | 360 ms | 0.014 | tarjeta KPI PROFIT |
+| 2 | 80 | 2.0 s | 2.9 s | 520 ms | 0 | - |
+| 3 | 83 | 1.9 s | 2.8 s | 460 ms | 0 | - |
+
+Hallazgo: releyendo los JSON de la fase 3 con el audit `layout-shifts`, las 4 pasadas con CLS 0.014 (1 antes y 3 despues de R1) desplazaban la **tarjeta KPI PROFIT**, nunca las de grafica. La atribucion de la fase 3 era incorrecta (corregida alli). Este cambio iguala la altura de las tarjetas de grafica, pero **no mejora el CLS medido por Lighthouse**: el 0.014 intermitente sigue y su causa (PROFIT) no se investigo en esta tarea. Las puntuaciones y TBT estan dentro del ruido entre pasadas.
+
+Valoracion de la skill en la tarea real: dio una guia accionable y detecto dos trampas que habrian invalidado el resultado (Vite sirviendo el modulo viejo y el preview vivo). La regla "no presentar ruido como mejora" llevo a revisar que nodo se desplazaba en vez de dar el CLS por resuelto. No se ajusto la skill.
+
+Limites: medicion de alturas a 1280x900 en Chromium headless; no se probaron otros anchos ni navegadores; el CLS de PROFIT queda sin causa.
