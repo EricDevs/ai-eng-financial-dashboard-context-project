@@ -147,14 +147,14 @@ Rama: `feature/agent-skills-fase5-internal-skill`. PR hacia `feature/agent-skill
 | 5.2 Redactar | El agente redacta `.skills/<nombre>/SKILL.md`; el mantenedor lo refina a la estructura de clase: objetivo, inputs, outputs, criterios de aceptacion. Corta y precisa | `SKILL.md` | completado 2026-11-17: `.skills/verify-frontend-change/SKILL.md` v2 (65 lineas). Refinado del mantenedor (sin referencias a la maquina local; disparador "al terminar el cambio") y pruebas de activacion en sesiones nuevas: v1 6/6 y v2 8/8 casos como se esperaba; la v2 anade paso 0 y "Cuando no usarla" ([evidencia](../validations/07-agent-skills-checks.md#pruebas-de-activacion-antes-de-la-tarea-real)) |
 | 5.3 Enrutar | Anadir `.skills/` a `AGENTS.md` (D2) | Diff de `AGENTS.md` | completado 2026-11-17: `AGENTS.md` lista `.agents/skills` y `.skills` y anade la tabla "Skill routing" ([evidencia](../validations/07-agent-skills-checks.md#53-enrutado-en-agentsmd)) |
 | 5.4 Probar en tarea real | Cargar la skill en una sesion y aplicarla a una tarea real del repo; confirmar que produce guia accionable y ajustar si no | Prompt, salida y ajustes | completado 2026-11-17: salto de 8 px de las tarjetas de grafica (causa: `text-base` anula `leading-none` en `CardTitle`); skeletons ajustados, 422 px en ambos estados. La skill detecto Vite sirviendo el modulo viejo y el preview vivo; el CLS 0.014 resulto ser de la tarjeta KPI PROFIT (atribucion de la fase 3 corregida). Sin ajustes a la skill ([evidencia](../validations/07-agent-skills-checks.md#54-tarea-real-salto-de-8-px-en-las-tarjetas-de-grafica)) |
-| 5.5 Commit y PR | Commit de la skill; PR | Hash y numero de PR | pendiente |
+| 5.5 Commit y PR | Commit de la skill; PR | Hash y numero de PR | completado 2026-11-17: commits `97bce11` (skill + `AGENTS.md`), `ce66108` (skeletons), `04d13bb` (evidencia); PR #15, merge `1c25a99` |
 
 Checklist de cierre:
 
 - [x] Skill en `.skills/` con objetivo, inputs, outputs y criterios de aceptacion.
 - [x] Guia especifica del proyecto, no relleno generico.
 - [x] Probada en una tarea real con resultado registrado.
-- [ ] PR de fase 5 mergeado.
+- [x] PR de fase 5 mergeado.
 
 ## 10. Fase 6: memory bank y cierre
 
@@ -162,9 +162,9 @@ Rama: `feature/agent-skills-fase6-memory-bank`. PR hacia `feature/agent-skills`,
 
 | Hito | Acciones | Evidencia | Estado |
 | --- | --- | --- | --- |
-| 6.1 `progress.md` | Crear `memory-bank/progress.md`: skills aplicadas, cambios verificados, skill del ecosistema elegida (y por que), skill interna creada | Archivo | pendiente |
-| 6.2 Actualizar linea base | `stack.md` (comandos y avisos de build tras los cambios), `status.md` (gaps cerrados/abiertos) y `AGENTS.md` si cambio el flujo | Diff | pendiente |
-| 6.3 Verificacion final | Build, lint y tests en la rama de integracion; `git diff --stat main...feature/agent-skills` para confirmar que no hay reescritura masiva | Salidas | pendiente |
+| 6.1 `progress.md` | Crear `memory-bank/progress.md`: skills aplicadas, cambios verificados, skill del ecosistema elegida (y por que), skill interna creada | Archivo | completado 2026-11-17: [progress.md](../../memory-bank/progress.md) con skills aplicadas, tabla de cambios verificados antes/despues, por que `vitest` y por que la skill interna, y lo no verificado |
+| 6.2 Actualizar linea base | `stack.md` (comandos y avisos de build tras los cambios), `status.md` (gaps cerrados/abiertos) y `AGENTS.md` si cambio el flujo | Diff | completado 2026-11-17: `stack.md` (jsdom, 8 tests, build sin avisos, trampas de Vite y preview, skills instaladas), `status.md` (gaps cerrados y abiertos, CLS de PROFIT, commits del proyecto 4), `overview.md` (carga diferida) y `AGENTS.md` (enrutado a `progress.md`) |
+| 6.3 Verificacion final | Build, lint y tests en la rama de integracion; `git diff --stat main...feature/agent-skills` para confirmar que no hay reescritura masiva | Salidas | completado 2026-11-17: lint OK, 8/8 tests frontend, build sin avisos (187.77 kB), 15/15 tests backend; frente a `main` el codigo de la app cambia 8 archivos (+72/-23 en `src`), sin reescritura ([evidencia](../validations/07-agent-skills-checks.md#63-verificacion-final)) |
 | 6.4 Commit y PR de fase | Commit del memory bank; PR | Hash y numero de PR | pendiente |
 | 6.5 PR final a `main` | PR `feature/agent-skills` -> `main` con resumen por skill y lista de PRs de fase; compartir la URL con el instructor | Numero y URL del PR | pendiente |
 
@@ -193,7 +193,7 @@ Checklist de cierre:
 | 2 Accessibility | `feature/agent-skills-fase2-accessibility` | PR #12 | `ff050ce`, `e83eb48` (merge `98e6bc5`) | completada 2026-11-16 |
 | 3 React best practices | `feature/agent-skills-fase3-react-best-practices` | PR #13 | `c06ede3`, `cd45cd2` (merge `23f4da1`) | completada 2026-11-16 |
 | 4 Ecosistema | `feature/agent-skills-fase4-ecosystem` | PR #14 | `2b7f444`, `99e7066`, `7e13588` (merge `894c4eb`) | completada 2026-11-17 |
-| 5 Skill interna | `feature/agent-skills-fase5-internal-skill` | - | - | pendiente |
+| 5 Skill interna | `feature/agent-skills-fase5-internal-skill` | PR #15 | `97bce11`, `ce66108`, `04d13bb` (merge `1c25a99`) | completada 2026-11-17 |
 | 6 Memory bank | `feature/agent-skills-fase6-memory-bank` | - | - | pendiente |
 | Final | `feature/agent-skills` -> `main` | - | - | pendiente |
 

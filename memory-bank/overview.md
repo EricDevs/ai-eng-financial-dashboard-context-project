@@ -1,6 +1,6 @@
 # Overview
 
-Revision: 2026-11-16, cierre del proyecto 3. Fuentes primarias: [App.tsx](../frontend/src/App.tsx),
+Revision: 2026-11-17, cierre del proyecto 4. Fuentes primarias: [App.tsx](../frontend/src/App.tsx),
 [routes.py](../backend/app/routes.py), [README.md](../README.md) y el
 [informe canonico](../docs/validations/03-verification-resume.md) de fase 1.
 
@@ -13,6 +13,8 @@ de beneficio. Implementado en
 [kpi-row.tsx](../frontend/src/components/dashboard/kpi-row.tsx),
 [income-outcome-chart.tsx](../frontend/src/components/dashboard/income-outcome-chart.tsx)
 y [profit-percent-chart.tsx](../frontend/src/components/dashboard/profit-percent-chart.tsx).
+Desde el proyecto 4 las graficas se cargan en diferido (`React.lazy`) y la UI
+anuncia carga y error a tecnologias de asistencia (ver [progress.md](progress.md)).
 No hay evidencia de un usuario o cliente real; no se atribuye a ninguno.
 
 ## Flujo UI/API

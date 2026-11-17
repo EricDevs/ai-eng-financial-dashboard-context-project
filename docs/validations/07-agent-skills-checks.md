@@ -490,3 +490,30 @@ Hallazgo: releyendo los JSON de la fase 3 con el audit `layout-shifts`, las 4 pa
 Valoracion de la skill en la tarea real: dio una guia accionable y detecto dos trampas que habrian invalidado el resultado (Vite sirviendo el modulo viejo y el preview vivo). La regla "no presentar ruido como mejora" llevo a revisar que nodo se desplazaba en vez de dar el CLS por resuelto. No se ajusto la skill.
 
 Limites: medicion de alturas a 1280x900 en Chromium headless; no se probaron otros anchos ni navegadores; el CLS de PROFIT queda sin causa.
+
+## Fase 6: memory bank y cierre
+
+Fecha: 2026-11-17. Rama: `feature/agent-skills-fase6-memory-bank` (desde `feature/agent-skills` en `1c25a99`). Reglas leidas: WF.
+
+### 6.3 Verificacion final
+
+Sobre `1c25a99` (rama de integracion con las fases 1-5; los cambios de la fase 6 son solo documentacion). La skill `verify-frontend-change` no se uso: verifica un cambio recien terminado y su paso 0 se detendria, porque no hay diff del frontend en el arbol de trabajo.
+
+| Comando | Resultado |
+| --- | --- |
+| `npm --prefix frontend run lint` | exit 0 |
+| `npm --prefix frontend test` | 2 archivos, 8 passed |
+| `npm --prefix frontend run build` | exit 0, sin avisos; chunk principal 187.77 kB, `LineChart-*.js` 342.30 kB (igual que la linea base de [stack.md](../../memory-bank/stack.md)) |
+| `uv run --no-project --python 3.13 --with-requirements backend/requirements.txt pytest backend/tests/test_routes.py -q` | 15 passed, 1 aviso: `StarletteDeprecationWarning` de httpx con `TestClient` (preexistente, ya listado en [status.md](../../memory-bank/status.md)) |
+
+Alcance frente a `main` (`git diff --stat origin/main...HEAD`), para comprobar que no hubo reescritura:
+
+| Area | Archivos | Lineas |
+| --- | --- | --- |
+| Codigo de la app (`frontend/src` sin tests, `index.html`) | 8 | 72 anadidas, 23 eliminadas en `src` + 1 linea en `index.html` |
+| Tests (`App.test.tsx`) | 1 | 71 anadidas |
+| Dependencias (`package.json`, `package-lock.json`) | 2 | `jsdom` (1 linea + 345 del lockfile, generadas por npm) |
+| Skills comunitarias (`.agents/skills/`, `skills-lock.json`) | 100 | 13426 anadidas, contenido de terceros sin editar |
+| Skill interna, `AGENTS.md`, roadmap y evidencia | 4 | documentacion |
+
+El cambio mas grande en codigo es `App.tsx` (50 lineas: carga diferida, `ChartFallback`, `role="alert"`, `aria-busy`). El backend no se toco.
