@@ -165,25 +165,25 @@ Rama: `feature/agent-skills-fase6-memory-bank`. PR hacia `feature/agent-skills`,
 | 6.1 `progress.md` | Crear `memory-bank/progress.md`: skills aplicadas, cambios verificados, skill del ecosistema elegida (y por que), skill interna creada | Archivo | completado 2026-11-17: [progress.md](../../memory-bank/progress.md) con skills aplicadas, tabla de cambios verificados antes/despues, por que `vitest` y por que la skill interna, y lo no verificado |
 | 6.2 Actualizar linea base | `stack.md` (comandos y avisos de build tras los cambios), `status.md` (gaps cerrados/abiertos) y `AGENTS.md` si cambio el flujo | Diff | completado 2026-11-17: `stack.md` (jsdom, 8 tests, build sin avisos, trampas de Vite y preview, skills instaladas), `status.md` (gaps cerrados y abiertos, CLS de PROFIT, commits del proyecto 4), `overview.md` (carga diferida) y `AGENTS.md` (enrutado a `progress.md`) |
 | 6.3 Verificacion final | Build, lint y tests en la rama de integracion; `git diff --stat main...feature/agent-skills` para confirmar que no hay reescritura masiva | Salidas | completado 2026-11-17: lint OK, 8/8 tests frontend, build sin avisos (187.77 kB), 15/15 tests backend; frente a `main` el codigo de la app cambia 8 archivos (+72/-23 en `src`), sin reescritura ([evidencia](../validations/07-agent-skills-checks.md#63-verificacion-final)) |
-| 6.4 Commit y PR de fase | Commit del memory bank; PR | Hash y numero de PR | pendiente |
+| 6.4 Commit y PR de fase | Commit del memory bank; PR | Hash y numero de PR | completado 2026-11-17: commits `c8a29a8` (memory bank) y `1b8e111` (verificacion final); PR #16, merge `95ab9e0` |
 | 6.5 PR final a `main` | PR `feature/agent-skills` -> `main` con resumen por skill y lista de PRs de fase; compartir la URL con el instructor | Numero y URL del PR | pendiente |
 
 Checklist de cierre:
 
-- [ ] Memory bank refleja con precision el trabajo de la sesion.
-- [ ] Verificacion final ejecutada y registrada.
+- [x] Memory bank refleja con precision el trabajo de la sesion.
+- [x] Verificacion final ejecutada y registrada.
 - [ ] PR final abierto y URL compartida.
 
 ## 11. Criterios de evaluacion (checklist global)
 
-- [ ] `accessibility` y `vercel-react-best-practices` cargadas y aplicadas; mejoras visibles y trazables a sus instrucciones.
-- [ ] Accesibilidad verificada: teclado, `aria-*` donde haga falta, `alt` presente, contraste basico.
-- [ ] Build del frontend pasa con el comando documentado, sin advertencias nuevas injustificadas.
-- [ ] >= 1 skill adicional descubierta con `npx skills find` y aplicada con justificacion escrita.
-- [ ] Skill interna en `.skills/` bien estructurada (objetivo, inputs, outputs, criterios de aceptacion) y especifica del proyecto.
-- [ ] Memory bank refleja con precision el trabajo de la sesion.
-- [ ] Cambios en `feature/agent-skills` con commits claros, idealmente uno por skill aplicada.
-- [ ] El trabajo se lee como mejora impulsada por agente y verificada, sin ediciones masivas sin revisar.
+- [x] `accessibility` y `vercel-react-best-practices` cargadas y aplicadas; mejoras visibles y trazables a sus instrucciones.
+- [x] Accesibilidad verificada: teclado, `aria-*` donde haga falta, `alt` presente, contraste basico.
+- [x] Build del frontend pasa con el comando documentado, sin advertencias nuevas injustificadas.
+- [x] >= 1 skill adicional descubierta con `npx skills find` y aplicada con justificacion escrita.
+- [x] Skill interna en `.skills/` bien estructurada (objetivo, inputs, outputs, criterios de aceptacion) y especifica del proyecto.
+- [x] Memory bank refleja con precision el trabajo de la sesion.
+- [x] Cambios en `feature/agent-skills` con commits claros, idealmente uno por skill aplicada.
+- [x] El trabajo se lee como mejora impulsada por agente y verificada, sin ediciones masivas sin revisar.
 
 ## 12. Control de cierre
 
@@ -194,7 +194,7 @@ Checklist de cierre:
 | 3 React best practices | `feature/agent-skills-fase3-react-best-practices` | PR #13 | `c06ede3`, `cd45cd2` (merge `23f4da1`) | completada 2026-11-16 |
 | 4 Ecosistema | `feature/agent-skills-fase4-ecosystem` | PR #14 | `2b7f444`, `99e7066`, `7e13588` (merge `894c4eb`) | completada 2026-11-17 |
 | 5 Skill interna | `feature/agent-skills-fase5-internal-skill` | PR #15 | `97bce11`, `ce66108`, `04d13bb` (merge `1c25a99`) | completada 2026-11-17 |
-| 6 Memory bank | `feature/agent-skills-fase6-memory-bank` | - | - | pendiente |
+| 6 Memory bank | `feature/agent-skills-fase6-memory-bank` | PR #16 | `c8a29a8`, `1b8e111` (merge `95ab9e0`) | completada 2026-11-17 |
 | Final | `feature/agent-skills` -> `main` | - | - | pendiente |
 
 Definition of Done: las seis fases cerradas con su PR y commits identificables, la rama de integracion con PR abierto contra `main`, cada cambio de codigo trazable a una instruccion de skill y verificado en la app o con los comandos documentados, y ningun resultado inventado. Una fase con un check bloqueado sigue abierta aunque se haya escrito su codigo.
