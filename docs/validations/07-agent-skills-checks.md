@@ -251,3 +251,152 @@ App en ejecucion (`docker compose`, tras `docker compose restart frontend` y com
 ### R2 tras medir R1
 
 No se recomienda. R2 adelantaria la peticion de `/api/metrics`, pero tras R1 la peticion termina a los ~193 ms observados, mientras que el retraso del LCP (~2.3 s simulados) es tiempo de CPU del render de React. Adelantar la red no acorta ese tiempo, y R2 anade riesgo (peticion duplicada si el `preload` no coincide con el `fetch`, y respetar `VITE_API_BASE_URL` en `index.html`). **Descartado por el mantenedor** el 2026-11-16 con este motivo.
+
+## Fase 4: explorar el ecosistema
+
+Fecha: 2026-11-17. Rama: `feature/agent-skills-fase4-ecosystem` (desde `feature/agent-skills` en `23f4da1`). Reglas leidas: WF, FE, DX. Temas pedidos por el mantenedor: `testing`, `seo` y `typescript` (los tres primeros de la lista de gaps; `performance` ya cubierto en la fase 3 y `forms` sin formularios en la app).
+
+### 4.1 Busqueda (`npx -y skills find <tema>`)
+
+Primeros resultados devueltos, en orden:
+
+| Tema | Skill | Instalaciones |
+| --- | --- | --- |
+| `testing` | `anthropics/skills@webapp-testing` | 207.2K |
+| | `clerk/skills@clerk-testing` | 48.9K |
+| | `coreyhaines31/marketingskills@ab-testing` | 89.3K |
+| | `addyosmani/agent-skills@browser-testing-with-devtools` | 72.2K |
+| | `github/awesome-copilot@webapp-testing` | 12.6K |
+| `seo` | `coreyhaines31/marketingskills@seo-audit` | 257.2K |
+| | `coreyhaines31/marketingskills@ai-seo` | 166.9K |
+| | `coreyhaines31/marketingskills@programmatic-seo` | 163.3K |
+| | `addyosmani/web-quality-skills@seo` | 56.3K |
+| | `iannuttall/seo@seo` | 33.5K |
+| `typescript` | `wshobson/agents@typescript-advanced-types` | 100.4K |
+| | `github/awesome-copilot@javascript-typescript-jest` | 14.6K |
+| | `jeffallan/claude-skills@typescript-pro` | 14.9K |
+| | `langchain-ai/langchain-skills@*-typescript-quickstart` | 5.9K |
+
+Descartadas sin leer por no corresponder al stack o al gap: `clerk-testing` (autenticacion Clerk), `ab-testing` (marketing), `golang-testing`, `limrun-*` (movil), `javascript-typescript-jest` (Jest; el repo usa Vitest), `langchain-*` y `typescript-mcp-server-generator` (otros dominios), `ai-seo` y `programmatic-seo` (contenido a escala).
+
+### Revision de candidatas (`SKILL.md` leido en GitHub antes de instalar)
+
+| Skill | Que cubre | Requisitos para aplicarla aqui |
+| --- | --- | --- |
+| `anthropics/skills@webapp-testing` | Pruebas de apps web con Playwright: arbol de decision, `scripts/with_server.py`, reconocimiento y accion | Python + Playwright y navegadores; infraestructura E2E nueva |
+| `addyosmani/agent-skills@browser-testing-with-devtools` | Pruebas en navegador real con Chrome DevTools MCP (DOM, consola, red, rendimiento) | "Requires the chrome-devtools MCP server to be configured" |
+| `addyosmani/web-quality-skills@seo` (MIT, 409 lineas) | Flujo de auditoria basado en evidencia (Lighthouse SEO, luego senales que Lighthouse no ve, corregir y repetir); crawlability, `robots.txt`, titulos, `meta description`, datos estructurados | Ninguno: Lighthouse CLI ya usado en fases 2 y 3 |
+| `coreyhaines31/marketingskills@seo-audit` | Auditoria SEO de marketing: indexacion, Google updates, hreflang, SEO local | Orientada a sitios publicos con trafico |
+| `wshobson/agents@typescript-advanced-types` | Genericos, tipos condicionales, mapped types, utilidades | Ninguno, pero el repo solo tiene tipos simples |
+| `jeffallan/claude-skills@typescript-pro` (MIT) | Tipos avanzados, branded types, tRPC; `tsconfig` recomendado con `strict`, `noUncheckedIndexedAccess`, `exactOptionalPropertyTypes`, `NodeNext`, `declaration` | El `tsconfig` recomendado es de libreria/Node (`NodeNext`, `declaration`), no de app Vite |
+
+### Medicion del gap de cada tema
+
+| Tema | Medicion | Resultado |
+| --- | --- | --- |
+| `typescript` | `npx tsc -p tsconfig.app.json --noEmit --strict` | **exit 0, 0 errores**: el codigo ya cumple `strict` aunque no este declarado. Con opciones extra de `typescript-pro`: `noUncheckedIndexedAccess` 2 errores (ambos en `financial-utils.ts:57`, dominio FIN), `exactOptionalPropertyTypes` 4, `noImplicitOverride` 0 |
+| `seo` | `npx -y lighthouse@12 http://localhost:4173 --only-categories=seo` sobre el build de produccion actual (`index-B7QkJpr-.js`) | **82/100**. Fallos: `meta-description` (no existe en `index.html`) y `robots-txt` (15 errores: `public/` solo tiene `favicon.svg`; la SPA responde `/robots.txt` con `index.html`, linea 1 `<!doctype html>` "Syntax not understood"). Pasan: `is-crawlable`, `document-title`, `http-status-code`, `link-text`, `crawlable-anchors`, `hreflang` |
+| `testing` | Inventario de tests | 1 archivo (`financial-utils.test.ts`, 6 tests de utilidades); ninguno de componentes ni de navegador ([status.md](../../memory-bank/status.md)) |
+
+Iteracion real de la medicion SEO: la primera ejecucion contra `http://localhost:5173` devolvio `CHROME_INTERSTITIAL_ERROR` (score `null`, todas las auditorias en error) porque Docker Desktop no estaba en marcha (`docker compose ps`: no responde `dockerDesktopLinuxEngine`). Se descarto y se midio sobre `vite preview` del build de produccion, valido para auditorias de HTML; la API no hace falta para ellas. Al parar el preview se reprodujo el proceso `node` huerfano de la fase 3 (PID 8032) y se termino.
+
+### 4.2 Eleccion y justificacion
+
+**Recomendada: `addyosmani/web-quality-skills@seo`.**
+
+1. Gap real y medido: SEO 82/100 con dos fallos concretos, y la falta de `meta description` ya quedo pendiente en la fase 3 (la skill de Vercel no cubre metadatos).
+2. Encaje con el stack: es web generica; los cambios esperados son `index.html` y un `public/robots.txt`, sin codigo de Next.
+3. Fuente: mismo autor y familia que `accessibility` (fase 2), con el mismo flujo de auditoria basado en evidencia y la misma herramienta (Lighthouse CLI).
+4. Cambio pequeno y verificable: sin dependencias nuevas (regla DX); se verifica repitiendo la misma auditoria.
+5. No duplica: `accessibility` cubre `title` y `lang`; `vercel-react-best-practices` no cubre metadatos.
+
+Punto abierto para aplicarla: es un dashboard ejecutivo interno. La propia skill contempla bloquear areas privadas (`Disallow`, `noindex`); habra que decidir si el `robots.txt` permite o bloquea la indexacion. Seguridad: la evaluacion Gen / Socket / Snyk se mostrara al instalar.
+
+**Descartadas:**
+
+- `testing`: es el gap de mas valor a largo plazo, pero las candidatas exigen infraestructura nueva (Playwright con Python, o un servidor MCP de Chrome DevTools) y ninguna usa Vitest, el runner del repo. Montar E2E es un cambio de alcance que requiere acuerdo aparte ([status.md](../../memory-bank/status.md): la ausencia de E2E no autoriza construirlo) y no es un cambio pequeno trazable. Queda como prioridad futura.
+- `typescript`: el gap medido es casi nulo (0 errores con `strict`). Las skills encontradas tratan tipos avanzados y tRPC, que este repo no usa, y el `tsconfig` de `typescript-pro` es de libreria Node, no de app Vite. Activar `strict` seria un cambio de una linea que no necesita una skill.
+
+### Revision de la eleccion: valor de SEO en un dashboard interno
+
+El mantenedor cuestiono el valor de SEO en un dashboard financiero interno. Analisis: el posicionamiento no aporta nada; lo que si aporta es **evitar la indexacion** si la app se expone en una URL publica (p. ej. una preview), con `robots.txt` (`Disallow`) y `<meta name="robots" content="noindex">`, que la skill contempla. Consecuencia: la puntuacion SEO de Lighthouse bajaria (`is-crawlable` falla a proposito con `noindex`), asi que la mejora no se mide por la puntuacion. La `meta description` tendria poco valor (vistas previas de enlaces).
+
+Como el descarte de `testing` se debia a que las candidatas exigian Playwright o un servidor MCP, se busco una skill para **Vitest**, el runner que ya usa el repo.
+
+`npx -y skills find vitest` (primeros resultados): `antfu/skills@vitest` 48.4K, `pproenca/dot-skills@vitest` 7.7K, `sentimony/skills@vitest` 4.6K, `onmax/nuxt-skills@vitest` 3.3K, `supabase/supabase@vitest` 2.8K. `npx -y skills find "react testing library"`: la mayor es `itechmeat/llm-code@react-testing-library` con 1.4K; el resto por debajo de 500.
+
+`antfu/skills@vitest` (`SKILL.md` de 55 lineas + 21 referencias): autor Anthony Fu (equipo de Vitest), generada desde el repositorio oficial de Vitest. Es una referencia de la API de Vitest (config, CLI, `expect`, hooks, mocking, snapshots, cobertura, entornos `jsdom`/`happy-dom`); no es especifica de React. Esta basada en **Vitest 5.1.0-beta.1**; el repo usa `vitest ^4.1.4`.
+
+Estado del repo para tests de componentes: no hay `vitest.config.*` ni bloque `test` en `vite.config.ts` (entorno por defecto `node`); no hay `jsdom`, `happy-dom` ni `@testing-library/*` en `package.json`.
+
+| Criterio | `seo` (no indexar) | `antfu/skills@vitest` (tests de componentes) |
+| --- | --- | --- |
+| Gap | Riesgo de indexacion si se expone; `meta description` ausente | Ningun test de componentes; las mejoras de las fases 2 y 3 no estan protegidas |
+| Valor para un dashboard interno | Bajo-medio (privacidad) | Alto (evita regresiones de accesibilidad y de la carga diferida) |
+| Fuente | Familia de `accessibility` | Equipo de Vitest |
+| Dependencias nuevas | Ninguna | Al menos un entorno DOM (`jsdom` o `happy-dom`), probablemente `@testing-library/react`: requiere acuerdo (regla DX) |
+| Riesgo | Bajo; la puntuacion SEO baja a proposito | Medio: la skill describe Vitest 5.1 beta y el repo usa 4.1; cada API usada debe comprobarse en la version instalada |
+| Tamano del cambio | `index.html` + `public/robots.txt` | Configuracion de entorno + 1-2 archivos de test |
+
+**Decision del mantenedor (2026-11-17): `antfu/skills@vitest`.** `seo` queda descartada por su bajo valor en un dashboard interno; la opcion "no indexar" se documenta como alternativa pequena por si la app llega a exponerse.
+
+### 4.3 Instalacion, carga y auditoria con `vitest`
+
+```bash
+npx -y skills add antfu/skills --skill vitest -a claude-code codex -y
+```
+
+Copia en `.agents/skills/vitest/`, symlink local en `.claude/skills/vitest`, `skills-lock.json` fija el commit `4a6bb39`. Seguridad mostrada por la CLI: Gen "Safe", Socket "0 alerts", Snyk "Low Risk". Cargada con `Skill(vitest)`.
+
+Referencias de la skill aplicables y comprobacion contra la version instalada (`vitest` 4.1.4):
+
+| Instruccion de la skill | Referencia | Existe en 4.1.4 |
+| --- | --- | --- |
+| Entorno DOM por archivo con el comentario `// @vitest-environment jsdom` (sin tocar la config global) | `advanced-environments.md`, "Per-File Environment" | Si: `content.match(/@(?:vitest\|jest)-environment\s+([\w-]+)\b/)` en `dist/chunks` |
+| Instalar el paquete del entorno: `npm i -D jsdom` | `advanced-environments.md`, "Installing Environment Packages" | `jsdom` es dependencia opcional declarada por `vitest` (`"jsdom": "*"`); no esta instalada (`npm ls jsdom`: vacio) |
+| `vi.stubGlobal('fetch', vi.fn(...))` y `vi.unstubAllGlobals()` | `features-mocking.md`, `advanced-vi.md` | Si (`dist/index.d.ts`) |
+| `vi.waitFor(...)` para esperar a que una asercion pase | `advanced-vi.md` | Si (`dist/index.d.ts`) |
+| Nota "v5: `clearMocks` defaults to `true`" | `features-mocking.md` | No aplica: comportamiento de v5; en 4.1 se crea el mock dentro de cada test |
+
+Estado actual de los tests: 1 archivo (`src/lib/financial-utils.test.ts`, entorno `node`, 6 tests de utilidades). Sin configuracion de Vitest propia. Ninguna de las mejoras de las fases 2 y 3 tiene un test.
+
+Hallazgos y propuestas:
+
+| ID | Propuesta | Justificacion | Instruccion de la skill |
+| --- | --- | --- | --- |
+| T0 | Anadir **solo** `jsdom` como dependencia de desarrollo | Es el minimo que exige la skill para probar componentes. `@testing-library/react` haria los tests mas legibles, pero la skill no lo cubre y seria otra dependencia; React 19 ya exporta `act` para renderizar con `createRoot` | "Installing Environment Packages" |
+| T1 | Nuevo `src/App.test.tsx` con `// @vitest-environment jsdom` y `fetch` simulado con `vi.stubGlobal`; test de **carga**: con un `fetch` que no resuelve, las dos secciones tienen `aria-busy="true"` (A10) | Protege A10 de la fase 2 | "Per-File Environment", `vi.stubGlobal` |
+| T2 | En el mismo archivo, test de **error**: con `fetch` que devuelve 500, esperar con `vi.waitFor` a `role="alert"` con `lang="es"` (A5, A6), `aria-busy="false"`, `h1` + 4 `h2` de KPI + 2 `h2` de graficas (A4). Los `h2` de graficas solo aparecen si se resuelve la carga diferida, asi que tambien cubre R1 de la fase 3 | Protege A4-A6, A10 y R1. En estado de error las graficas muestran "No data available", sin `ResponsiveContainer`, que en jsdom necesitaria `ResizeObserver` | `vi.waitFor`, `vi.stubGlobal` |
+
+Fuera de alcance de estos tests (siguen verificados manualmente en la fase 2): A1/A2 contraste y A9 linea discontinua (jsdom no calcula CSS ni layout), A3 `<title>` de las graficas (requiere el estado con datos y un stub de `ResizeObserver` para Recharts), A7 titulo de `index.html` y A8 `motion-safe` (CSS).
+
+Archivos que se tocarian: `frontend/package.json` y `frontend/package-lock.json` (T0, mediante `npm i -D jsdom`), `frontend/src/App.test.tsx` (nuevo). Sin cambios en `vite.config.ts` ni en el codigo de la app.
+
+**Decision del mantenedor (2026-11-17)**: T0, T1 y T2 aceptadas; instalacion de `jsdom` autorizada.
+
+### 4.3 Implementacion
+
+- T0: `npm --prefix frontend i -D jsdom` -> `jsdom@31.0.1` (una linea en `package.json`, `package-lock.json` actualizado por npm; regla DX punto 4). `npm audit` antes y despues (manifiestos restaurados con `git stash` para medir el "antes"): 21 vulnerabilidades en ambos casos (1 low, 12 moderate, 8 high), **ninguna nueva**; son preexistentes y siguen sin evaluar ([status.md](../../memory-bank/status.md)).
+- T1 y T2: [App.test.tsx](../../frontend/src/App.test.tsx) con `// @vitest-environment jsdom`, `fetch` simulado con `vi.stubGlobal` (restaurado con `vi.unstubAllGlobals` en `afterEach`), render con `createRoot` y esperas con `vi.waitFor`. Sin `act` ni `IS_REACT_ACT_ENVIRONMENT`: `vi.waitFor` reintenta hasta que React aplica las actualizaciones, y la salida no muestra avisos.
+- Docker: el contenedor del frontend usa un volumen anonimo para `node_modules`; `jsdom` solo hace falta para ejecutar los tests en el host. Ejecutarlos dentro del contenedor requeriria reconstruirlo (`docker compose up --build`). No se cambio el Dockerfile.
+
+### 4.4 Verificacion
+
+| Comando | Resultado |
+| --- | --- |
+| `npm --prefix frontend test -- src/App.test.tsx` | 2 passed; 0 avisos en la salida (`warning`, `not wrapped in act`, `Error:`) |
+| `npm --prefix frontend test` | 2 archivos, **8 passed** (6 previos + 2 nuevos) |
+| `npm --prefix frontend run lint` | exit 0 |
+| `npm --prefix frontend run build` | exit 0, sin avisos; chunk principal 187.76 kB (igual que tras la fase 3); el test no entra en `dist` |
+| `git diff --check` | limpio |
+
+**Los tests detectan roturas**: se modifico `App.tsx` temporalmente con `sed`, se ejecuto el test y se restauro con `git checkout` (sin cambios en `App.tsx` al terminar; tests de nuevo en verde):
+
+| Rotura | Protege | Resultado |
+| --- | --- | --- |
+| M1 quitar `role="alert"` | A5 | falla el test de error |
+| M2 quitar `lang="es"` | A6 | falla el test de error |
+| M3 quitar `aria-busy` de la seccion de KPI | A10 | fallan los 2 tests |
+| M4 exportacion inexistente en el `lazy` de `IncomeOutcomeChart` | R1 | falla el test de error (la grafica cargada en diferido no aparece) |
+
+Limite: M4 comprueba que las graficas cargadas en diferido llegan a renderizarse, no que esten en un chunk aparte; eso lo comprueba la salida del build.

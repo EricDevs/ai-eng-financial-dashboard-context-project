@@ -112,13 +112,13 @@ Rama: `feature/agent-skills-fase3-react-best-practices`. PR hacia `feature/agent
 | 3.2 Adaptar a Vite | Para cada regla de Next (`next/image`, `next/font`, metadata) decidir: equivalente en Vite o N/A justificado | Tabla regla -> aplicacion/N/A | completado 2026-11-16: tabla de aplicabilidad (server/hidratacion N/A, `next/dynamic` -> `React.lazy`, SWR innecesario) |
 | 3.3 Implementar | Correcciones minimas aceptadas (p. ej. metadatos reales en `index.html`, reservar espacio de graficas, carga diferida de Recharts si reduce el chunk) | Diff | completado 2026-11-16: R1 aceptado (graficas con `React.lazy` + `Suspense` en `App.tsx`); R2 aplazado y luego descartado (ver 3.4); R3 y R4 descartados por impacto no medible |
 | 3.4 Verificar | `npm --prefix frontend run build` sin advertencias nuevas (comparar con la linea base); lint y tests; observar la app (sin saltos de layout en carga) | Salidas de comandos + notas | completado 2026-11-16: build sin avisos (chunk principal 584.60 -> 187.76 kB); lint y 6 tests OK; Lighthouse sin mejora de LCP fuera del ruido; sin regresiones de accesibilidad ni de layout. R2 descartado tras medir (el retraso del LCP es CPU de render, no red) |
-| 3.5 Commit y PR | Commit que referencia `vercel-react-best-practices`; PR | Hash y numero de PR | pendiente |
+| 3.5 Commit y PR | Commit que referencia `vercel-react-best-practices`; PR | Hash y numero de PR | completado 2026-11-16: commits `c06ede3` (perf, R1) y `cd45cd2` (evidencia), PR #13, merge `23f4da1` |
 
 Checklist de cierre:
 
 - [x] Cada cambio trazable a una instruccion de la skill; reglas de Next marcadas N/A con motivo.
 - [x] Build pasa sin advertencias nuevas injustificadas.
-- [ ] PR de fase 3 mergeado.
+- [x] PR de fase 3 mergeado.
 
 ## 8. Fase 4: explorar el ecosistema
 
@@ -126,15 +126,15 @@ Rama: `feature/agent-skills-fase4-ecosystem`. PR hacia `feature/agent-skills`.
 
 | Hito | Acciones | Evidencia | Estado |
 | --- | --- | --- | --- |
-| 4.1 Buscar | `npx skills find <tema>` sobre >= 2 temas relevantes (candidatos: `performance`, `testing`, `typescript`, `seo`, `forms`) | Salidas de los comandos | pendiente |
-| 4.2 Elegir | Comparar candidatas contra gaps reales del repo ([status.md](../../memory-bank/status.md): sin E2E, chunk grande, riesgo de huso horario sin corregir) y elegir >= 1 | Justificacion escrita | pendiente |
-| 4.3 Aplicar | Instalar, cargar, auditar y aplicar con el mismo metodo (propuestas trazables, verificacion) | Diff + salidas | pendiente |
+| 4.1 Buscar | `npx skills find <tema>` sobre >= 2 temas relevantes (candidatos: `performance`, `testing`, `typescript`, `seo`, `forms`) | Salidas de los comandos | completado 2026-11-17: `testing`, `seo` y `typescript` buscados; 6 candidatas revisadas leyendo su `SKILL.md` ([evidencia](../validations/07-agent-skills-checks.md#fase-4-explorar-el-ecosistema)) |
+| 4.2 Elegir | Comparar candidatas contra gaps reales del repo ([status.md](../../memory-bank/status.md): sin E2E, chunk grande, riesgo de huso horario sin corregir) y elegir >= 1 | Justificacion escrita | completado 2026-11-17: gaps medidos (SEO 82/100, `strict` con 0 errores, 1 archivo de tests). Primera recomendacion `seo`; el mantenedor cuestiono su valor en un dashboard interno, se busco `vitest` y se eligio `antfu/skills@vitest`. `seo` y `typescript` descartados con motivo |
+| 4.3 Aplicar | Instalar, cargar, auditar y aplicar con el mismo metodo (propuestas trazables, verificacion) | Diff + salidas | completado 2026-11-17: T0-T2 aceptadas y `jsdom` autorizado; `App.test.tsx` con 2 tests (8 en total); 4 roturas provocadas detectadas; lint y build sin avisos; `npm audit` sin vulnerabilidades nuevas |
 | 4.4 Commit y PR | Commit que referencia la skill elegida; PR | Hash y numero de PR | pendiente |
 
 Checklist de cierre:
 
-- [ ] >= 2 temas buscados con `npx skills find`.
-- [ ] >= 1 skill adicional aplicada con justificacion escrita.
+- [x] >= 2 temas buscados con `npx skills find`.
+- [x] >= 1 skill adicional aplicada con justificacion escrita.
 - [ ] PR de fase 4 mergeado.
 
 ## 9. Fase 5: skill interna del proyecto
@@ -191,7 +191,7 @@ Checklist de cierre:
 | --- | --- | --- | --- | --- |
 | 1 Preparacion y descubrimiento | `feature/agent-skills-fase1-setup` | PR #11 | `442f11d`, `4b9af5b` (merge `3ed7ade`) | completada 2026-11-16 |
 | 2 Accessibility | `feature/agent-skills-fase2-accessibility` | PR #12 | `ff050ce`, `e83eb48` (merge `98e6bc5`) | completada 2026-11-16 |
-| 3 React best practices | `feature/agent-skills-fase3-react-best-practices` | - | - | pendiente |
+| 3 React best practices | `feature/agent-skills-fase3-react-best-practices` | PR #13 | `c06ede3`, `cd45cd2` (merge `23f4da1`) | completada 2026-11-16 |
 | 4 Ecosistema | `feature/agent-skills-fase4-ecosystem` | - | - | pendiente |
 | 5 Skill interna | `feature/agent-skills-fase5-internal-skill` | - | - | pendiente |
 | 6 Memory bank | `feature/agent-skills-fase6-memory-bank` | - | - | pendiente |
