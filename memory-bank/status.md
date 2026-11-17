@@ -1,10 +1,12 @@
 # Status
 
-Revision: 2026-11-16, cierre del proyecto 3. Fuentes: [01-structure.md](../docs/validations/01-structure.md),
+Revision: 2026-11-17, cierre del proyecto 4. Fuentes: [01-structure.md](../docs/validations/01-structure.md),
 [03-verification-resume.md](../docs/validations/03-verification-resume.md),
 [02-handover-checks.md](../docs/validations/02-handover-checks.md),
-[05-rules-checks.md](../docs/validations/05-rules-checks.md) y commits
-reales de fases 1-3. "Implementado" significa visto en codigo; "probado"
+[05-rules-checks.md](../docs/validations/05-rules-checks.md),
+[07-agent-skills-checks.md](../docs/validations/07-agent-skills-checks.md) y
+commits reales de los proyectos 2-4. Resumen del proyecto 4 en
+[progress.md](progress.md). "Implementado" significa visto en codigo; "probado"
 enlaza el check que lo demuestra.
 
 ## Implementado y probado
@@ -16,12 +18,16 @@ enlaza el check que lo demuestra.
   [03-verification-resume.md](../docs/validations/03-verification-resume.md#matriz-de-contraste-del-resumen).
 - UI con cuatro KPI y dos series mensuales, consumiendo `/api/metrics` vía el
   proxy de Vite; observado en ejecucion real (UI-PROXY-01).
-- 15 tests backend y 6 tests frontend (5 originales + 1 de frontera de mes
-  anadido en fase 3) pasan; lint y build de frontend pasan. Ver
-  [stack.md](stack.md) para los comandos.
+- 15 tests backend y 8 tests frontend (6 de utilidades + 2 de estados de
+  carga y error de `App`, proyecto 4) pasan; lint y build de frontend pasan
+  sin avisos. Ver [stack.md](stack.md) para los comandos.
 - Seis reglas de agente (`WF`, `FIN`, `API`, `CAL`, `FE`, `DX`) en
   [.agents/rules](../.agents/rules), cada una validada con una tarea real y
   registrada en [05-rules-checks.md](../docs/validations/05-rules-checks.md).
+- Proyecto 4: mejoras de accesibilidad (contraste, encabezados, nombres de
+  graficas, aviso de error anunciado, `aria-busy`, movimiento reducido),
+  graficas cargadas en diferido y skeletons sin salto de altura; tres skills
+  comunitarias y una interna. Detalle y mediciones en [progress.md](progress.md).
 
 ## Especificado, no implementado (proyecto 3)
 
@@ -48,12 +54,18 @@ enlaza el check que lo demuestra.
 - **CORS de desarrollo**: origen y metodos comodin con credenciales en
   [main.py](../backend/app/main.py); no revisado para datos reales.
 - Sin base de datos persistente, sin pipeline de CI y sin pruebas
-  end-to-end/navegador en los archivos inspeccionados.
+  end-to-end/navegador; los tests de componentes (jsdom) no calculan CSS ni
+  layout.
 - `mock-data.ts` y `hero.png` sin importacion detectada en el frontend
   inspeccionado; no se ha confirmado si son codigo muerto o uso futuro.
-- Aviso de build: chunk JS superior a 500 kB sin dividir
-  (FRONTEND-BUILD-01); vulnerabilidades npm y aviso de deprecacion de
-  httpx/TestClient sin evaluar.
+- 21 vulnerabilidades npm preexistentes (1 low, 12 moderate, 8 high; ninguna
+  anadida en el proyecto 4) y aviso de deprecacion de httpx/TestClient, sin
+  evaluar. El aviso de chunk > 500 kB se resolvio en el proyecto 4.
+- **CLS intermitente 0.014** en Lighthouse, producido por la tarjeta KPI
+  PROFIT; causa sin investigar. LCP de produccion 2.7-2.9 s dominado por el
+  render de React, no por la red.
+- Accesibilidad sin probar con lector de pantalla real, zoom al 200 % ni alto
+  contraste de Windows.
 - Exactitud numerica de KPI/graficas sobre la respuesta completa (360
   movimientos) end-to-end: no verificada; solo pruebas de utilidades con
   fixtures pequenas y controladas (ver [stack.md](stack.md)).
@@ -67,8 +79,10 @@ enlaza el check que lo demuestra.
 2. Si se acuerda un cambio de alcance: aislar el RNG, corregir el calendario
    de `computeMonthlyData` o derivar el periodo de cabecera de los datos
    reales, cada uno con su propio test de frontera antes/despues.
-3. Evaluar `npm audit`, el aviso de chunk grande y la deprecacion de
-   httpx/TestClient; ninguno bloquea el funcionamiento actual.
+3. Evaluar `npm audit` y la deprecacion de httpx/TestClient; ninguno bloquea
+   el funcionamiento actual.
+4. Investigar el desplazamiento de la tarjeta KPI PROFIT (CLS 0.014)
+   verificando con la skill `verify-frontend-change`.
 
 Ausencia de una funcionalidad (CI, base de datos, E2E) no autoriza
 construirla por iniciativa propia; requiere un acuerdo de alcance aparte.
@@ -94,5 +108,16 @@ Proyecto 3 (specs frontend), ramas de fase hacia `feature/frontend-specs`:
 | 4 Contrato de datos | `7c5ddfc`, `127bed9`, `18e1c37` | merge `977376e` via PR #8 |
 | Final | `feature/frontend-specs` -> `main` | merge `24884e1` via PR #9 |
 
-Detalle y evidencia en [ROADMAP-Project-2.md](../docs/entregables/ROADMAP-Project-2.md)
-y [ROADMAP-Project-3.md](../docs/entregables/ROADMAP-Project-3.md).
+Proyecto 4 (agent skills), ramas de fase hacia `feature/agent-skills`:
+
+| Fase | Commit(s) | Integracion |
+| --- | --- | --- |
+| 1 Preparacion y descubrimiento | `442f11d`, `4b9af5b` | merge `3ed7ade` via PR #11 |
+| 2 `accessibility` | `ff050ce`, `e83eb48` | merge `98e6bc5` via PR #12 |
+| 3 `vercel-react-best-practices` | `c06ede3`, `cd45cd2` | merge `23f4da1` via PR #13 |
+| 4 Ecosistema (`vitest`) | `2b7f444`, `99e7066`, `7e13588` | merge `894c4eb` via PR #14 |
+| 5 Skill interna | `97bce11`, `ce66108`, `04d13bb` | merge `1c25a99` via PR #15 |
+
+Detalle y evidencia en [ROADMAP-Project-2.md](../docs/entregables/ROADMAP-Project-2.md),
+[ROADMAP-Project-3.md](../docs/entregables/ROADMAP-Project-3.md) y
+[ROADMAP-Project-4.md](../docs/entregables/ROADMAP-Project-4.md).

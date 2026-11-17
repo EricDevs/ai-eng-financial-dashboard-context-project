@@ -58,7 +58,9 @@ or when asked for a product/status summary: [overview](memory-bank/overview.md)
 (what the product does and its known product-level gap), [stack](memory-bank/stack.md)
 (languages, frameworks, infra and already-verified commands) and
 [status](memory-bank/status.md) (implemented vs. proven, known gaps, next
-priorities and commit/integration history). Memory is factual evidence from
+priorities and commit/integration history). Read [progress](memory-bank/progress.md)
+for the agent skills applied, the changes they verified and why each skill
+was chosen. Memory is factual evidence from
 past phases, not a task queue; absence of a feature here does not authorize
 building it. If a fact here conflicts with the current code or docs, trust
 what you observe now and flag the memory file as stale instead of acting on it.
