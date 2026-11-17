@@ -51,8 +51,8 @@ export function IncomeOutcomeChart({ data, loading }: IncomeOutcomeChartProps) {
     return (
       <Card className="border-border/60">
         <CardHeader className="pb-4">
-          <Skeleton className="h-5 w-52" />
-          <Skeleton className="h-3 w-64 mt-1" />
+          <Skeleton className="h-5 w-52 my-0.5" />
+          <Skeleton className="h-3 w-64 my-1" />
         </CardHeader>
         <CardContent>
           <Skeleton className="h-[280px] w-full rounded-lg" />
@@ -76,16 +76,21 @@ export function IncomeOutcomeChart({ data, loading }: IncomeOutcomeChartProps) {
           </div>
         ) : (
           <ResponsiveContainer width="100%" height={280}>
-            <LineChart data={data} margin={{ top: 4, right: 8, left: 0, bottom: 0 }}>
+            <LineChart
+              data={data}
+              margin={{ top: 4, right: 8, left: 0, bottom: 0 }}
+              title="Income vs. Outcome"
+              desc="Monthly income (solid line) and outcome (dashed line). Use the arrow keys to read each month."
+            >
               <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" strokeOpacity={0.6} />
               <XAxis
                 dataKey="month"
-                tick={{ fontSize: 12, fill: 'var(--color-muted-foreground)' }}
+                tick={{ fontSize: 12, fill: 'var(--muted-foreground)' }}
                 axisLine={false}
                 tickLine={false}
               />
               <YAxis
-                tick={{ fontSize: 11, fill: 'var(--color-muted-foreground)' }}
+                tick={{ fontSize: 11, fill: 'var(--muted-foreground)' }}
                 axisLine={false}
                 tickLine={false}
                 tickFormatter={(v) => `$${(v / 1000).toFixed(0)}k`}
@@ -103,6 +108,7 @@ export function IncomeOutcomeChart({ data, loading }: IncomeOutcomeChartProps) {
                 name="income"
                 stroke="var(--chart-income)"
                 strokeWidth={2}
+                legendType="plainline"
                 dot={{ r: 3, fill: 'var(--chart-income)', strokeWidth: 0 }}
                 activeDot={{ r: 5, strokeWidth: 0 }}
               />
@@ -112,6 +118,8 @@ export function IncomeOutcomeChart({ data, loading }: IncomeOutcomeChartProps) {
                 name="outcome"
                 stroke="var(--chart-outcome)"
                 strokeWidth={2}
+                strokeDasharray="6 4"
+                legendType="plainline"
                 dot={{ r: 3, fill: 'var(--chart-outcome)', strokeWidth: 0 }}
                 activeDot={{ r: 5, strokeWidth: 0 }}
               />

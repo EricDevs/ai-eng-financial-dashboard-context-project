@@ -28,7 +28,8 @@ Metodo por skill (enunciado, "Como trabajas"):
 
 ## 2. Hechos del repo que condicionan el plan
 
-- **El frontend es Vite + React 19, no Next.js** ([package.json](../../frontend/package.json), [vite.config.ts](../../frontend/vite.config.ts)). Las reglas de `vercel-react-best-practices` especificas de Next (`next/image`, `next/font`, `metadata` por pagina) no aplican literalmente: se registran como N/A con justificacion o se aplica su equivalente (dimensiones explicitas de imagen, metadatos en [index.html](../../frontend/index.html), carga de fuentes en CSS). No se migra a Next.
+- **El frontend es Vite + React 19, no Next.js** ([package.json](../../frontend/package.json), [vite.config.ts](../../frontend/vite.config.ts)). Las reglas de `vercel-react-best-practices` especificas de Next no aplican literalmente: se registran como N/A con justificacion o se aplica su equivalente en Vite. No se migra a Next.
+- **La skill `vercel-react-best-practices` real no cubre `next/image`, `next/font` ni metadatos por pagina** (revisada en la fase 1): son 70 reglas de rendimiento (bundle, re-renders, rendering, JS). Los cambios de la fase 3 se trazan a esas reglas; metadatos y `lang` se trazan a `accessibility` (3.1.1 Page language) si se tocan. Detalle en [07-agent-skills-checks.md](../validations/07-agent-skills-checks.md#16-instalacion-y-carga).
 - Linea base observable: [index.html](../../frontend/index.html) tiene `<title>frontend</title>`, `lang="en"` y sin `meta description`. [hero.png](../../frontend/src/assets/hero.png) y [mock-data.ts](../../frontend/src/lib/mock-data.ts) no tienen importacion detectada ([overview.md](../../memory-bank/overview.md)).
 - Componentes afectados: [dashboard/](../../frontend/src/components/dashboard) (`dashboard-header`, `kpi-row`, `kpi-card`, `income-outcome-chart`, `profit-percent-chart`), [ui/](../../frontend/src/components/ui) (`card`, `skeleton`), [App.tsx](../../frontend/src/App.tsx) y tokens en [index.css](../../frontend/src/index.css).
 - **Aviso de build preexistente**: chunk JS > 500 kB (FRONTEND-BUILD-01 en [stack.md](../../memory-bank/stack.md)). El criterio "sin advertencias nuevas injustificadas" se mide contra esa linea base.
@@ -54,11 +55,11 @@ Estados de hito: pendiente, en curso, bloqueado, en revision, completado.
 
 | ID | Decision | Propuesta | Estado |
 | --- | --- | --- | --- |
-| D1 | Donde se instalan las skills comunitarias y si se commitean | Instalacion a nivel proyecto con `npx skills add`, commiteada para que el equipo las recargue; registrar la ruta real que crea la CLI | pendiente |
-| D2 | `.skills/` (enunciado) vs `.agents/skills` (AGENTS.md) | Skill interna en `.skills/` como pide el enunciado y anadir esa ruta al enrutado de `AGENTS.md` | pendiente |
+| D1 | Donde se instalan las skills comunitarias y si se commitean | Instalacion a nivel proyecto con `npx skills add`, commiteada para que el equipo las recargue; registrar la ruta real que crea la CLI | resuelta 2026-11-16: copia canonica versionada en `.agents/skills/` (ruta que esperan README y `AGENTS.md`) + `skills-lock.json`; symlink local en `.claude/skills/` (ignorado) |
+| D2 | `.skills/` (enunciado) vs `.agents/skills` (AGENTS.md) | Skill interna en `.skills/` como pide el enunciado y anadir esa ruta al enrutado de `AGENTS.md` | resuelta 2026-11-17: `.skills/` para skills del proyecto, `.agents/skills` para comunitarias; ambas en `AGENTS.md` |
 | D3 | Anadir lint de accesibilidad (`eslint-plugin-jsx-a11y`) | Solo si la skill lo recomienda y el mantenedor lo aprueba (regla DX) | pendiente |
-| D4 | Archivo de evidencia | `docs/validations/07-agent-skills-checks.md` con prompts, propuestas aceptadas/rechazadas, comandos y salidas | pendiente |
-| D5 | Ramas por fase o rama unica | Ramas por fase, como en el proyecto 3 | pendiente |
+| D4 | Archivo de evidencia | `docs/validations/07-agent-skills-checks.md` con prompts, propuestas aceptadas/rechazadas, comandos y salidas | resuelta 2026-11-16: [07-agent-skills-checks.md](../validations/07-agent-skills-checks.md) |
+| D5 | Ramas por fase o rama unica | Ramas por fase, como en el proyecto 3 | resuelta 2026-11-16: ramas por fase |
 
 ## 5. Fase 1: preparacion, linea base y descubrimiento de skills
 
@@ -66,21 +67,21 @@ Rama: `feature/agent-skills-fase1-setup`. PR hacia `feature/agent-skills`.
 
 | Hito | Acciones | Evidencia | Estado |
 | --- | --- | --- | --- |
-| 1.1 Preparar repo | `git pull origin main`; confirmar `memory-bank/` y `.agents/rules` commiteados; crear `feature/agent-skills` y la rama de fase | `git status`, `git branch` | pendiente |
-| 1.2 Actualizar memory bank | Corregir `status.md` (cierre proyecto 2 fase 4, proyecto 3 con PRs #5-#9) | Diff de `memory-bank/` | en revision 2026-11-16: adelantado como cierre del proyecto 3 en `feature/frontend-specs` (recreada desde `main`), commit `c8b6628`, PR #10 hacia `main` |
-| 1.3 Confirmar como ejecutar y validar | El agente confirma con evidencia del repo como arrancar la app y que comando de build valida el frontend | Cita de archivos + salida de comandos | pendiente |
-| 1.4 Linea base de calidad | Ejecutar build, lint y tests del frontend; registrar avisos existentes (chunk > 500 kB). Pasada manual inicial de teclado sobre la app | Salidas en el archivo de evidencia (D4) | pendiente |
-| 1.5 Descubrir skills proporcionadas | `npx skills find accessibility` y `npx skills find vercel-react-best-practices`; revisar que cubre cada una antes de instalar | Salida de ambos comandos | pendiente |
-| 1.6 Cargar las skills | Instalar ambas (D1) y cargarlas en el agente; resumir que instrucciones dan y cuales aplican a Vite (marcar N/A las de Next) | Resumen por skill en el archivo de evidencia | pendiente |
-| 1.7 Commit y PR de fase | Commit de memory bank, skills instaladas y roadmap; PR a la rama de integracion | Hash y numero de PR | pendiente |
+| 1.1 Preparar repo | `git pull origin main`; confirmar `memory-bank/` y `.agents/rules` commiteados; crear `feature/agent-skills` y la rama de fase | `git status`, `git branch` | completado 2026-11-16: `main` sincronizado en `ac3c6f3`; `feature/agent-skills` publicada; rama de fase local |
+| 1.2 Actualizar memory bank | Corregir `status.md` (cierre proyecto 2 fase 4, proyecto 3 con PRs #5-#9) | Diff de `memory-bank/` | completado 2026-11-16: commit `c8b6628`, PR #10, merge `ac3c6f3` en `main` |
+| 1.3 Confirmar como ejecutar y validar | El agente confirma con evidencia del repo como arrancar la app y que comando de build valida el frontend | Cita de archivos + salida de comandos | completado 2026-11-16: ver [07-agent-skills-checks.md](../validations/07-agent-skills-checks.md#13-como-ejecutar-la-app-y-validar-el-frontend) |
+| 1.4 Linea base de calidad | Ejecutar build, lint y tests del frontend; registrar avisos existentes (chunk > 500 kB). Pasada manual inicial de teclado sobre la app | Salidas en el archivo de evidencia (D4) | completado 2026-11-16: build exit 0 con aviso preexistente (JS 584.25 kB), lint limpio, 6 tests passed. La pasada de teclado se movio al inicio de la fase 2 (2.1) |
+| 1.5 Descubrir skills proporcionadas | `npx skills find accessibility` y `npx skills find vercel-react-best-practices`; revisar que cubre cada una antes de instalar | Salida de ambos comandos | completado 2026-11-16: elegidas `addyosmani/web-quality-skills@accessibility` y `vercel-labs/agent-skills@vercel-react-best-practices` |
+| 1.6 Cargar las skills | Instalar ambas (D1) y cargarlas en el agente; resumir que instrucciones dan y cuales aplican a Vite (marcar N/A las de Next) | Resumen por skill en el archivo de evidencia | completado 2026-11-16: instaladas en `.agents/skills/`, leidas por el agente; tabla de aplicabilidad registrada |
+| 1.7 Commit y PR de fase | Commit de memory bank, skills instaladas y roadmap; PR a la rama de integracion | Hash y numero de PR | completado 2026-11-16: commits `442f11d` (skills) y `4b9af5b` (evidencia), PR #11, merge `3ed7ade` |
 
 Checklist de cierre:
 
-- [ ] Rama de integracion creada desde `main` actualizado.
-- [ ] Memory bank refleja el estado real tras el proyecto 3.
-- [ ] Linea base de build/lint/tests registrada, avisos incluidos.
-- [ ] Ambas skills encontradas, revisadas, instaladas y cargadas.
-- [ ] PR de fase 1 mergeado en la rama de integracion.
+- [x] Rama de integracion creada desde `main` actualizado.
+- [x] Memory bank refleja el estado real tras el proyecto 3.
+- [x] Linea base de build/lint/tests registrada, avisos incluidos.
+- [x] Ambas skills encontradas, revisadas, instaladas y cargadas.
+- [x] PR de fase 1 mergeado en la rama de integracion.
 
 ## 6. Fase 2: skill `accessibility`
 
@@ -88,18 +89,18 @@ Rama: `feature/agent-skills-fase2-accessibility`. PR hacia `feature/agent-skills
 
 | Hito | Acciones | Evidencia | Estado |
 | --- | --- | --- | --- |
-| 2.1 Auditoria | Con la skill cargada, el agente audita `App.tsx`, `dashboard/`, `ui/`, `index.css` e `index.html` y lista hallazgos con archivo, linea e instruccion de la skill | Lista de hallazgos | pendiente |
-| 2.2 Revision de propuestas | Aceptar solo cambios ligados a un archivo real y a una instruccion de la skill; registrar rechazados y por que | Tabla aceptado/rechazado | pendiente |
-| 2.3 Implementar | Correcciones minimas: etiquetas `aria-*`/`role` (p. ej. graficas Recharts, iconos Lucide decorativos con `aria-hidden`), `alt`, estados de carga/error anunciables, foco visible, contraste de tokens | Diff | pendiente |
-| 2.4 Verificar | Navegacion por teclado en elementos interactivos; `aria-*`/`role` correctos; `alt` presente; contraste basico de textos y controles (ratio medido). Lint, tests y build sin avisos nuevos | Notas de la pasada manual + salidas de comandos | pendiente |
-| 2.5 Commit y PR | Commit que referencia la skill `accessibility`; PR | Hash y numero de PR | pendiente |
+| 2.1 Auditoria | Pasada manual de teclado inicial (movida desde 1.4) y auditoria Lighthouse de accesibilidad sobre la app en ejecucion, como pide el flujo de la skill. Con la skill cargada, el agente audita `App.tsx`, `dashboard/`, `ui/`, `index.css` e `index.html` y lista hallazgos con archivo, linea e instruccion de la skill | Lista de hallazgos | completado 2026-11-16: Lighthouse 100 sin fallos; 10 hallazgos manuales A1-A10 ([evidencia](../validations/07-agent-skills-checks.md#21-auditoria-antes-de-cambios)) |
+| 2.2 Revision de propuestas | Aceptar solo cambios ligados a un archivo real y a una instruccion de la skill; registrar rechazados y por que | Tabla aceptado/rechazado | completado 2026-11-16: 10 propuestas aceptadas por el mantenedor; 2 cambios descartados antes de proponer, con motivo |
+| 2.3 Implementar | Correcciones minimas: etiquetas `aria-*`/`role` (p. ej. graficas Recharts, iconos Lucide decorativos con `aria-hidden`), `alt`, estados de carga/error anunciables, foco visible, contraste de tokens | Diff | completado 2026-11-16: 9 archivos del frontend, cambios minimos por hallazgo |
+| 2.4 Verificar | Navegacion por teclado en elementos interactivos; `aria-*`/`role` correctos; `alt` presente; contraste basico de textos y controles (ratio medido). Lint, tests y build sin avisos nuevos | Notas de la pasada manual + salidas de comandos | completado 2026-11-16: A1 3.14->5.18:1, A2 2.04->4.69:1, nombres de graficas y h2 en el arbol de Chrome, alert/lang/aria-busy observados; lint, 6 tests y build sin avisos nuevos. Hallazgo: Vite en Docker no recarga modulos (bind mount de Windows) |
+| 2.5 Commit y PR | Commit que referencia la skill `accessibility`; PR | Hash y numero de PR | completado 2026-11-16: commits `ff050ce` (fix(a11y), A1-A10) y `e83eb48` (evidencia), PR #12, merge `98e6bc5` |
 
 Checklist de cierre:
 
-- [ ] Cada cambio trazable a una instruccion de `accessibility`.
-- [ ] Teclado, `aria-*`/`role`, `alt` y contraste verificados en la app en ejecucion.
-- [ ] Build sin advertencias nuevas injustificadas.
-- [ ] PR de fase 2 mergeado.
+- [x] Cada cambio trazable a una instruccion de `accessibility`.
+- [x] Teclado, `aria-*`/`role`, `alt` y contraste verificados en la app en ejecucion.
+- [x] Build sin advertencias nuevas injustificadas.
+- [x] PR de fase 2 mergeado.
 
 ## 7. Fase 3: skill `vercel-react-best-practices`
 
@@ -107,17 +108,17 @@ Rama: `feature/agent-skills-fase3-react-best-practices`. PR hacia `feature/agent
 
 | Hito | Acciones | Evidencia | Estado |
 | --- | --- | --- | --- |
-| 3.1 Auditoria | El agente audita patrones orientados a despliegue: metadatos (`title`, `description`, `lang` de `index.html`), layout shift (alturas de skeleton/graficas, dimensiones de imagen), fuentes, tamano de bundle, re-renders y anti-patrones de Lighthouse | Lista de hallazgos con instruccion de la skill | pendiente |
-| 3.2 Adaptar a Vite | Para cada regla de Next (`next/image`, `next/font`, metadata) decidir: equivalente en Vite o N/A justificado | Tabla regla -> aplicacion/N/A | pendiente |
-| 3.3 Implementar | Correcciones minimas aceptadas (p. ej. metadatos reales en `index.html`, reservar espacio de graficas, carga diferida de Recharts si reduce el chunk) | Diff | pendiente |
-| 3.4 Verificar | `npm --prefix frontend run build` sin advertencias nuevas (comparar con la linea base); lint y tests; observar la app (sin saltos de layout en carga) | Salidas de comandos + notas | pendiente |
-| 3.5 Commit y PR | Commit que referencia `vercel-react-best-practices`; PR | Hash y numero de PR | pendiente |
+| 3.1 Auditoria | El agente audita patrones orientados a despliegue: metadatos (`title`, `description`, `lang` de `index.html`), layout shift (alturas de skeleton/graficas, dimensiones de imagen), fuentes, tamano de bundle, re-renders y anti-patrones de Lighthouse | Lista de hallazgos con instruccion de la skill | completado 2026-11-16: bundle medido (Recharts + deps 60 % del JS), Lighthouse de rendimiento x3 en build de produccion; hallazgos R1-R4 ([evidencia](../validations/07-agent-skills-checks.md#31-auditoria-antes-de-cambios)) |
+| 3.2 Adaptar a Vite | Para cada regla de Next (`next/image`, `next/font`, metadata) decidir: equivalente en Vite o N/A justificado | Tabla regla -> aplicacion/N/A | completado 2026-11-16: tabla de aplicabilidad (server/hidratacion N/A, `next/dynamic` -> `React.lazy`, SWR innecesario) |
+| 3.3 Implementar | Correcciones minimas aceptadas (p. ej. metadatos reales en `index.html`, reservar espacio de graficas, carga diferida de Recharts si reduce el chunk) | Diff | completado 2026-11-16: R1 aceptado (graficas con `React.lazy` + `Suspense` en `App.tsx`); R2 aplazado y luego descartado (ver 3.4); R3 y R4 descartados por impacto no medible |
+| 3.4 Verificar | `npm --prefix frontend run build` sin advertencias nuevas (comparar con la linea base); lint y tests; observar la app (sin saltos de layout en carga) | Salidas de comandos + notas | completado 2026-11-16: build sin avisos (chunk principal 584.60 -> 187.76 kB); lint y 6 tests OK; Lighthouse sin mejora de LCP fuera del ruido; sin regresiones de accesibilidad ni de layout. R2 descartado tras medir (el retraso del LCP es CPU de render, no red) |
+| 3.5 Commit y PR | Commit que referencia `vercel-react-best-practices`; PR | Hash y numero de PR | completado 2026-11-16: commits `c06ede3` (perf, R1) y `cd45cd2` (evidencia), PR #13, merge `23f4da1` |
 
 Checklist de cierre:
 
-- [ ] Cada cambio trazable a una instruccion de la skill; reglas de Next marcadas N/A con motivo.
-- [ ] Build pasa sin advertencias nuevas injustificadas.
-- [ ] PR de fase 3 mergeado.
+- [x] Cada cambio trazable a una instruccion de la skill; reglas de Next marcadas N/A con motivo.
+- [x] Build pasa sin advertencias nuevas injustificadas.
+- [x] PR de fase 3 mergeado.
 
 ## 8. Fase 4: explorar el ecosistema
 
@@ -125,16 +126,16 @@ Rama: `feature/agent-skills-fase4-ecosystem`. PR hacia `feature/agent-skills`.
 
 | Hito | Acciones | Evidencia | Estado |
 | --- | --- | --- | --- |
-| 4.1 Buscar | `npx skills find <tema>` sobre >= 2 temas relevantes (candidatos: `performance`, `testing`, `typescript`, `seo`, `forms`) | Salidas de los comandos | pendiente |
-| 4.2 Elegir | Comparar candidatas contra gaps reales del repo ([status.md](../../memory-bank/status.md): sin E2E, chunk grande, riesgo de huso horario sin corregir) y elegir >= 1 | Justificacion escrita | pendiente |
-| 4.3 Aplicar | Instalar, cargar, auditar y aplicar con el mismo metodo (propuestas trazables, verificacion) | Diff + salidas | pendiente |
-| 4.4 Commit y PR | Commit que referencia la skill elegida; PR | Hash y numero de PR | pendiente |
+| 4.1 Buscar | `npx skills find <tema>` sobre >= 2 temas relevantes (candidatos: `performance`, `testing`, `typescript`, `seo`, `forms`) | Salidas de los comandos | completado 2026-11-17: `testing`, `seo` y `typescript` buscados; 6 candidatas revisadas leyendo su `SKILL.md` ([evidencia](../validations/07-agent-skills-checks.md#fase-4-explorar-el-ecosistema)) |
+| 4.2 Elegir | Comparar candidatas contra gaps reales del repo ([status.md](../../memory-bank/status.md): sin E2E, chunk grande, riesgo de huso horario sin corregir) y elegir >= 1 | Justificacion escrita | completado 2026-11-17: gaps medidos (SEO 82/100, `strict` con 0 errores, 1 archivo de tests). Primera recomendacion `seo`; el mantenedor cuestiono su valor en un dashboard interno, se busco `vitest` y se eligio `antfu/skills@vitest`. `seo` y `typescript` descartados con motivo |
+| 4.3 Aplicar | Instalar, cargar, auditar y aplicar con el mismo metodo (propuestas trazables, verificacion) | Diff + salidas | completado 2026-11-17: T0-T2 aceptadas y `jsdom` autorizado; `App.test.tsx` con 2 tests (8 en total); 4 roturas provocadas detectadas; lint y build sin avisos; `npm audit` sin vulnerabilidades nuevas |
+| 4.4 Commit y PR | Commit que referencia la skill elegida; PR | Hash y numero de PR | completado 2026-11-17: commits `2b7f444` (skill), `99e7066` (jsdom + tests) y `7e13588` (evidencia), PR #14, merge `894c4eb` |
 
 Checklist de cierre:
 
-- [ ] >= 2 temas buscados con `npx skills find`.
-- [ ] >= 1 skill adicional aplicada con justificacion escrita.
-- [ ] PR de fase 4 mergeado.
+- [x] >= 2 temas buscados con `npx skills find`.
+- [x] >= 1 skill adicional aplicada con justificacion escrita.
+- [x] PR de fase 4 mergeado.
 
 ## 9. Fase 5: skill interna del proyecto
 
@@ -142,18 +143,18 @@ Rama: `feature/agent-skills-fase5-internal-skill`. PR hacia `feature/agent-skill
 
 | Hito | Acciones | Evidencia | Estado |
 | --- | --- | --- | --- |
-| 5.1 Identificar el gap | Con el agente, elegir un gap especifico de este repo que las skills comunitarias no cubren. Candidatos con base en el repo: checks de QA antes del merge (pytest via `uv`, tests/lint/build frontend, `git diff --check`, registro de evidencia), flujo de ramas por fase con merge commit, o convenciones UI del dashboard (Card/Skeleton/tokens, formateadores `en-US`/USD) | Gap elegido y motivo | pendiente |
-| 5.2 Redactar | El agente redacta `.skills/<nombre>/SKILL.md`; el mantenedor lo refina a la estructura de clase: objetivo, inputs, outputs, criterios de aceptacion. Corta y precisa | `SKILL.md` | pendiente |
-| 5.3 Enrutar | Anadir `.skills/` a `AGENTS.md` (D2) | Diff de `AGENTS.md` | pendiente |
-| 5.4 Probar en tarea real | Cargar la skill en una sesion y aplicarla a una tarea real del repo; confirmar que produce guia accionable y ajustar si no | Prompt, salida y ajustes | pendiente |
-| 5.5 Commit y PR | Commit de la skill; PR | Hash y numero de PR | pendiente |
+| 5.1 Identificar el gap | Con el agente, elegir un gap especifico de este repo que las skills comunitarias no cubren. Candidatos con base en el repo: checks de QA antes del merge (pytest via `uv`, tests/lint/build frontend, `git diff --check`, registro de evidencia), flujo de ramas por fase con merge commit, o convenciones UI del dashboard (Card/Skeleton/tokens, formateadores `en-US`/USD) | Gap elegido y motivo | completado 2026-11-17: elegido por el mantenedor "verificar un cambio del frontend en este entorno" (QA antes del merge), frente a "flujo de ramas y PRs" (mas generico, ya documentado en la seccion 3) |
+| 5.2 Redactar | El agente redacta `.skills/<nombre>/SKILL.md`; el mantenedor lo refina a la estructura de clase: objetivo, inputs, outputs, criterios de aceptacion. Corta y precisa | `SKILL.md` | completado 2026-11-17: `.skills/verify-frontend-change/SKILL.md` v2 (65 lineas). Refinado del mantenedor (sin referencias a la maquina local; disparador "al terminar el cambio") y pruebas de activacion en sesiones nuevas: v1 6/6 y v2 8/8 casos como se esperaba; la v2 anade paso 0 y "Cuando no usarla" ([evidencia](../validations/07-agent-skills-checks.md#pruebas-de-activacion-antes-de-la-tarea-real)) |
+| 5.3 Enrutar | Anadir `.skills/` a `AGENTS.md` (D2) | Diff de `AGENTS.md` | completado 2026-11-17: `AGENTS.md` lista `.agents/skills` y `.skills` y anade la tabla "Skill routing" ([evidencia](../validations/07-agent-skills-checks.md#53-enrutado-en-agentsmd)) |
+| 5.4 Probar en tarea real | Cargar la skill en una sesion y aplicarla a una tarea real del repo; confirmar que produce guia accionable y ajustar si no | Prompt, salida y ajustes | completado 2026-11-17: salto de 8 px de las tarjetas de grafica (causa: `text-base` anula `leading-none` en `CardTitle`); skeletons ajustados, 422 px en ambos estados. La skill detecto Vite sirviendo el modulo viejo y el preview vivo; el CLS 0.014 resulto ser de la tarjeta KPI PROFIT (atribucion de la fase 3 corregida). Sin ajustes a la skill ([evidencia](../validations/07-agent-skills-checks.md#54-tarea-real-salto-de-8-px-en-las-tarjetas-de-grafica)) |
+| 5.5 Commit y PR | Commit de la skill; PR | Hash y numero de PR | completado 2026-11-17: commits `97bce11` (skill + `AGENTS.md`), `ce66108` (skeletons), `04d13bb` (evidencia); PR #15, merge `1c25a99` |
 
 Checklist de cierre:
 
-- [ ] Skill en `.skills/` con objetivo, inputs, outputs y criterios de aceptacion.
-- [ ] Guia especifica del proyecto, no relleno generico.
-- [ ] Probada en una tarea real con resultado registrado.
-- [ ] PR de fase 5 mergeado.
+- [x] Skill en `.skills/` con objetivo, inputs, outputs y criterios de aceptacion.
+- [x] Guia especifica del proyecto, no relleno generico.
+- [x] Probada en una tarea real con resultado registrado.
+- [x] PR de fase 5 mergeado.
 
 ## 10. Fase 6: memory bank y cierre
 
@@ -161,39 +162,39 @@ Rama: `feature/agent-skills-fase6-memory-bank`. PR hacia `feature/agent-skills`,
 
 | Hito | Acciones | Evidencia | Estado |
 | --- | --- | --- | --- |
-| 6.1 `progress.md` | Crear `memory-bank/progress.md`: skills aplicadas, cambios verificados, skill del ecosistema elegida (y por que), skill interna creada | Archivo | pendiente |
-| 6.2 Actualizar linea base | `stack.md` (comandos y avisos de build tras los cambios), `status.md` (gaps cerrados/abiertos) y `AGENTS.md` si cambio el flujo | Diff | pendiente |
-| 6.3 Verificacion final | Build, lint y tests en la rama de integracion; `git diff --stat main...feature/agent-skills` para confirmar que no hay reescritura masiva | Salidas | pendiente |
-| 6.4 Commit y PR de fase | Commit del memory bank; PR | Hash y numero de PR | pendiente |
-| 6.5 PR final a `main` | PR `feature/agent-skills` -> `main` con resumen por skill y lista de PRs de fase; compartir la URL con el instructor | Numero y URL del PR | pendiente |
+| 6.1 `progress.md` | Crear `memory-bank/progress.md`: skills aplicadas, cambios verificados, skill del ecosistema elegida (y por que), skill interna creada | Archivo | completado 2026-11-17: [progress.md](../../memory-bank/progress.md) con skills aplicadas, tabla de cambios verificados antes/despues, por que `vitest` y por que la skill interna, y lo no verificado |
+| 6.2 Actualizar linea base | `stack.md` (comandos y avisos de build tras los cambios), `status.md` (gaps cerrados/abiertos) y `AGENTS.md` si cambio el flujo | Diff | completado 2026-11-17: `stack.md` (jsdom, 8 tests, build sin avisos, trampas de Vite y preview, skills instaladas), `status.md` (gaps cerrados y abiertos, CLS de PROFIT, commits del proyecto 4), `overview.md` (carga diferida) y `AGENTS.md` (enrutado a `progress.md`) |
+| 6.3 Verificacion final | Build, lint y tests en la rama de integracion; `git diff --stat main...feature/agent-skills` para confirmar que no hay reescritura masiva | Salidas | completado 2026-11-17: lint OK, 8/8 tests frontend, build sin avisos (187.77 kB), 15/15 tests backend; frente a `main` el codigo de la app cambia 8 archivos (+72/-23 en `src`), sin reescritura ([evidencia](../validations/07-agent-skills-checks.md#63-verificacion-final)) |
+| 6.4 Commit y PR de fase | Commit del memory bank; PR | Hash y numero de PR | completado 2026-11-17: commits `c8a29a8` (memory bank) y `1b8e111` (verificacion final); PR #16, merge `95ab9e0` |
+| 6.5 PR final a `main` | PR `feature/agent-skills` -> `main` con resumen por skill y lista de PRs de fase; compartir la URL con el instructor | Numero y URL del PR | PR #17 abierto 2026-11-17 (https://github.com/EricDevs/ai-eng-financial-dashboard-context-project/pull/17); falta que el mantenedor comparta la URL con el instructor |
 
 Checklist de cierre:
 
-- [ ] Memory bank refleja con precision el trabajo de la sesion.
-- [ ] Verificacion final ejecutada y registrada.
+- [x] Memory bank refleja con precision el trabajo de la sesion.
+- [x] Verificacion final ejecutada y registrada.
 - [ ] PR final abierto y URL compartida.
 
 ## 11. Criterios de evaluacion (checklist global)
 
-- [ ] `accessibility` y `vercel-react-best-practices` cargadas y aplicadas; mejoras visibles y trazables a sus instrucciones.
-- [ ] Accesibilidad verificada: teclado, `aria-*` donde haga falta, `alt` presente, contraste basico.
-- [ ] Build del frontend pasa con el comando documentado, sin advertencias nuevas injustificadas.
-- [ ] >= 1 skill adicional descubierta con `npx skills find` y aplicada con justificacion escrita.
-- [ ] Skill interna en `.skills/` bien estructurada (objetivo, inputs, outputs, criterios de aceptacion) y especifica del proyecto.
-- [ ] Memory bank refleja con precision el trabajo de la sesion.
-- [ ] Cambios en `feature/agent-skills` con commits claros, idealmente uno por skill aplicada.
-- [ ] El trabajo se lee como mejora impulsada por agente y verificada, sin ediciones masivas sin revisar.
+- [x] `accessibility` y `vercel-react-best-practices` cargadas y aplicadas; mejoras visibles y trazables a sus instrucciones.
+- [x] Accesibilidad verificada: teclado, `aria-*` donde haga falta, `alt` presente, contraste basico.
+- [x] Build del frontend pasa con el comando documentado, sin advertencias nuevas injustificadas.
+- [x] >= 1 skill adicional descubierta con `npx skills find` y aplicada con justificacion escrita.
+- [x] Skill interna en `.skills/` bien estructurada (objetivo, inputs, outputs, criterios de aceptacion) y especifica del proyecto.
+- [x] Memory bank refleja con precision el trabajo de la sesion.
+- [x] Cambios en `feature/agent-skills` con commits claros, idealmente uno por skill aplicada.
+- [x] El trabajo se lee como mejora impulsada por agente y verificada, sin ediciones masivas sin revisar.
 
 ## 12. Control de cierre
 
 | Fase | Rama | PR | Commits | Estado |
 | --- | --- | --- | --- | --- |
-| 1 Preparacion y descubrimiento | `feature/agent-skills-fase1-setup` | - | - | pendiente |
-| 2 Accessibility | `feature/agent-skills-fase2-accessibility` | - | - | pendiente |
-| 3 React best practices | `feature/agent-skills-fase3-react-best-practices` | - | - | pendiente |
-| 4 Ecosistema | `feature/agent-skills-fase4-ecosystem` | - | - | pendiente |
-| 5 Skill interna | `feature/agent-skills-fase5-internal-skill` | - | - | pendiente |
-| 6 Memory bank | `feature/agent-skills-fase6-memory-bank` | - | - | pendiente |
-| Final | `feature/agent-skills` -> `main` | - | - | pendiente |
+| 1 Preparacion y descubrimiento | `feature/agent-skills-fase1-setup` | PR #11 | `442f11d`, `4b9af5b` (merge `3ed7ade`) | completada 2026-11-16 |
+| 2 Accessibility | `feature/agent-skills-fase2-accessibility` | PR #12 | `ff050ce`, `e83eb48` (merge `98e6bc5`) | completada 2026-11-16 |
+| 3 React best practices | `feature/agent-skills-fase3-react-best-practices` | PR #13 | `c06ede3`, `cd45cd2` (merge `23f4da1`) | completada 2026-11-16 |
+| 4 Ecosistema | `feature/agent-skills-fase4-ecosystem` | PR #14 | `2b7f444`, `99e7066`, `7e13588` (merge `894c4eb`) | completada 2026-11-17 |
+| 5 Skill interna | `feature/agent-skills-fase5-internal-skill` | PR #15 | `97bce11`, `ce66108`, `04d13bb` (merge `1c25a99`) | completada 2026-11-17 |
+| 6 Memory bank | `feature/agent-skills-fase6-memory-bank` | PR #16 | `c8a29a8`, `1b8e111` (merge `95ab9e0`) | completada 2026-11-17 |
+| Final | `feature/agent-skills` -> `main` | PR #17 | `241efe4` (cierre del roadmap) | abierto 2026-11-17 |
 
 Definition of Done: las seis fases cerradas con su PR y commits identificables, la rama de integracion con PR abierto contra `main`, cada cambio de codigo trazable a una instruccion de skill y verificado en la app o con los comandos documentados, y ningun resultado inventado. Una fase con un check bloqueado sigue abierta aunque se haya escrito su codigo.

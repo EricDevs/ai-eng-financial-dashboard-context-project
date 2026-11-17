@@ -53,8 +53,8 @@ export function ProfitPercentChart({ data, loading }: ProfitPercentChartProps) {
     return (
       <Card className="border-border/60">
         <CardHeader className="pb-4">
-          <Skeleton className="h-5 w-52" />
-          <Skeleton className="h-3 w-64 mt-1" />
+          <Skeleton className="h-5 w-52 my-0.5" />
+          <Skeleton className="h-3 w-64 my-1" />
         </CardHeader>
         <CardContent>
           <Skeleton className="h-[280px] w-full rounded-lg" />
@@ -78,16 +78,21 @@ export function ProfitPercentChart({ data, loading }: ProfitPercentChartProps) {
           </div>
         ) : (
           <ResponsiveContainer width="100%" height={280}>
-            <LineChart data={data} margin={{ top: 4, right: 8, left: 0, bottom: 0 }}>
+            <LineChart
+              data={data}
+              margin={{ top: 4, right: 8, left: 0, bottom: 0 }}
+              title="Profit Margin %"
+              desc="Monthly profit as a percentage of total income. Use the arrow keys to read each month."
+            >
               <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" strokeOpacity={0.6} />
               <XAxis
                 dataKey="month"
-                tick={{ fontSize: 12, fill: 'var(--color-muted-foreground)' }}
+                tick={{ fontSize: 12, fill: 'var(--muted-foreground)' }}
                 axisLine={false}
                 tickLine={false}
               />
               <YAxis
-                tick={{ fontSize: 11, fill: 'var(--color-muted-foreground)' }}
+                tick={{ fontSize: 11, fill: 'var(--muted-foreground)' }}
                 axisLine={false}
                 tickLine={false}
                 tickFormatter={(v) => `${v.toFixed(0)}%`}

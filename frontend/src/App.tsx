@@ -1,8 +1,8 @@
-import { useEffect, useState } from "react";
+import { lazy, Suspense, useEffect, useState } from "react";
 import { DashboardHeader } from "@/components/dashboard/dashboard-header";
 import { KPIRow } from "@/components/dashboard/kpi-row";
-import { IncomeOutcomeChart } from "@/components/dashboard/income-outcome-chart";
-import { ProfitPercentChart } from "@/components/dashboard/profit-percent-chart";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   type FinancialMovement,
   type KPIMetrics,
@@ -11,6 +11,33 @@ import {
 import { computeKPIs, computeMonthlyData } from "@/lib/financial-utils";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "";
+
+// Charts pull in Recharts (~60% of the JS); load them in a separate chunk.
+const IncomeOutcomeChart = lazy(() =>
+  import("@/components/dashboard/income-outcome-chart").then((m) => ({
+    default: m.IncomeOutcomeChart,
+  })),
+);
+const ProfitPercentChart = lazy(() =>
+  import("@/components/dashboard/profit-percent-chart").then((m) => ({
+    default: m.ProfitPercentChart,
+  })),
+);
+
+/** Same markup as the charts' own loading state, so the swap causes no layout shift. */
+function ChartFallback() {
+  return (
+    <Card className="border-border/60">
+      <CardHeader className="pb-4">
+        <Skeleton className="h-5 w-52 my-0.5" />
+        <Skeleton className="h-3 w-64 my-1" />
+      </CardHeader>
+      <CardContent>
+        <Skeleton className="h-[280px] w-full rounded-lg" />
+      </CardContent>
+    </Card>
+  );
+}
 
 async function fetchFinancialData(): Promise<FinancialMovement[]> {
   const response = await fetch(`${API_BASE_URL}/api/metrics`);
@@ -49,21 +76,30 @@ function App() {
           <DashboardHeader period="2024 - Full Year" />
 
           {error ? (
-            <div className="rounded-lg border border-destructive/30 bg-destructive/10 p-4 text-sm text-destructive-foreground">
+            <div
+              role="alert"
+              lang="es"
+              className="rounded-lg border border-destructive/30 bg-destructive/10 p-4 text-sm text-destructive-foreground"
+            >
               {error}
             </div>
           ) : null}
 
-          <section aria-label="Key performance indicators">
+          <section aria-label="Key performance indicators" aria-busy={loading}>
             <KPIRow metrics={metrics} loading={loading} />
           </section>
 
           <section
             aria-label="Financial charts"
+            aria-busy={loading}
             className="grid grid-cols-1 gap-4 xl:grid-cols-2"
           >
-            <IncomeOutcomeChart data={monthlyData} loading={loading} />
-            <ProfitPercentChart data={monthlyData} loading={loading} />
+            <Suspense fallback={<ChartFallback />}>
+              <IncomeOutcomeChart data={monthlyData} loading={loading} />
+            </Suspense>
+            <Suspense fallback={<ChartFallback />}>
+              <ProfitPercentChart data={monthlyData} loading={loading} />
+            </Suspense>
           </section>
         </div>
       </div>

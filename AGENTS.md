@@ -5,8 +5,8 @@ Agents working on this project **must**:
 - Look for **work instructions and rules** in the directory:  
   `./.agents/rules`
 
-- Look for available **agent skills** in the directory:  
-  `./.agents/skills`
+- Look for available **agent skills** in the directories:  
+  `./.agents/skills` (community skills) and `./.skills` (project skills)
 
 - Look for the **project memory bank** in:  
   `./memory-bank`  
@@ -33,8 +33,18 @@ the task; a test of API or calendar behavior also needs its domain rule.
 
 Before editing, name the rule IDs read and state their relevant scope. If a
 referenced instruction cannot be read, report that limitation instead of
-claiming it was loaded. Read `.agents/skills` and `memory-bank` if present;
-their absence does not authorize inventing skills or project memory.
+claiming it was loaded. Read `.agents/skills`, `.skills` and `memory-bank` if
+present; their absence does not authorize inventing skills or project memory.
+
+## Skill routing
+
+Community skills are installed with `npx skills add` into `.agents/skills` and
+pinned in `skills-lock.json`. Project skills are written for this repo and live
+in `.skills`. Read a skill's `SKILL.md` when the task matches its trigger:
+
+| Skill | Use when |
+| --- | --- |
+| [verify-frontend-change](.skills/verify-frontend-change/SKILL.md) | A frontend code change (frontend/src, frontend/index.html or its config) is finished, before claiming it works or improves something |
 
 The source proposals are in [04 - Conventions](docs/validations/04-conventions.md).
 Record rule exercises, exact prompts, observed outputs, checks and limitations
@@ -48,7 +58,9 @@ or when asked for a product/status summary: [overview](memory-bank/overview.md)
 (what the product does and its known product-level gap), [stack](memory-bank/stack.md)
 (languages, frameworks, infra and already-verified commands) and
 [status](memory-bank/status.md) (implemented vs. proven, known gaps, next
-priorities and commit/integration history). Memory is factual evidence from
+priorities and commit/integration history). Read [progress](memory-bank/progress.md)
+for the agent skills applied, the changes they verified and why each skill
+was chosen. Memory is factual evidence from
 past phases, not a task queue; absence of a feature here does not authorize
 building it. If a fact here conflicts with the current code or docs, trust
 what you observe now and flag the memory file as stale instead of acting on it.
