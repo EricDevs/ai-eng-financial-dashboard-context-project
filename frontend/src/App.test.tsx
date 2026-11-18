@@ -36,7 +36,7 @@ describe("App loading and error states", () => {
     root.render(<App />);
 
     await vi.waitFor(() => {
-      expect(busyStates()).toEqual(["true", "true"]);
+      expect(busyStates()).toEqual(["true", "true", "true"]);
     });
   });
 
@@ -59,7 +59,7 @@ describe("App loading and error states", () => {
     const alert = container.querySelector('[role="alert"]');
     expect(alert?.getAttribute("lang")).toBe("es");
     expect(alert?.textContent).toContain("No se pudo cargar");
-    expect(busyStates()).toEqual(["false", "false"]);
+    expect(busyStates()).toEqual(["false", "false", "false"]);
     expect(container.querySelectorAll("h1")).toHaveLength(1);
     expect(
       [...container.querySelectorAll("h2")].map((heading) => heading.textContent),
@@ -70,6 +70,7 @@ describe("App loading and error states", () => {
       "Profit Margin",
       "Income vs. Outcome",
       "Profit Margin %",
+      "Anomaly Alerts",
     ]);
   });
 });
@@ -294,6 +295,167 @@ describe("date range filter", () => {
       expect(url).not.toMatch(/=(&|$)/);
       expect(url).not.toContain("undefined");
       expect(url).not.toMatch(/category|operation_type/);
+    }
+  });
+});
+
+const ALERT = {
+  period: "2026-03",
+  outcome_total: 88075.59,
+  baseline_average: 55334.29,
+  increase_ratio: 0.5917,
+};
+const alertCalls = (fetchMock: FetchMock) =>
+  calledUrls(fetchMock).filter((url) => url.startsWith("/api/metrics/alerts"));
+const alertRows = () =>
+  [...container.querySelectorAll('section[aria-label="Anomaly alerts"] tbody tr')].map(
+    (row) => row.querySelector("td")?.textContent,
+  );
+
+async function setThreshold(value: string) {
+  setInputValue(inputByLabel(container, "Alert threshold"), value);
+  await vi.waitFor(() => expect(inputByLabel(container, "Alert threshold").value).toBe(value));
+}
+
+describe("anomaly alerts", () => {
+  it("requests alerts with the default threshold on load", async () => {
+    const fetchMock = stubApi();
+    await renderLoaded();
+    await vi.waitFor(() =>
+      expect(alertCalls(fetchMock)).toEqual(["/api/metrics/alerts?threshold=0.3"]),
+    );
+  });
+
+  it("refetches with a valid threshold", async () => {
+    const fetchMock = stubApi();
+    await renderLoaded();
+
+    for (const [text, url] of [
+      ["0.5", "/api/metrics/alerts?threshold=0.5"],
+      ["0.01", "/api/metrics/alerts?threshold=0.01"],
+      ["1.0", "/api/metrics/alerts?threshold=1"],
+    ]) {
+      await setThreshold(text);
+      await vi.waitFor(() => expect(alertCalls(fetchMock).at(-1)).toBe(url));
+    }
+  });
+
+  it("does not request with an invalid threshold", async () => {
+    const fetchMock = stubApi((url) =>
+      url.startsWith("/api/metrics/alerts") ? Promise.resolve(jsonResponse([ALERT])) : undefined,
+    );
+    await renderLoaded();
+    await vi.waitFor(() => expect(alertRows()).toEqual(["2026-03"]));
+    const callsBefore = alertCalls(fetchMock).length;
+
+    for (const text of ["", "0", "5"]) {
+      await setThreshold(text);
+      await vi.waitFor(() =>
+        expect(container.textContent).toContain("Enter a value between 0.01 and 1.0."),
+      );
+    }
+    await tick();
+    expect(alertCalls(fetchMock)).toHaveLength(callsBefore);
+    expect(alertRows()).toEqual(["2026-03"]);
+  });
+
+  it("refetches alerts when the date filter changes", async () => {
+    const fetchMock = stubApi();
+    await renderLoaded();
+    await setThreshold("0.5");
+    await setDate("Start date", "2026-01-01");
+    await vi.waitFor(() =>
+      expect(alertCalls(fetchMock).at(-1)).toBe(
+        "/api/metrics/alerts?threshold=0.5&start_date=2026-01-01",
+      ),
+    );
+  });
+
+  it("does not request alerts with a date filter that cannot be requested", async () => {
+    const fetchMock = stubApi();
+    await renderLoaded();
+    await vi.waitFor(() => expect(container.textContent).toContain("Available data"));
+    await setDate("End date", "2026-01-01");
+    await vi.waitFor(() =>
+      expect(alertCalls(fetchMock).at(-1)).toBe("/api/metrics/alerts?threshold=0.3&end_date=2026-01-01"),
+    );
+    const callsBefore = alertCalls(fetchMock).length;
+
+    for (const start of ["2026-02-01", "0019-02-02", "1900-02-02"]) {
+      await setDate("Start date", start);
+    }
+    await tick();
+    expect(alertCalls(fetchMock)).toHaveLength(callsBefore);
+  });
+
+  it("applies a threshold typed during an invalid range once fixed", async () => {
+    const fetchMock = stubApi();
+    await renderLoaded();
+    await setDate("Start date", "2026-02-01");
+    await setDate("End date", "2026-01-01");
+    await vi.waitFor(() =>
+      expect(container.textContent).toContain("Start date must be on or before end date."),
+    );
+    await setThreshold("0.4");
+    await tick();
+    expect(alertCalls(fetchMock).some((url) => url.includes("threshold=0.4"))).toBe(false);
+
+    await setDate("Start date", "2025-12-01");
+    await vi.waitFor(() =>
+      expect(alertCalls(fetchMock).at(-1)).toBe(
+        "/api/metrics/alerts?threshold=0.4&start_date=2025-12-01&end_date=2026-01-01",
+      ),
+    );
+  });
+
+  it("keeps alert errors inside the card", async () => {
+    stubApi((url) => {
+      if (url === "/api/metrics/alerts?threshold=0.3") return Promise.resolve(jsonResponse(null, 500));
+      if (url.startsWith("/api/metrics/alerts")) return Promise.resolve(jsonResponse([ALERT]));
+      return undefined;
+    });
+    await renderLoaded();
+    await vi.waitFor(() =>
+      expect(container.textContent).toContain("Could not load anomaly alerts."),
+    );
+    expect(container.textContent).not.toContain("No se pudo cargar");
+    expect(kpiValues()).toEqual(["$1,000", "$250", "$750", "75.0%"]);
+
+    await setThreshold("0.4");
+    await vi.waitFor(() => {
+      expect(container.textContent).not.toContain("Could not load anomaly alerts.");
+      expect(alertRows()).toEqual(["2026-03"]);
+    });
+  });
+
+  it("renders only the latest alerts response", async () => {
+    const first = deferred<Response>();
+    const second = deferred<Response>();
+    stubApi((url) => {
+      if (url === "/api/metrics/alerts?threshold=0.4") return first.promise;
+      if (url === "/api/metrics/alerts?threshold=0.5") return second.promise;
+      return undefined;
+    });
+    await renderLoaded();
+
+    await setThreshold("0.4");
+    await setThreshold("0.5");
+    second.resolve(jsonResponse([{ ...ALERT, period: "2026-06" }]));
+    await vi.waitFor(() => expect(alertRows()).toEqual(["2026-06"]));
+    first.resolve(jsonResponse([{ ...ALERT, period: "2025-12" }]));
+    await tick();
+    expect(alertRows()).toEqual(["2026-06"]);
+  });
+
+  it("never sends group_by or business_type to alerts", async () => {
+    const fetchMock = stubApi();
+    await renderLoaded();
+    await setThreshold("0.5");
+    await setDate("Start date", "2026-01-01");
+    await vi.waitFor(() => expect(alertCalls(fetchMock).length).toBeGreaterThan(1));
+
+    for (const url of alertCalls(fetchMock)) {
+      expect(url).not.toMatch(/group_by|business_type/);
     }
   });
 });

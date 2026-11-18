@@ -1,17 +1,20 @@
 import { lazy, Suspense, useState } from "react";
+import { AlertsTable } from "@/components/dashboard/alerts-table";
 import { DashboardHeader } from "@/components/dashboard/dashboard-header";
 import { DateRangePicker } from "@/components/dashboard/date-range-picker";
 import { KPIRow } from "@/components/dashboard/kpi-row";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { buildQuery } from "@/lib/api";
-import { type FacetsResponse } from "@/lib/api-types";
+import { type AlertsResponse, type FacetsResponse } from "@/lib/api-types";
 import { type FinancialMovement } from "@/lib/financial-types";
 import {
   computeKPIs,
   computeMonthlyData,
   formatPeriodLabel,
   getDateRangeIssue,
+  parseThreshold,
+  THRESHOLD_DEFAULT,
 } from "@/lib/financial-utils";
 import { type DateRangeFilter } from "@/lib/param-types";
 import { useApiResource } from "@/lib/use-api-resource";
@@ -49,9 +52,25 @@ function App() {
   const bounds = facets.data
     ? { min_date: facets.data.min_date, max_date: facets.data.max_date }
     : null;
+  const requestable = getDateRangeIssue(filter, bounds) === null;
   const movements = useApiResource<FinancialMovement[]>(
-    getDateRangeIssue(filter, bounds) === null ? `/api/metrics${buildQuery(filter)}` : null,
+    requestable ? `/api/metrics${buildQuery(filter)}` : null,
   );
+
+  const [thresholdText, setThresholdText] = useState(String(THRESHOLD_DEFAULT));
+  const [appliedThreshold, setAppliedThreshold] = useState(THRESHOLD_DEFAULT);
+  const alerts = useApiResource<AlertsResponse>(
+    requestable
+      ? `/api/metrics/alerts${buildQuery({ threshold: appliedThreshold, ...filter })}`
+      : null,
+  );
+
+  /** Keeps the typed text; applies it only when valid, even with a filter that cannot be requested (DEC-08). */
+  function handleThresholdChange(text: string) {
+    setThresholdText(text);
+    const threshold = parseThreshold(text);
+    if (threshold !== null) setAppliedThreshold(threshold);
+  }
 
   const metrics = movements.data?.length ? computeKPIs(movements.data) : null;
   const monthlyData = movements.data ? computeMonthlyData(movements.data) : [];
@@ -101,6 +120,17 @@ function App() {
             <Suspense fallback={<ChartFallback />}>
               <ProfitPercentChart data={monthlyData} loading={movements.loading} />
             </Suspense>
+          </section>
+
+          <section aria-label="Anomaly alerts" aria-busy={alerts.loading}>
+            <AlertsTable
+              alerts={alerts.data}
+              appliedThreshold={appliedThreshold}
+              thresholdText={thresholdText}
+              onThresholdChange={handleThresholdChange}
+              loading={alerts.loading}
+              error={alerts.error}
+            />
           </section>
         </div>
       </div>
