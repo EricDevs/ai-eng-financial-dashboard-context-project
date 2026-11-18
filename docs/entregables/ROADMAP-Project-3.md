@@ -137,3 +137,39 @@ Checklist de cierre:
 | Final | `feature/frontend-specs` -> `main` | PR #9 | n/a (merge `24884e1`) | completada 2026-11-16 |
 
 Definition of Done: las cuatro fases cerradas con su PR y commits identificables, la rama de integracion mergeada en `main`, todas las afirmaciones de API verificadas (✅) o explicitamente marcadas (❓), y ningun resultado inventado. Una fase bloqueada sigue abierta aunque se haya escrito su documento.
+
+## 9. Ampliacion v2: planes, implementacion y prueba de traspaso
+
+Fecha de apertura: 2026-11-18. Continua el ejercicio: comprobar que las specs permiten desarrollar las tres funcionalidades sin que el agente tenga dudas ni tome decisiones por su cuenta. La restriccion "no se implementa nada" del encabezado vale para las fases 1-4; en esta ampliacion si se implementa.
+
+Ciclo de trabajo: la spec se versiona (v1.1 en adelante) y, por cada version, se actualizan el plan y la implementacion. Git guarda el historial; los archivos reflejan la ultima version aprobada.
+
+### 9.1 Ramas y PR
+
+Mismas reglas que la seccion 2: rama de integracion `feature/frontend-specs-v2` (desde `main` actualizado, `43248bf`), una rama por fase con PR hacia ella y merge commit, y PR final a `main`. No commitear ni hacer merge sin aprobacion del mantenedor.
+
+| Fase | Rama | Contenido |
+| --- | --- | --- |
+| 5 Planes y mejora de specs | `feature/frontend-specs-v2-fase5-plans` | Spec v1.1 a v1.4 (`components.md`, `README.md`), planes de [docs/plans](../plans) y esta seccion |
+| 6 F1 (iteracion 1) | `feature/frontend-specs-v2-fase6-f1` | Codigo de F1, tests y evidencia en `docs/validations/08-features-checks.md` |
+| 7 F2 (iteracion 1) | `feature/frontend-specs-v2-fase7-f2` | Plan F2 adaptado a la spec vigente, codigo, tests, prueba visual y correcciones de spec |
+| 8 F3 (iteracion 1) | `feature/frontend-specs-v2-fase8-f3` | Igual para F3 |
+| 9 Prueba de traspaso | `feature/frontend-specs-v2-fase9-handover` | Ejecucion limpia y su evidencia |
+
+### 9.2 Fase 9: prueba de traspaso
+
+- Rama creada desde el commit de merge de la fase 5 (spec y planes, sin codigo de la iteracion 1).
+- Chat nuevo, sin contexto previo. El agente lee la spec y AGENTS.md, **genera su propio plan** (los planes de la iteracion 1 no se le dan: contienen el codigo), el mantenedor revisa ese plan y el agente implementa a partir de el.
+- En cada etapa el agente anota toda pregunta o decision que la spec no resuelva. Criterio de exito: tests en verde, prueba visual del mantenedor correcta y **ninguna decision propia del agente**. Cada decision anotada es un hueco de la spec: se corrige y se repite.
+- Se integran la evidencia y las correcciones de la spec. El codigo de la iteracion 1 (fases 6-8) es el que queda en la rama de integracion; el de la fase 9 se conserva en su rama para comparar, porque integrarlo encima obligaria a resolver conflictos en los mismos archivos.
+
+### 9.3 Control de cierre v2
+
+| Fase | Rama | PR | Commits | Estado |
+| --- | --- | --- | --- | --- |
+| 5 Planes y specs | `feature/frontend-specs-v2-fase5-plans` | — | — | en curso |
+| 6 F1 | `feature/frontend-specs-v2-fase6-f1` | — | — | implementado sin commit; prueba visual aprobada (2 rondas) |
+| 7 F2 | `feature/frontend-specs-v2-fase7-f2` | — | — | pendiente |
+| 8 F3 | `feature/frontend-specs-v2-fase8-f3` | — | — | pendiente |
+| 9 Traspaso | `feature/frontend-specs-v2-fase9-handover` | — | — | pendiente |
+| Final | `feature/frontend-specs-v2` -> `main` | — | — | pendiente |
