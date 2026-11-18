@@ -1,6 +1,6 @@
 # F2 - Tabla de alertas de anomalias: plan de implementacion
 
-**Version:** 5.1 | **Fecha:** 2026-11-18 | **Estado:** version de entrega, sin codigo; pendiente de ejecutar | **Spec:** v1.5
+**Version:** 5.2 | **Fecha:** 2026-11-18 | **Estado:** version de entrega, sin codigo; iteracion 1 en curso (fase 7) | **Spec:** v1.6
 
 **Como ejecutar:** tarea por tarea y en orden; marcar cada paso (`- [ ]`) al completarlo. No empezar una tarea sin que la anterior tenga sus tests en verde. Cada test se ve fallar antes de implementar.
 
@@ -12,7 +12,7 @@
 
 **Stack:** React 19.2, TypeScript ~6.0, Vitest 4 + jsdom, Tailwind 4.
 
-**Spec:** [components.md v1.5](../../frontend/specs/components.md): F2, convenciones comunes (precedencia de estados, roles ARIA y aspecto de los errores), regla unica de peticion, disposicion de la pagina y DEC-06 a DEC-09, DEC-16, DEC-18, DEC-19, DEC-26 y DEC-29. Evidencia de la API en [verification.md](../../frontend/specs/verification.md#f2---tabla-de-alertas-de-anomalias).
+**Spec:** [components.md v1.6](../../frontend/specs/components.md): F2 (incluida su seccion de presentacion), convenciones comunes (precedencia de estados, roles ARIA y aspecto de los errores), regla unica de peticion, disposicion de la pagina y DEC-06 a DEC-09, DEC-16, DEC-18, DEC-19, DEC-26, DEC-29 y DEC-30. Evidencia de la API en [verification.md](../../frontend/specs/verification.md#f2---tabla-de-alertas-de-anomalias).
 
 **Depende de:** [plan F1](f1-date-range-filter.md) ejecutado (`buildQuery`, `useApiResource`, `getDateRangeIssue`, `bounds` en `App`, `AlertsResponse`, `test-helpers.ts`, `stubApi` de `App.test.tsx`).
 
@@ -82,7 +82,7 @@
 
 - [ ] **Paso 0: extraer `ErrorNotice`** sin cambiar su marcado ni sus clases. Verificar con `npm --prefix frontend test -- src/components/dashboard/date-range-picker.test.tsx` -> PASS (14 tests, sin cambios en los tests).
 
-**Interfaces (produce):** `ThresholdInput({ value, onChange }: ThresholdInputProps)`. `<input type="number">` con `min=THRESHOLD_MIN`, `max=THRESHOLD_MAX`, `step=0.01`, etiqueta visible `Alert threshold` (con `useId`) y ayuda `Ratio between 0.01 and 1.0 (default 0.3).` asociada con `aria-describedby`. Si `parseThreshold(value)` es `null`: `aria-invalid="true"` y error `Enter a value between 0.01 and 1.0.` con `ErrorNotice` (DEC-29). Emite el texto tal cual.
+**Interfaces (produce):** `ThresholdInput({ value, onChange }: ThresholdInputProps)`. `<input type="number">` con `min=THRESHOLD_MIN`, `max=THRESHOLD_MAX`, `step=0.01`, etiqueta visible `Alert threshold` (con `useId`) y ayuda `Ratio between 0.01 and 1.0 (default 0.3).` asociada con `aria-describedby`. Si `parseThreshold(value)` es `null`: `aria-invalid="true"` y error `Enter a value between 0.01 and 1.0.` con `ErrorNotice` (DEC-29). Emite el texto tal cual. Disposicion (DEC-30): etiqueta, input y ayuda en una fila que se apila si no cabe, y el aviso debajo; input con el tamano y estilo de los inputs de fecha de F1.
 
 - [ ] **Paso 1: tests que fallan**
 
@@ -104,7 +104,7 @@
 
 **Interfaces (produce):** `AlertsTable(props: AlertsTableProps)` con las props de la spec.
 
-**Comportamiento a implementar:** `Card` con titulo `Anomaly Alerts` (DEC-06), ayuda `Average outcome of all earlier periods in the selected range.` y `ThresholdInput` en la cabecera. Cuerpo segun la precedencia (DEC-16):
+**Comportamiento a implementar:** `Card` con titulo `Anomaly Alerts` (DEC-06) y ayuda `Average outcome of all earlier periods in the selected range.` en la cabecera; en el contenido, de arriba abajo, `ThresholdInput` y despues la tabla o su estado (DEC-30: el control no va en una columna lateral de la cabecera). Cuerpo segun la precedencia (DEC-16):
 - `loading`: tabla con cabecera y 3 filas de `Skeleton` en `tbody`; input activo.
 - `error`: `Could not load anomaly alerts.` con `ErrorNotice` (DEC-29) y sin tabla.
 - `alerts` vacio o `null`: tabla con cabecera; en `tbody`, un elemento con `role="status"` con `No anomalies detected for the current threshold ({formatPercent(appliedThreshold * 100)}).` y `Try a lower threshold or a wider date range.` (DEC-09, DEC-18).
@@ -164,7 +164,7 @@ Procedimiento del repositorio para verificar cambios del frontend: [.skills/veri
 
 - [ ] **Paso 1:** lint, tests y build -> sin errores ni avisos nuevos.
 - [ ] **Paso 2: los tests detectan la rotura:** quitar `role="alert"` de `ThresholdInput` -> falla `shows an error for invalid text`; aplicar el umbral sin `parseThreshold` -> falla `does not request with an invalid threshold`; pedir alertas sin la regla unica -> falla `does not request alerts with a date filter that cannot be requested`. Restaurar tras cada una.
-- [ ] **Paso 3: app en ejecucion** (usuario; confirmar con `curl` que Vite sirve `alerts-table.tsx`): comparar fila a fila con `curl "http://localhost:8000/api/metrics/alerts?threshold=0.3"` (el dataset depende de la fecha de hoy); `1.0`; `0`, `5`, `0,3` y vacio sin peticion (pestana Red); un rango de un mes -> vacio; backend parado -> error solo en la tarjeta; los errores con el mismo aviso rojo que el filtro de fechas (DEC-29).
+- [ ] **Paso 3: app en ejecucion** (usuario; confirmar con `curl` que Vite sirve `alerts-table.tsx`): comparar fila a fila con `curl "http://localhost:8000/api/metrics/alerts?threshold=0.3"` (el dataset depende de la fecha de hoy); `1.0`; `0`, `5`, `0,3` y vacio sin peticion (pestana Red); un rango de un mes -> vacio; backend parado -> error solo en la tarjeta; los errores con el mismo aviso rojo que el filtro de fechas (DEC-29); disposicion de la tarjeta sin hueco entre el titulo y la tabla (AC-F2-14).
 - [ ] **Paso 4:** pasar a la spec lo que surja de la prueba visual; registrar evidencia; actualizar memory-bank; `git diff --check`.
 - [ ] **Paso 5: commit** `docs(f2): record verification evidence`.
 
@@ -179,3 +179,4 @@ Procedimiento del repositorio para verificar cambios del frontend: [.skills/veri
 | 4.0 | 2026-11-18 | Ejemplos de codigo de implementacion en cada tarea (commit `9297324`) |
 | 5.0 | 2026-11-18 | Version de entrega sin codigo, adaptada a la spec 1.4: regla unica de peticion para alertas (DEC-26) y su test; hueco H-11 (estilo de los errores de F2) |
 | 5.1 | 2026-11-18 | Spec 1.5: H-11 pasa a DEC-29 (decision del usuario: el aviso rojo de F1); `ErrorNotice` se extrae a un componente compartido (Tarea 2, paso 0) |
+| 5.2 | 2026-11-18 | Spec 1.6, tras la prueba visual de F2: disposicion de la tarjeta en una columna y tamano del input del umbral (DEC-30) en las Tareas 2 y 3; comprobacion visual AC-F2-14 en la Tarea 5 |

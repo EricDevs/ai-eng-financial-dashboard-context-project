@@ -1,10 +1,10 @@
 # Especificacion de componentes
 
-**Version:** 1.5 | **Fecha:** 2026-11-18 | Cambios en el [Historial de versiones](#historial-de-versiones).
+**Version:** 1.6 | **Fecha:** 2026-11-18 | Cambios en el [Historial de versiones](#historial-de-versiones).
 
 Capa frontend de tres funcionalidades del dashboard financiero. Es una especificacion: no hay codigo React ni llamadas a la API. Tipos en [api-types.ts](api-types.ts) y [param-types.ts](param-types.ts); evidencia de la API en [verification.md](verification.md).
 
-Las versiones 1.1 a 1.3 no cambian el comportamiento de la 1.0: cierran decisiones que la 1.0 dejaba abiertas para poder implementar sin preguntas. La 1.4 **si cambia** un comportamiento de la 1.0, tras la prueba visual de F1: una fecha fuera del rango disponible pasa a ser un error de validacion (DEC-26). La 1.5 fija el aspecto de los errores de F2 y F3 (DEC-29). Cada una tiene un ID `DEC-xx` y se explica en [Decisiones de implementacion](#decisiones-de-implementacion); en el texto se marcan con la version que la introdujo, por ejemplo `(v1.1, DEC-xx)`.
+Las versiones 1.1 a 1.3 no cambian el comportamiento de la 1.0: cierran decisiones que la 1.0 dejaba abiertas para poder implementar sin preguntas. La 1.4 **si cambia** un comportamiento de la 1.0, tras la prueba visual de F1: una fecha fuera del rango disponible pasa a ser un error de validacion (DEC-26). La 1.5 fija el aspecto de los errores de F2 y F3 (DEC-29) y la 1.6 la disposicion de la tarjeta de alertas (DEC-30). Cada una tiene un ID `DEC-xx` y se explica en [Decisiones de implementacion](#decisiones-de-implementacion); en el texto se marcan con la version que la introdujo, por ejemplo `(v1.1, DEC-xx)`.
 
 ## Convenciones comunes
 
@@ -278,6 +278,17 @@ Es una tabla HTML (`table`, `thead`, `tbody`); los mensajes de vacio y las filas
 
 `<input type="number">` con `min=0.01`, `max=1`, `step=0.01`, etiqueta `Alert threshold` y ayuda `Ratio between 0.01 and 1.0 (default 0.3).` Valor inicial `'0.3'`. Los extremos 0.01 y 1.0 son validos. Un texto vacio o no numerico (el navegador entrega `''` para una entrada que no es un numero, por ejemplo `0,3`) es invalido.
 
+El umbral es el incremento minimo (ratio) que debe superar un periodo: se muestran los periodos con `increase_ratio > threshold`. Solo afecta a la tabla de alertas, no a los KPI ni a los graficos.
+
+### Presentacion de F2 (v1.6, DEC-30)
+
+| Elemento | Requisito |
+| --- | --- |
+| Disposicion de la tarjeta | De arriba abajo: titulo y linea de ayuda; fila del umbral; aviso de error del umbral si lo hay; tabla (o su estado). El control **no** va en una columna lateral de la cabecera: en la prueba visual de F2 dejaba un hueco vacio entre el titulo y la tabla |
+| Fila del umbral | Etiqueta, input y ayuda en una sola linea (se apilan si no caben) |
+| Input | Mismos tamano y estilo que los inputs de fecha de F1: alto 44 px, texto de 16 px, fondo `card`, anillo de foco y borde rojo con `aria-invalid` |
+| Errores | Aviso rojo de DEC-29 |
+
 ### Renderizado condicional
 
 | Condicion | Que se muestra |
@@ -325,6 +336,7 @@ Es una tabla HTML (`table`, `thead`, `tbody`); los mensajes de vacio y las filas
 | AC-F2-11 | Si falla la peticion de alertas, entonces el sistema deberá mostrar `Could not load anomaly alerts.` solo en la tarjeta, sin activar el banner global ni vaciar los KPI |
 | AC-F2-12 | Si llegan respuestas fuera de orden, el sistema deberá mostrar solo la correspondiente al ultimo umbral y filtro |
 | AC-F2-13 | (v1.1, DEC-08) Cuando el usuario escribe un umbral valido mientras el rango de fechas es invalido, el sistema no deberá pedir datos; cuando el rango vuelva a ser valido, deberá pedir las alertas con ese umbral |
+| AC-F2-14 | (v1.6, DEC-30) El sistema deberá mostrar la tarjeta de alertas con la disposicion y el input de [Presentacion de F2](#presentacion-de-f2-v16-dec-30), sin espacio vacio entre el titulo y la tabla; se comprueba en la prueba visual, no en tests |
 
 ### Restricciones negativas de F2
 
@@ -518,7 +530,7 @@ Valen para las tres funcionalidades. Los invariantes son condiciones que nunca d
 
 ## Decisiones de implementacion
 
-Puntos que la version 1.0 no fijaba y que habia que decidir para implementar y escribir tests con valores exactos. Salieron de la revision de los planes de implementacion del 2026-11-18 y el usuario las acepto: DEC-01 a DEC-14 en la v1.1, DEC-15 a DEC-23 en la v1.2 (tras regenerar los planes sobre la v1.1) y DEC-24 en la v1.3 (tras regenerarlos sobre la v1.2). DEC-25 a DEC-28 salen de la prueba visual y de funcionamiento de F1 hecha por el usuario (v1.4). DEC-29 sale de adaptar los planes de F2 y F3 a la v1.4 (hueco H-11) y la decidio el usuario (v1.5). Los IDs no se renumeran ni se reutilizan; una decision retirada se marca como obsoleta.
+Puntos que la version 1.0 no fijaba y que habia que decidir para implementar y escribir tests con valores exactos. Salieron de la revision de los planes de implementacion del 2026-11-18 y el usuario las acepto: DEC-01 a DEC-14 en la v1.1, DEC-15 a DEC-23 en la v1.2 (tras regenerar los planes sobre la v1.1) y DEC-24 en la v1.3 (tras regenerarlos sobre la v1.2). DEC-25 a DEC-28 salen de la prueba visual y de funcionamiento de F1 hecha por el usuario (v1.4). DEC-29 sale de adaptar los planes de F2 y F3 a la v1.4 (hueco H-11) y la decidio el usuario (v1.5). DEC-30 sale de la prueba visual de F2 (v1.6). Los IDs no se renumeran ni se reutilizan; una decision retirada se marca como obsoleta.
 
 | ID | Decision | Motivo | Alternativa descartada |
 | --- | --- | --- | --- |
@@ -551,6 +563,7 @@ Puntos que la version 1.0 no fijaba y que habia que decidir para implementar y e
 | DEC-27 | `Available data` en una linea bajo los inputs; inputs y etiquetas mas grandes (alto 44 px, texto 16 px) | Prueba del usuario: el filtro se veia pequeno y la referencia a la derecha se perdia | — |
 | DEC-28 | Errores de validacion como aviso rojo (borde y fondo rojos translucidos, texto rojo claro, icono). `Clear dates` con borde y fondo del color primario y texto claro | Prueba del usuario: el error se veia en blanco (`--destructive-foreground` es casi blanco en el tema oscuro) y el boton, negro con texto gris, se distinguia poco. `--destructive` es demasiado oscuro para texto sobre el fondo oscuro, por eso el texto usa un rojo claro | Usar `--destructive` como color de texto (contraste insuficiente) |
 | DEC-29 | Los errores de F2 y F3 (umbral invalido, error de carga de alertas, de un grupo y del grafico comparativo) usan el mismo aviso rojo que F1 | DEC-28 solo cubria los errores de fechas; con `text-destructive-foreground` los de F2 y F3 se verian casi blancos, como paso en F1. Un unico estilo de error en toda la vista | Un estilo propio por tarjeta |
+| DEC-30 | Tarjeta de alertas en una columna: titulo, fila del umbral (etiqueta, input y ayuda en linea), aviso y tabla. Input del umbral con el tamano y estilo de los inputs de fecha de F1 | Prueba visual de F2: con el control en una columna lateral de la cabecera, su altura (etiqueta, input, ayuda y aviso) dejaba un hueco vacio entre el titulo y la tabla. El tamano del input no estaba fijado; se igualo al de F1 y el usuario lo vio en la prueba | Mantener la columna lateral y reducir la ayuda a un tooltip |
 
 ## Historial de versiones
 
@@ -562,3 +575,4 @@ Puntos que la version 1.0 no fijaba y que habia que decidir para implementar y e
 | 1.3 | 2026-11-18 | Decision DEC-24 (foco tras `Clear dates`), encontrada al regenerar los planes sobre la 1.2; criterio AC-F1-16. Sin cambios en el comportamiento de la 1.0 ni en los tipos |
 | 1.4 | 2026-11-18 | Tras la prueba visual de F1: DEC-25 a DEC-28; `getDateRangeIssue` y regla unica de peticion; criterios AC-F1-17 a AC-F1-20 (AC-F1-02 y AC-F1-05 ajustados); seccion de presentacion de F1; INV-7; prop `bounds` en `ComparisonPage`. **Cambia un comportamiento de la 1.0**: una fecha fuera del rango de `facets` pasa a ser error de validacion (DEC-26). Tipos de la API sin cambios |
 | 1.5 | 2026-11-18 | DEC-29: aspecto unico de los errores de F2 y F3 (el aviso rojo de F1), decidido por el usuario al adaptar los planes de F2 y F3 (hueco H-11). Sin cambios de comportamiento ni de tipos |
+| 1.6 | 2026-11-18 | Tras la prueba visual de F2: DEC-30 (disposicion de la tarjeta de alertas y tamano del input del umbral), criterio AC-F2-14 y aclaracion de que el umbral solo afecta a la tabla de alertas. Sin cambios de comportamiento ni de tipos |
