@@ -64,14 +64,12 @@ export function AlertsTable({
 }: AlertsTableProps) {
   return (
     <Card className="border-border/60">
-      <CardHeader className="flex flex-col gap-4 pb-4 sm:flex-row sm:items-start sm:justify-between">
-        <div>
-          <CardTitle className="text-base font-semibold">Anomaly Alerts</CardTitle>
-          <CardDescription>Average outcome of all earlier periods in the selected range.</CardDescription>
-        </div>
-        <ThresholdInput value={thresholdText} onChange={onThresholdChange} />
+      <CardHeader className="pb-2">
+        <CardTitle className="text-base font-semibold">Anomaly Alerts</CardTitle>
+        <CardDescription>Average outcome of all earlier periods in the selected range.</CardDescription>
       </CardHeader>
-      <CardContent>
+      <CardContent className="flex flex-col gap-5">
+        <ThresholdInput value={thresholdText} onChange={onThresholdChange} />
         {!loading && error ? (
           <ErrorNotice>Could not load anomaly alerts.</ErrorNotice>
         ) : (
