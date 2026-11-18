@@ -5,6 +5,9 @@ import {
   computeMonthlyData,
   formatCurrency,
   formatPercent,
+  formatPeriodLabel,
+  getDateRangeIssue,
+  isValidDateRange,
 } from "./financial-utils";
 import type { FinancialMovement } from "./financial-types";
 
@@ -148,5 +151,73 @@ describe("formatters", () => {
 
   it("formats percent with one decimal", () => {
     expect(formatPercent(15.555)).toBe("15.6%");
+  });
+});
+
+describe("date range", () => {
+  it("accepts empty, single-ended, equal and ordered ranges", () => {
+    expect(isValidDateRange({})).toBe(true);
+    expect(isValidDateRange({ start_date: "2026-01-01" })).toBe(true);
+    expect(isValidDateRange({ end_date: "2026-01-31" })).toBe(true);
+    expect(isValidDateRange({ start_date: "2026-01-15", end_date: "2026-01-15" })).toBe(true);
+    expect(isValidDateRange({ start_date: "2025-12-31", end_date: "2026-01-01" })).toBe(true);
+  });
+
+  it("rejects a start date after the end date", () => {
+    expect(isValidDateRange({ start_date: "2026-01-02", end_date: "2026-01-01" })).toBe(false);
+  });
+
+  it("labels the period with raw dates", () => {
+    expect(formatPeriodLabel({})).toBeNull();
+    expect(formatPeriodLabel({ start_date: "2026-01-01", end_date: "2026-01-31" })).toBe(
+      "2026-01-01 — 2026-01-31",
+    );
+    expect(formatPeriodLabel({ start_date: "2026-01-01" })).toBe("From 2026-01-01");
+    expect(formatPeriodLabel({ end_date: "2026-01-31" })).toBe("Until 2026-01-31");
+  });
+
+  it("labels an inverted range as typed", () => {
+    expect(formatPeriodLabel({ start_date: "2026-02-01", end_date: "2026-01-01" })).toBe(
+      "2026-02-01 — 2026-01-01",
+    );
+  });
+});
+
+describe("getDateRangeIssue", () => {
+  const bounds = { min_date: "2025-11-01", max_date: "2026-10-28" };
+
+  it("accepts ranges inside the bounds, including the limits", () => {
+    expect(getDateRangeIssue({}, bounds)).toBeNull();
+    expect(getDateRangeIssue({ start_date: "2025-11-01", end_date: "2026-10-28" }, bounds)).toBeNull();
+  });
+
+  it("treats a zero-padded year as a date still being typed", () => {
+    // Chrome emits 0001, 0019, 0190 while the user types the year 1900.
+    for (const start_date of ["0001-02-02", "0019-02-02", "0190-02-02"]) {
+      expect(getDateRangeIssue({ start_date }, bounds)).toBe("incomplete");
+      expect(getDateRangeIssue({ start_date }, null)).toBe("incomplete");
+    }
+  });
+
+  it("rejects complete dates outside the bounds", () => {
+    expect(getDateRangeIssue({ start_date: "1900-02-02" }, bounds)).toBe("outOfBounds");
+    expect(getDateRangeIssue({ end_date: "2026-10-29" }, bounds)).toBe("outOfBounds");
+    expect(getDateRangeIssue({ start_date: "2025-10-31" }, bounds)).toBe("outOfBounds");
+  });
+
+  it("does not check bounds when they are unknown", () => {
+    expect(getDateRangeIssue({ start_date: "1900-02-02" }, null)).toBeNull();
+  });
+
+  it("reports out of bounds before an inverted range", () => {
+    expect(getDateRangeIssue({ start_date: "2027-01-01", end_date: "2026-01-01" }, bounds)).toBe(
+      "outOfBounds",
+    );
+  });
+
+  it("reports an inverted range inside the bounds", () => {
+    expect(getDateRangeIssue({ start_date: "2026-02-01", end_date: "2026-01-01" }, bounds)).toBe(
+      "inverted",
+    );
   });
 });

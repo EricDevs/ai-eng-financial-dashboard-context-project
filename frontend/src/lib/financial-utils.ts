@@ -3,6 +3,7 @@ import {
   type KPIMetrics,
   type MonthlyDataPoint,
 } from "./financial-types";
+import type { DateRangeFilter } from "./param-types";
 
 function toYearMonthKey(value: Date): string {
   return `${value.getFullYear()}-${String(value.getMonth() + 1).padStart(2, "0")}`;
@@ -77,4 +78,38 @@ export function formatCurrency(value: number): string {
 
 export function formatPercent(value: number): string {
   return `${value.toFixed(1)}%`;
+}
+
+/** True when a bound is missing or start_date <= end_date (YYYY-MM-DD compares chronologically). */
+export function isValidDateRange(filter: DateRangeFilter): boolean {
+  const { start_date, end_date } = filter;
+  return !start_date || !end_date || start_date <= end_date;
+}
+
+export type DateBounds = { min_date: string; max_date: string };
+export type DateRangeIssue = "incomplete" | "outOfBounds" | "inverted";
+
+/**
+ * Why the filter cannot be requested, or null when it can. A zero-padded year
+ * (0001, 0019, 0190) is a date still being typed. Bounds are checked only when known.
+ */
+export function getDateRangeIssue(
+  filter: DateRangeFilter,
+  bounds: DateBounds | null,
+): DateRangeIssue | null {
+  const dates = [filter.start_date, filter.end_date].filter((date) => date !== undefined);
+  if (dates.some((date) => date.startsWith("0"))) return "incomplete";
+  if (bounds && dates.some((date) => date < bounds.min_date || date > bounds.max_date)) {
+    return "outOfBounds";
+  }
+  return isValidDateRange(filter) ? null : "inverted";
+}
+
+/** Header label with raw YYYY-MM-DD dates; null without dates. Does not validate the range. */
+export function formatPeriodLabel(filter: DateRangeFilter): string | null {
+  const { start_date, end_date } = filter;
+  if (start_date && end_date) return `${start_date} — ${end_date}`;
+  if (start_date) return `From ${start_date}`;
+  if (end_date) return `Until ${end_date}`;
+  return null;
 }

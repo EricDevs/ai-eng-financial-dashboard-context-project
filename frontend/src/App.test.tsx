@@ -3,6 +3,10 @@ import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import App from "./App";
+import { buttonByText, deferred, inputByLabel, jsonResponse, setInputValue } from "@/test-helpers";
+
+// The charts are lazy chunks with Recharts; loading them in jsdom can exceed the 1 s default.
+const LAZY_CHARTS = { timeout: 5000 };
 
 let container: HTMLDivElement;
 let root: Root;
@@ -50,7 +54,7 @@ describe("App loading and error states", () => {
       );
       expect(headings).toContain("Income vs. Outcome");
       expect(headings).toContain("Profit Margin %");
-    });
+    }, LAZY_CHARTS);
 
     const alert = container.querySelector('[role="alert"]');
     expect(alert?.getAttribute("lang")).toBe("es");
@@ -67,5 +71,229 @@ describe("App loading and error states", () => {
       "Income vs. Outcome",
       "Profit Margin %",
     ]);
+  });
+});
+
+const FACETS = {
+  operation_types: ["income", "outcome"],
+  business_types: ["B2B", "B2C"],
+  categories: ["sales", "others"],
+  min_date: "2025-11-01",
+  max_date: "2026-10-28",
+};
+
+const movement = (amount: number, operation_type: "income" | "outcome") => ({
+  create_date: "2026-01-10",
+  amount,
+  operation_type,
+  category: "sales",
+  business_type: "B2B",
+});
+const ALL_MOVEMENTS = [movement(1000, "income"), movement(250, "outcome")];
+const FILTERED_MOVEMENTS = [movement(100, "income"), movement(25, "outcome")];
+
+const isMovementsUrl = (url: string) => url === "/api/metrics" || url.startsWith("/api/metrics?");
+
+/** Routes the fake fetch by URL; `route` overrides the defaults when it returns a promise. */
+function stubApi(route: (url: string) => Promise<Response> | undefined = () => undefined) {
+  const fetchMock = vi.fn((url: string) => {
+    const custom = route(url);
+    if (custom) return custom;
+    if (url === "/api/metrics/facets") return Promise.resolve(jsonResponse(FACETS));
+    if (url === "/api/metrics") return Promise.resolve(jsonResponse(ALL_MOVEMENTS));
+    if (isMovementsUrl(url)) return Promise.resolve(jsonResponse(FILTERED_MOVEMENTS));
+    return Promise.resolve(jsonResponse([]));
+  });
+  vi.stubGlobal("fetch", fetchMock);
+  return fetchMock;
+}
+
+type FetchMock = ReturnType<typeof stubApi>;
+const calledUrls = (fetchMock: FetchMock) => fetchMock.mock.calls.map(([url]) => url);
+const movementCalls = (fetchMock: FetchMock) => calledUrls(fetchMock).filter(isMovementsUrl);
+const tick = () => new Promise((done) => setTimeout(done, 0));
+const kpiSection = () =>
+  container.querySelector('section[aria-label="Key performance indicators"]');
+const kpiValues = () =>
+  [...(kpiSection()?.querySelectorAll("p.text-3xl") ?? [])].map((p) => p.textContent);
+
+async function renderLoaded() {
+  root.render(<App />);
+  await vi.waitFor(() => expect(kpiValues()[0]).toBe("$1,000"));
+}
+
+async function setDate(label: "Start date" | "End date", value: string) {
+  setInputValue(inputByLabel(container, label), value);
+  await vi.waitFor(() => expect(inputByLabel(container, label).value).toBe(value));
+}
+
+describe("date range filter", () => {
+  it("requests facets and unfiltered movements on load", async () => {
+    const fetchMock = stubApi();
+    await renderLoaded();
+
+    expect(calledUrls(fetchMock)).toContain("/api/metrics/facets");
+    expect(movementCalls(fetchMock)).toEqual(["/api/metrics"]);
+    await vi.waitFor(() =>
+      expect(container.textContent).toContain("Available data: 2025-11-01 to 2026-10-28"),
+    );
+  });
+
+  it("refetches with only the informed dates and recalculates KPIs", async () => {
+    const fetchMock = stubApi();
+    await renderLoaded();
+
+    await setDate("Start date", "2026-01-01");
+    await vi.waitFor(() => {
+      expect(movementCalls(fetchMock).at(-1)).toBe("/api/metrics?start_date=2026-01-01");
+      expect(container.textContent).toContain("From 2026-01-01");
+      expect(kpiValues()).toEqual(["$100", "$25", "$75", "75.0%"]);
+    });
+
+    await setDate("End date", "2026-01-31");
+    await vi.waitFor(() => {
+      expect(movementCalls(fetchMock).at(-1)).toBe(
+        "/api/metrics?start_date=2026-01-01&end_date=2026-01-31",
+      );
+      expect(container.textContent).toContain("2026-01-01 — 2026-01-31");
+    });
+  });
+
+  it("blocks requests and keeps data on an inverted range", async () => {
+    const fetchMock = stubApi();
+    await renderLoaded();
+    await setDate("End date", "2026-01-01");
+    await vi.waitFor(() => expect(kpiValues()).toEqual(["$100", "$25", "$75", "75.0%"]));
+    const callsBefore = movementCalls(fetchMock).length;
+
+    await setDate("Start date", "2026-02-01");
+    await vi.waitFor(() =>
+      expect(container.textContent).toContain("Start date must be on or before end date."),
+    );
+    await tick();
+    expect(movementCalls(fetchMock)).toHaveLength(callsBefore);
+    expect(kpiValues()).toEqual(["$100", "$25", "$75", "75.0%"]);
+    expect(container.textContent).toContain("2026-02-01 — 2026-01-01");
+
+    setInputValue(inputByLabel(container, "Start date"), "");
+    await vi.waitFor(() => expect(container.textContent).toContain("Until 2026-01-01"));
+    expect(kpiSection()?.querySelector('[data-slot="skeleton"]')).toBeNull();
+    expect(kpiValues()).toEqual(["$100", "$25", "$75", "75.0%"]);
+  });
+
+  it("shows dashes, empty charts and a notice for an empty range", async () => {
+    stubApi((url) =>
+      url.startsWith("/api/metrics?") ? Promise.resolve(jsonResponse([])) : undefined,
+    );
+    await renderLoaded();
+
+    await setDate("Start date", "2026-10-28");
+    await vi.waitFor(() => {
+      expect(kpiValues()).toEqual(["—", "—", "—", "—"]);
+      expect(container.querySelector('[role="status"]')?.textContent).toBe(
+        "No movements found for the selected range.",
+      );
+      expect(container.textContent?.split("No data available to display")).toHaveLength(3);
+    }, LAZY_CHARTS);
+  });
+
+  it("clears both dates and reloads without filters", async () => {
+    const fetchMock = stubApi();
+    await renderLoaded();
+    await setDate("Start date", "2026-01-01");
+    await vi.waitFor(() => expect(container.textContent).toContain("From 2026-01-01"));
+
+    buttonByText(container, "Clear dates").click();
+    await vi.waitFor(() => {
+      expect(movementCalls(fetchMock).at(-1)).toBe("/api/metrics");
+      expect(container.textContent).toContain("2024 - Full Year");
+      expect(kpiValues()).toEqual(["$1,000", "$250", "$750", "75.0%"]);
+    });
+  });
+
+  it("works without the reference line when facets fails", async () => {
+    stubApi((url) =>
+      url === "/api/metrics/facets" ? Promise.resolve(jsonResponse(null, 500)) : undefined,
+    );
+    await renderLoaded();
+    await tick();
+
+    expect(container.textContent).not.toContain("Available data");
+    expect(container.querySelector('[role="alert"]')).toBeNull();
+    expect(inputByLabel(container, "Start date").hasAttribute("min")).toBe(false);
+  });
+
+  it("shows dashes and the banner when movements fail, and recovers", async () => {
+    stubApi((url) =>
+      url === "/api/metrics" ? Promise.resolve(jsonResponse(null, 500)) : undefined,
+    );
+    root.render(<App />);
+    await vi.waitFor(() => {
+      expect(container.querySelector('[role="alert"]')?.textContent).toContain(
+        "No se pudo cargar",
+      );
+      expect(kpiValues()).toEqual(["—", "—", "—", "—"]);
+    });
+
+    await setDate("Start date", "2026-01-01");
+    await vi.waitFor(() => {
+      expect(container.querySelector('[role="alert"]')).toBeNull();
+      expect(kpiValues()).toEqual(["$100", "$25", "$75", "75.0%"]);
+    });
+  });
+
+  it("renders only the latest response", async () => {
+    const first = deferred<Response>();
+    const second = deferred<Response>();
+    stubApi((url) => {
+      if (url === "/api/metrics?start_date=2026-01-01") return first.promise;
+      if (url === "/api/metrics?start_date=2026-01-02") return second.promise;
+      return undefined;
+    });
+    await renderLoaded();
+
+    await setDate("Start date", "2026-01-01");
+    await setDate("Start date", "2026-01-02");
+    second.resolve(jsonResponse([movement(500, "income")]));
+    await vi.waitFor(() => expect(kpiValues()[0]).toBe("$500"));
+    first.resolve(jsonResponse([movement(7, "income")]));
+    await tick();
+    expect(kpiValues()[0]).toBe("$500");
+  });
+
+  it("does not request while a year is typed nor for a date outside the range", async () => {
+    const fetchMock = stubApi();
+    await renderLoaded();
+    await vi.waitFor(() => expect(container.textContent).toContain("Available data"));
+
+    // Chrome emits these values while the user types 02-02-1900 by hand.
+    for (const start of ["0001-02-02", "0019-02-02", "0190-02-02", "1900-02-02"]) {
+      await setDate("Start date", start);
+    }
+    await vi.waitFor(() =>
+      expect(container.querySelector('[role="alert"]')?.textContent).toBe(
+        "Dates must be between 2025-11-01 and 2026-10-28.",
+      ),
+    );
+    await tick();
+    expect(movementCalls(fetchMock)).toEqual(["/api/metrics"]);
+    expect(kpiValues()).toEqual(["$1,000", "$250", "$750", "75.0%"]);
+  });
+
+  it("never sends empty or invalid date params", async () => {
+    const fetchMock = stubApi();
+    await renderLoaded();
+    await setDate("Start date", "2026-01-01");
+    await setDate("End date", "2026-01-31");
+    setInputValue(inputByLabel(container, "Start date"), "");
+    await vi.waitFor(() =>
+      expect(movementCalls(fetchMock).at(-1)).toBe("/api/metrics?end_date=2026-01-31"),
+    );
+
+    for (const url of movementCalls(fetchMock)) {
+      expect(url).not.toMatch(/=(&|$)/);
+      expect(url).not.toContain("undefined");
+      expect(url).not.toMatch(/category|operation_type/);
+    }
   });
 });
