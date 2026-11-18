@@ -159,7 +159,7 @@ Mismas reglas que la seccion 2: rama de integracion `feature/frontend-specs-v2` 
 ### 9.2 Fase 9: prueba de traspaso
 
 - Rama creada desde el commit de merge de la fase 5 (spec y planes, sin codigo de la iteracion 1).
-- Chat nuevo, sin contexto previo. El agente lee la spec y AGENTS.md, **genera su propio plan** (los planes de la iteracion 1 no se le dan: contienen el codigo), el mantenedor revisa ese plan y el agente implementa a partir de el.
+- Chat nuevo, sin contexto previo. El agente lee la spec y AGENTS.md, **genera su propio plan y sus tareas** (no se le dan los planes de `docs/plans`: el objetivo es comprobar que la spec basta), el mantenedor revisa ese plan y el agente implementa a partir de el. Despues se compara su plan con los entregados.
 - En cada etapa el agente anota toda pregunta o decision que la spec no resuelva. Criterio de exito: tests en verde, prueba visual del mantenedor correcta y **ninguna decision propia del agente**. Cada decision anotada es un hueco de la spec: se corrige y se repite.
 - Se integran la evidencia y las correcciones de la spec. El codigo de la iteracion 1 (fases 6-8) es el que queda en la rama de integracion; el de la fase 9 se conserva en su rama para comparar, porque integrarlo encima obligaria a resolver conflictos en los mismos archivos.
 
@@ -167,7 +167,7 @@ Mismas reglas que la seccion 2: rama de integracion `feature/frontend-specs-v2` 
 
 | Fase | Rama | PR | Commits | Estado |
 | --- | --- | --- | --- | --- |
-| 5 Planes y specs | `feature/frontend-specs-v2-fase5-plans` | — | — | en curso |
+| 5 Planes y specs | `feature/frontend-specs-v2-fase5-plans` | — | `b880d90` (spec v1.4), `9297324` (planes de la iteracion 1, con codigo) y el commit de los planes de entrega, sin codigo (F1 v8.0, F2 y F3 v5.0) | commits hechos; PR pendiente |
 | 6 F1 | `feature/frontend-specs-v2-fase6-f1` | — | — | implementado sin commit; prueba visual aprobada (2 rondas) |
 | 7 F2 | `feature/frontend-specs-v2-fase7-f2` | — | — | pendiente |
 | 8 F3 | `feature/frontend-specs-v2-fase8-f3` | — | — | pendiente |
