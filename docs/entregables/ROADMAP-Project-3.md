@@ -167,7 +167,7 @@ Mismas reglas que la seccion 2: rama de integracion `feature/frontend-specs-v2` 
 
 | Fase | Rama | PR | Commits | Estado |
 | --- | --- | --- | --- | --- |
-| 5 Planes y specs | `feature/frontend-specs-v2-fase5-plans` | — | `b880d90` (spec v1.4), `9297324` (planes de la iteracion 1, con codigo) y el commit de los planes de entrega, sin codigo (F1 v8.0, F2 y F3 v5.0) | commits hechos; PR pendiente |
+| 5 Planes y specs | `feature/frontend-specs-v2-fase5-plans` | PR #18 | `b880d90` (spec v1.4), `9297324` (planes de la iteracion 1, con codigo), `4e51f0a` (planes de entrega, sin codigo), `f486623` (spec v1.5 y planes F2/F3 v5.1) y el commit de este registro | PR abierto, pendiente de aprobacion |
 | 6 F1 | `feature/frontend-specs-v2-fase6-f1` | — | — | implementado sin commit; prueba visual aprobada (2 rondas) |
 | 7 F2 | `feature/frontend-specs-v2-fase7-f2` | — | — | pendiente |
 | 8 F3 | `feature/frontend-specs-v2-fase8-f3` | — | — | pendiente |
