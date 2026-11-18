@@ -68,9 +68,13 @@ Revision: 2026-11-17, cierre del proyecto 4. Fuentes: [requirements.txt](../back
 
 - Backend: `uv run --no-project --python 3.13 --with-requirements backend/requirements.txt pytest backend/tests/test_routes.py -q`
   -> 15 passed (BACKEND-TEST-01; reconfirmado en fase 3, API-01).
-- Frontend tests: `npm --prefix frontend test` -> 2 archivos, 8 passed
-  (2026-11-17): `financial-utils.test.ts` (6, incluido el caso de frontera de
-  mes FIN-CAL-01) y `App.test.tsx` (2, estados de carga y error).
+- Frontend tests: `npm --prefix frontend test` -> 5 archivos, 51 passed
+  (2026-11-18, tras F1): `financial-utils.test.ts`, `api.test.ts`,
+  `use-api-resource.test.tsx`, `date-range-picker.test.tsx` y `App.test.tsx`.
+  Antes de F1: 2 archivos, 8 passed (2026-11-17). Las esperas de `App.test.tsx`
+  que dependen de los graficos diferidos usan un limite de 5 s: con el de
+  1 s por defecto fallaban en esta maquina (~1.1 s de carga en jsdom).
+  Build tras F1: chunk principal 191.21 kB, sin avisos.
 - Lint: `npm --prefix frontend run lint` -> sin errores/avisos
   (FRONTEND-LINT-01; reconfirmado en el proyecto 4).
 - Build: `npm --prefix frontend run build` (`tsc -b && vite build`) -> exitoso
