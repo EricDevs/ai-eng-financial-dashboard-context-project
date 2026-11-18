@@ -1,7 +1,7 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
 import { type AlertsResponse } from '@/lib/api-types'
-import { formatCurrency, formatPercent } from '@/lib/financial-utils'
+import { formatCurrency, formatPercent, parseThreshold } from '@/lib/financial-utils'
 import { ErrorNotice } from './error-notice'
 import { ThresholdInput } from './threshold-input'
 
@@ -64,12 +64,17 @@ export function AlertsTable({
 }: AlertsTableProps) {
   return (
     <Card className="border-border/60">
-      <CardHeader className="pb-2">
-        <CardTitle className="text-base font-semibold">Anomaly Alerts</CardTitle>
-        <CardDescription>Average outcome of all earlier periods in the selected range.</CardDescription>
-      </CardHeader>
-      <CardContent className="flex flex-col gap-5">
+      <CardHeader className="flex flex-col gap-4 pb-2 lg:flex-row lg:items-center lg:justify-between">
+        <div className="flex flex-col gap-2">
+          <CardTitle className="text-base font-semibold">Anomaly Alerts</CardTitle>
+          <CardDescription>Average outcome of all earlier periods in the selected range.</CardDescription>
+        </div>
         <ThresholdInput value={thresholdText} onChange={onThresholdChange} />
+      </CardHeader>
+      <CardContent className="flex flex-col gap-4">
+        {parseThreshold(thresholdText) === null ? (
+          <ErrorNotice>Enter a value between 0.01 and 1.0.</ErrorNotice>
+        ) : null}
         {!loading && error ? (
           <ErrorNotice>Could not load anomaly alerts.</ErrorNotice>
         ) : (

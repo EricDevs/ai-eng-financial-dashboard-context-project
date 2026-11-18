@@ -99,6 +99,17 @@ describe('AlertsTable', () => {
     })
   })
 
+  it('places the threshold error below the header, outside the control', async () => {
+    renderTable({ thresholdText: '0' })
+    await vi.waitFor(() => {
+      const alert = view.container.querySelector('[role="alert"]')
+      const table = view.container.querySelector('table')
+      expect(alert?.textContent).toBe('Enter a value between 0.01 and 1.0.')
+      expect(alert?.closest('[data-slot="card-header"]')).toBeNull()
+      expect(table && alert?.compareDocumentPosition(table)).toBe(Node.DOCUMENT_POSITION_FOLLOWING)
+    })
+  })
+
   it('keeps the last rows while the input is invalid', async () => {
     renderTable({ thresholdText: '0' })
     await vi.waitFor(() => {

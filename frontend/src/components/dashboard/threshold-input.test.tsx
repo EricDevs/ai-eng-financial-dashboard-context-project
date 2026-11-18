@@ -4,8 +4,6 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { inputByLabel, mountRoot, setInputValue } from '@/test-helpers'
 import { ThresholdInput } from './threshold-input'
 
-const INVALID = 'Enter a value between 0.01 and 1.0.'
-
 let view: ReturnType<typeof mountRoot>
 
 beforeEach(() => {
@@ -40,21 +38,18 @@ describe('ThresholdInput', () => {
     expect(onChange).toHaveBeenCalledWith('0.5')
   })
 
-  it('shows an error for invalid text', async () => {
+  it('marks invalid text without rendering the notice', async () => {
     for (const text of ['', '0', '5']) {
       view.root.render(<ThresholdInput value={text} onChange={vi.fn()} />)
-      await vi.waitFor(() => {
-        expect(view.container.querySelector('[role="alert"]')?.textContent).toBe(INVALID)
-        expect(input().getAttribute('aria-invalid')).toBe('true')
-      })
+      await vi.waitFor(() => expect(input().getAttribute('aria-invalid')).toBe('true'))
+      expect(view.container.querySelector('[role="alert"]')).toBeNull()
     }
   })
 
-  it('shows no error at the limits', async () => {
+  it('does not mark the limits as invalid', async () => {
     for (const text of ['0.01', '1.0']) {
       view.root.render(<ThresholdInput value={text} onChange={vi.fn()} />)
       await vi.waitFor(() => expect(input().value).toBe(text))
-      expect(view.container.querySelector('[role="alert"]')).toBeNull()
       expect(input().hasAttribute('aria-invalid')).toBe(false)
     }
   })
