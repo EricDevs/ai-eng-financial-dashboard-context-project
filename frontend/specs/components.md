@@ -1,10 +1,10 @@
 # Especificacion de componentes
 
-**Version:** 1.4 | **Fecha:** 2026-11-18 | Cambios en el [Historial de versiones](#historial-de-versiones).
+**Version:** 1.5 | **Fecha:** 2026-11-18 | Cambios en el [Historial de versiones](#historial-de-versiones).
 
 Capa frontend de tres funcionalidades del dashboard financiero. Es una especificacion: no hay codigo React ni llamadas a la API. Tipos en [api-types.ts](api-types.ts) y [param-types.ts](param-types.ts); evidencia de la API en [verification.md](verification.md).
 
-Las versiones 1.1 a 1.3 no cambian el comportamiento de la 1.0: cierran decisiones que la 1.0 dejaba abiertas para poder implementar sin preguntas. La 1.4 **si cambia** un comportamiento de la 1.0, tras la prueba visual de F1: una fecha fuera del rango disponible pasa a ser un error de validacion (DEC-26). Cada una tiene un ID `DEC-xx` y se explica en [Decisiones de implementacion](#decisiones-de-implementacion); en el texto se marcan con la version que la introdujo, por ejemplo `(v1.1, DEC-xx)`.
+Las versiones 1.1 a 1.3 no cambian el comportamiento de la 1.0: cierran decisiones que la 1.0 dejaba abiertas para poder implementar sin preguntas. La 1.4 **si cambia** un comportamiento de la 1.0, tras la prueba visual de F1: una fecha fuera del rango disponible pasa a ser un error de validacion (DEC-26). La 1.5 fija el aspecto de los errores de F2 y F3 (DEC-29). Cada una tiene un ID `DEC-xx` y se explica en [Decisiones de implementacion](#decisiones-de-implementacion); en el texto se marcan con la version que la introdujo, por ejemplo `(v1.1, DEC-xx)`.
 
 ## Convenciones comunes
 
@@ -17,6 +17,7 @@ Las versiones 1.1 a 1.3 no cambian el comportamiento de la 1.0: cierran decision
 - Los parametros de query se escriben en un orden fijo: primero los propios del endpoint y despues `start_date` y `end_date`. Alertas: `threshold`, `start_date`, `end_date`. Top: `operation_type`, `limit`, `business_type`, `start_date`, `end_date` (v1.1, DEC-07).
 - **Precedencia de estados** en tarjetas, paneles y graficos nuevos: `loading` > `error` > vacio > datos. Si coinciden carga y error, se muestra la carga. Los avisos de validacion de un input (rango de fechas, umbral) son independientes y se muestran siempre que apliquen (v1.2, DEC-16).
 - **Roles ARIA de los mensajes** en F2 y F3: los errores de carga llevan `role="alert"` y los estados vacios `role="status"`, igual que el aviso de rango sin movimientos de F1 (v1.2, DEC-18).
+- **Aspecto de los errores** en F2 y F3: todo mensaje de error (validacion del umbral y errores de carga) usa el mismo aviso rojo que F1: borde y fondo rojo translucido (`border-red-500/40`, `bg-red-500/10`), texto rojo claro (`text-red-300`) e icono `AlertCircle`; ver la [presentacion de F1](#presentacion-v14-dec-27-dec-28) (v1.5, DEC-29). El banner de error global de `App` no cambia.
 - Los criterios de aceptacion usan notacion EARS (`Cuando`, `Mientras`, `Si ... entonces`, `El sistema deberá`) y tienen un ID estable (`AC-F1-01`, `AC-F2-01`, `AC-F3-01`). Los IDs no se renumeran ni se reutilizan: un criterio retirado se marca como obsoleto y conserva su ID.
 - Los invariantes y restricciones que valen para las tres funcionalidades estan al final, en [Invariantes y restricciones comunes](#invariantes-y-restricciones-comunes).
 
@@ -282,10 +283,10 @@ Es una tabla HTML (`table`, `thead`, `tbody`); los mensajes de vacio y las filas
 | Condicion | Que se muestra |
 | --- | --- |
 | `loading` | Titulo e input visibles; el cuerpo muestra 3 filas de `Skeleton`; el input sigue activo |
-| `error` | Cuerpo: `Could not load anomaly alerts.` con `role="alert"` (v1.2, DEC-18); la tabla se oculta; el input sigue activo |
+| `error` | Cuerpo: `Could not load anomaly alerts.` con `role="alert"` (v1.2, DEC-18), como aviso rojo (v1.5, DEC-29); la tabla se oculta; el input sigue activo |
 | `alerts` con filas | Tabla de cuatro columnas |
 | **`alerts` vacio (`[]`)** | Titulo, input y cabecera de la tabla siguen visibles; el cuerpo muestra `No anomalies detected for the current threshold ({formatPercent(appliedThreshold * 100)}).` y debajo `Try a lower threshold or a wider date range.`, con `role="status"` (v1.2, DEC-18). La tabla **no desaparece** |
-| `parseThreshold(thresholdText)` es null | Bajo el input: `Enter a value between 0.01 and 1.0.` con `role="alert"` e `aria-invalid`; la tabla sigue mostrando el ultimo resultado valido |
+| `parseThreshold(thresholdText)` es null | Bajo el input: `Enter a value between 0.01 and 1.0.` con `role="alert"`, como aviso rojo (v1.5, DEC-29), e `aria-invalid`; la tabla sigue mostrando el ultimo resultado valido |
 
 ### Comportamiento de la pagina
 
@@ -439,7 +440,7 @@ Mientras se descarga el codigo diferido de `ComparisonPage`, el `Suspense` muest
 
 ### Tablas (`GroupTopTable`)
 
-Titulo `{group} - Top income categories` y descripcion `Top 5 categories by total income`. Mientras carga, titulo y descripcion siguen visibles y el cuerpo muestra 3 filas de `Skeleton`, como `AlertsTable` (v1.2, DEC-17). El vacio `No income in the selected range for {group}.` lleva `role="status"` y el error `Could not load {group} income data.`, `role="alert"` (v1.2, DEC-18). Columnas:
+Titulo `{group} - Top income categories` y descripcion `Top 5 categories by total income`. Mientras carga, titulo y descripcion siguen visibles y el cuerpo muestra 3 filas de `Skeleton`, como `AlertsTable` (v1.2, DEC-17). El vacio `No income in the selected range for {group}.` lleva `role="status"` y el error `Could not load {group} income data.`, `role="alert"` (v1.2, DEC-18), como aviso rojo (v1.5, DEC-29). Columnas:
 
 | Columna | Campo | Formato |
 | --- | --- | --- |
@@ -453,7 +454,7 @@ El porcentaje es sobre el total del grupo. Ese total es la suma de las filas por
 
 `BarChart` de Recharts con una barra por grupo. Color de B2B: `var(--chart-1)`; de B2C: `var(--chart-5)` (se evitan `--chart-2` y `--chart-profit`, que ya significan gasto y beneficio). Eje Y y tooltip con `formatCurrency`. Titulo `Income: B2B vs B2C`.
 
-Detalles (v1.2, DEC-20): eje X con `B2B` y `B2C` (`dataKey="business_type"`); serie `Income` (`<Bar dataKey="total_income" name="Income">`); el `BarChart` lleva `title="Income: B2B vs B2C"` y `desc="Total income of B2B and B2C in the selected range."`, como los graficos existentes. Mientras carga usa el mismo marcado de carga que los graficos existentes (v1.2, DEC-17). El vacio `No income to compare in the selected range.` lleva `role="status"` y el error `Could not load the comparison.`, `role="alert"` (v1.2, DEC-18).
+Detalles (v1.2, DEC-20): eje X con `B2B` y `B2C` (`dataKey="business_type"`); serie `Income` (`<Bar dataKey="total_income" name="Income">`); el `BarChart` lleva `title="Income: B2B vs B2C"` y `desc="Total income of B2B and B2C in the selected range."`, como los graficos existentes. Mientras carga usa el mismo marcado de carga que los graficos existentes (v1.2, DEC-17). El vacio `No income to compare in the selected range.` lleva `role="status"` y el error `Could not load the comparison.`, `role="alert"` (v1.2, DEC-18), como aviso rojo (v1.5, DEC-29).
 
 ### Criterios de aceptacion (EARS)
 
@@ -517,7 +518,7 @@ Valen para las tres funcionalidades. Los invariantes son condiciones que nunca d
 
 ## Decisiones de implementacion
 
-Puntos que la version 1.0 no fijaba y que habia que decidir para implementar y escribir tests con valores exactos. Salieron de la revision de los planes de implementacion del 2026-11-18 y el usuario las acepto: DEC-01 a DEC-14 en la v1.1, DEC-15 a DEC-23 en la v1.2 (tras regenerar los planes sobre la v1.1) y DEC-24 en la v1.3 (tras regenerarlos sobre la v1.2). DEC-25 a DEC-28 salen de la prueba visual y de funcionamiento de F1 hecha por el usuario (v1.4). Los IDs no se renumeran ni se reutilizan; una decision retirada se marca como obsoleta.
+Puntos que la version 1.0 no fijaba y que habia que decidir para implementar y escribir tests con valores exactos. Salieron de la revision de los planes de implementacion del 2026-11-18 y el usuario las acepto: DEC-01 a DEC-14 en la v1.1, DEC-15 a DEC-23 en la v1.2 (tras regenerar los planes sobre la v1.1) y DEC-24 en la v1.3 (tras regenerarlos sobre la v1.2). DEC-25 a DEC-28 salen de la prueba visual y de funcionamiento de F1 hecha por el usuario (v1.4). DEC-29 sale de adaptar los planes de F2 y F3 a la v1.4 (hueco H-11) y la decidio el usuario (v1.5). Los IDs no se renumeran ni se reutilizan; una decision retirada se marca como obsoleta.
 
 | ID | Decision | Motivo | Alternativa descartada |
 | --- | --- | --- | --- |
@@ -549,6 +550,7 @@ Puntos que la version 1.0 no fijaba y que habia que decidir para implementar y e
 | DEC-26 | Una fecha completa fuera de `[min_date, max_date]` es un error de validacion: aviso rojo, sin peticion, datos anteriores intactos. Sustituye el caso de la 1.0 "fecha fuera de bounds no es error" | Peticion del usuario tras la prueba: una fecha muy anterior a los datos debe explicarse, no mostrarse como "sin movimientos" | Mantener la 1.0 (pedir y mostrar el estado vacio) |
 | DEC-27 | `Available data` en una linea bajo los inputs; inputs y etiquetas mas grandes (alto 44 px, texto 16 px) | Prueba del usuario: el filtro se veia pequeno y la referencia a la derecha se perdia | — |
 | DEC-28 | Errores de validacion como aviso rojo (borde y fondo rojos translucidos, texto rojo claro, icono). `Clear dates` con borde y fondo del color primario y texto claro | Prueba del usuario: el error se veia en blanco (`--destructive-foreground` es casi blanco en el tema oscuro) y el boton, negro con texto gris, se distinguia poco. `--destructive` es demasiado oscuro para texto sobre el fondo oscuro, por eso el texto usa un rojo claro | Usar `--destructive` como color de texto (contraste insuficiente) |
+| DEC-29 | Los errores de F2 y F3 (umbral invalido, error de carga de alertas, de un grupo y del grafico comparativo) usan el mismo aviso rojo que F1 | DEC-28 solo cubria los errores de fechas; con `text-destructive-foreground` los de F2 y F3 se verian casi blancos, como paso en F1. Un unico estilo de error en toda la vista | Un estilo propio por tarjeta |
 
 ## Historial de versiones
 
@@ -559,3 +561,4 @@ Puntos que la version 1.0 no fijaba y que habia que decidir para implementar y e
 | 1.2 | 2026-11-18 | Decisiones DEC-15 a DEC-23, que cierran los huecos encontrados al regenerar los planes sobre la 1.1; seccion [Disposicion de la pagina](#disposicion-de-la-pagina-v12-dec-19); reglas comunes de precedencia de estados y roles ARIA; criterios AC-F3-17 y AC-F3-18; se resuelve la contradiccion sobre `2024 - Full Year` (DEC-22). Sin cambios en el comportamiento de la 1.0 ni en los tipos |
 | 1.3 | 2026-11-18 | Decision DEC-24 (foco tras `Clear dates`), encontrada al regenerar los planes sobre la 1.2; criterio AC-F1-16. Sin cambios en el comportamiento de la 1.0 ni en los tipos |
 | 1.4 | 2026-11-18 | Tras la prueba visual de F1: DEC-25 a DEC-28; `getDateRangeIssue` y regla unica de peticion; criterios AC-F1-17 a AC-F1-20 (AC-F1-02 y AC-F1-05 ajustados); seccion de presentacion de F1; INV-7; prop `bounds` en `ComparisonPage`. **Cambia un comportamiento de la 1.0**: una fecha fuera del rango de `facets` pasa a ser error de validacion (DEC-26). Tipos de la API sin cambios |
+| 1.5 | 2026-11-18 | DEC-29: aspecto unico de los errores de F2 y F3 (el aviso rojo de F1), decidido por el usuario al adaptar los planes de F2 y F3 (hueco H-11). Sin cambios de comportamiento ni de tipos |

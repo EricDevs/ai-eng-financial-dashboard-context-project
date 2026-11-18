@@ -1,6 +1,6 @@
 # F2 - Tabla de alertas de anomalias: plan de implementacion
 
-**Version:** 5.0 | **Fecha:** 2026-11-18 | **Estado:** version de entrega, sin codigo; pendiente de ejecutar | **Spec:** v1.4
+**Version:** 5.1 | **Fecha:** 2026-11-18 | **Estado:** version de entrega, sin codigo; pendiente de ejecutar | **Spec:** v1.5
 
 **Como ejecutar:** tarea por tarea y en orden; marcar cada paso (`- [ ]`) al completarlo. No empezar una tarea sin que la anterior tenga sus tests en verde. Cada test se ve fallar antes de implementar.
 
@@ -12,7 +12,7 @@
 
 **Stack:** React 19.2, TypeScript ~6.0, Vitest 4 + jsdom, Tailwind 4.
 
-**Spec:** [components.md v1.4](../../frontend/specs/components.md): F2, convenciones comunes (precedencia de estados y roles ARIA), regla unica de peticion, disposicion de la pagina y DEC-06 a DEC-09, DEC-16, DEC-18, DEC-19 y DEC-26. Evidencia de la API en [verification.md](../../frontend/specs/verification.md#f2---tabla-de-alertas-de-anomalias).
+**Spec:** [components.md v1.5](../../frontend/specs/components.md): F2, convenciones comunes (precedencia de estados, roles ARIA y aspecto de los errores), regla unica de peticion, disposicion de la pagina y DEC-06 a DEC-09, DEC-16, DEC-18, DEC-19, DEC-26 y DEC-29. Evidencia de la API en [verification.md](../../frontend/specs/verification.md#f2---tabla-de-alertas-de-anomalias).
 
 **Depende de:** [plan F1](f1-date-range-filter.md) ejecutado (`buildQuery`, `useApiResource`, `getDateRangeIssue`, `bounds` en `App`, `AlertsResponse`, `test-helpers.ts`, `stubApi` de `App.test.tsx`).
 
@@ -28,19 +28,15 @@
 - Estados con precedencia `loading` > `error` > vacio > datos (DEC-16); error con `role="alert"`, vacio con `role="status"` (DEC-18).
 - La tarjeta no aparece en `B2B vs B2C` (lo cubre el plan F3).
 - Un fallo de alertas no activa el banner global ni vacia los KPI (INV-6).
+- Todos los errores de F2 (umbral invalido y error de carga) se muestran con el aviso rojo de F1 (DEC-29).
 - Estilo de cada archivo como en F1. Sin dependencias nuevas, sin `any` explicito, sin backend.
-
-## Hueco de la spec v1.4 detectado al adaptar el plan
-
-| ID | Hueco | Propuesta provisional (a confirmar en la prueba visual de la fase 7) |
-| --- | --- | --- |
-| H-11 | DEC-28 fija el aviso rojo solo para los errores de fechas. La spec no dice como se ven el error del umbral (`Enter a value between 0.01 and 1.0.`) ni el error de carga de la tarjeta (`Could not load anomaly alerts.`); con `text-destructive-foreground` se verian casi blancos, como paso en F1 | Mismo aviso rojo que F1 (borde y fondo `red-500` translucidos, texto `red-300`, icono `AlertCircle`). Si se confirma, pasa a la spec como decision nueva |
 
 ## Mapa de archivos
 
 | Archivo | Responsabilidad | Tarea |
 | --- | --- | --- |
 | `src/lib/financial-utils.ts` | Constantes del umbral y `parseThreshold` | 1 |
+| `src/components/dashboard/error-notice.tsx` | Aviso rojo compartido (`ErrorNotice`), extraido de `date-range-picker.tsx` | 2 |
 | `src/components/dashboard/threshold-input.tsx` | Input del umbral con ayuda y error | 2 |
 | `src/components/dashboard/alerts-table.tsx` | Tarjeta con titulo, input y tabla o su estado | 3 |
 | `src/App.tsx` | Estado del umbral, peticion de alertas y seccion | 4 |
@@ -48,6 +44,7 @@
 ## Decisiones propias del plan (implementacion, no producto)
 
 - **Actualizacion de tests existentes (cambio de producto, no debilitamiento):** en `App.test.tsx`, `busyStates()` pasa de 2 a 3 secciones (la `section` de alertas de DEC-19) y la lista de `h2` anade `Anomaly Alerts` al final. El primer `[role="alert"]` sigue siendo el banner en espanol, porque va antes en el DOM.
+- El aviso rojo que F1 tiene como componente interno de `date-range-picker.tsx` se extrae a `error-notice.tsx` (`ErrorNotice({ children }: { children: string })`, con `role="alert"`) y lo usan el picker, `ThresholdInput` y `AlertsTable` (y despues F3). Asi DEC-29 se cumple con un solo estilo en el codigo.
 - Fixture de fila: `{ period: "2026-03", outcome_total: 88075.59, baseline_average: 55334.29, increase_ratio: 0.5917 }` -> `2026-03`, `$88,076`, `$55,334`, `59.2%`.
 - En los tests de `App`, "llamadas de alertas" son las URLs que empiezan por `/api/metrics/alerts`. Entre cambios de input se espera al re-render (`vi.waitFor`), porque el filtro siguiente se construye con el `value` actual.
 
@@ -79,11 +76,13 @@
 - [ ] **Paso 4:** mismo comando -> PASS.
 - [ ] **Paso 5: commit** `feat(f2): add threshold parsing`.
 
-### Tarea 2: Componente `ThresholdInput`
+### Tarea 2: Aviso compartido y componente `ThresholdInput`
 
-**Archivos:** crear `src/components/dashboard/threshold-input.tsx`; test `threshold-input.test.tsx` (jsdom).
+**Archivos:** crear `src/components/dashboard/error-notice.tsx` (extraido de `date-range-picker.tsx`, que pasa a importarlo); crear `src/components/dashboard/threshold-input.tsx`; test `threshold-input.test.tsx` (jsdom).
 
-**Interfaces (produce):** `ThresholdInput({ value, onChange }: ThresholdInputProps)`. `<input type="number">` con `min=THRESHOLD_MIN`, `max=THRESHOLD_MAX`, `step=0.01`, etiqueta visible `Alert threshold` (con `useId`) y ayuda `Ratio between 0.01 and 1.0 (default 0.3).` asociada con `aria-describedby`. Si `parseThreshold(value)` es `null`: `aria-invalid="true"` y error `Enter a value between 0.01 and 1.0.` con `role="alert"` (estilo: H-11). Emite el texto tal cual.
+- [ ] **Paso 0: extraer `ErrorNotice`** sin cambiar su marcado ni sus clases. Verificar con `npm --prefix frontend test -- src/components/dashboard/date-range-picker.test.tsx` -> PASS (14 tests, sin cambios en los tests).
+
+**Interfaces (produce):** `ThresholdInput({ value, onChange }: ThresholdInputProps)`. `<input type="number">` con `min=THRESHOLD_MIN`, `max=THRESHOLD_MAX`, `step=0.01`, etiqueta visible `Alert threshold` (con `useId`) y ayuda `Ratio between 0.01 and 1.0 (default 0.3).` asociada con `aria-describedby`. Si `parseThreshold(value)` es `null`: `aria-invalid="true"` y error `Enter a value between 0.01 and 1.0.` con `ErrorNotice` (DEC-29). Emite el texto tal cual.
 
 - [ ] **Paso 1: tests que fallan**
 
@@ -107,7 +106,7 @@
 
 **Comportamiento a implementar:** `Card` con titulo `Anomaly Alerts` (DEC-06), ayuda `Average outcome of all earlier periods in the selected range.` y `ThresholdInput` en la cabecera. Cuerpo segun la precedencia (DEC-16):
 - `loading`: tabla con cabecera y 3 filas de `Skeleton` en `tbody`; input activo.
-- `error`: `Could not load anomaly alerts.` con `role="alert"` (estilo: H-11) y sin tabla.
+- `error`: `Could not load anomaly alerts.` con `ErrorNotice` (DEC-29) y sin tabla.
 - `alerts` vacio o `null`: tabla con cabecera; en `tbody`, un elemento con `role="status"` con `No anomalies detected for the current threshold ({formatPercent(appliedThreshold * 100)}).` y `Try a lower threshold or a wider date range.` (DEC-09, DEC-18).
 - Con filas: `Period` tal cual, `Outcome` y `Avg. of previous periods` con `formatCurrency`, `Increase` con `formatPercent(increase_ratio * 100)`, en el orden recibido.
 
@@ -165,8 +164,8 @@ Procedimiento del repositorio para verificar cambios del frontend: [.skills/veri
 
 - [ ] **Paso 1:** lint, tests y build -> sin errores ni avisos nuevos.
 - [ ] **Paso 2: los tests detectan la rotura:** quitar `role="alert"` de `ThresholdInput` -> falla `shows an error for invalid text`; aplicar el umbral sin `parseThreshold` -> falla `does not request with an invalid threshold`; pedir alertas sin la regla unica -> falla `does not request alerts with a date filter that cannot be requested`. Restaurar tras cada una.
-- [ ] **Paso 3: app en ejecucion** (usuario; confirmar con `curl` que Vite sirve `alerts-table.tsx`): comparar fila a fila con `curl "http://localhost:8000/api/metrics/alerts?threshold=0.3"` (el dataset depende de la fecha de hoy); `1.0`; `0`, `5`, `0,3` y vacio sin peticion (pestana Red); un rango de un mes -> vacio; backend parado -> error solo en la tarjeta; aspecto de los errores (H-11).
-- [ ] **Paso 4:** pasar a la spec las decisiones de la prueba visual (H-11 y lo que surja); registrar evidencia; actualizar memory-bank; `git diff --check`.
+- [ ] **Paso 3: app en ejecucion** (usuario; confirmar con `curl` que Vite sirve `alerts-table.tsx`): comparar fila a fila con `curl "http://localhost:8000/api/metrics/alerts?threshold=0.3"` (el dataset depende de la fecha de hoy); `1.0`; `0`, `5`, `0,3` y vacio sin peticion (pestana Red); un rango de un mes -> vacio; backend parado -> error solo en la tarjeta; los errores con el mismo aviso rojo que el filtro de fechas (DEC-29).
+- [ ] **Paso 4:** pasar a la spec lo que surja de la prueba visual; registrar evidencia; actualizar memory-bank; `git diff --check`.
 - [ ] **Paso 5: commit** `docs(f2): record verification evidence`.
 
 ## Historial del plan
@@ -179,3 +178,4 @@ Procedimiento del repositorio para verificar cambios del frontend: [.skills/veri
 | 3.1 | 2026-11-18 | Referencia a la spec 1.3; sin cambios de contenido |
 | 4.0 | 2026-11-18 | Ejemplos de codigo de implementacion en cada tarea (commit `9297324`) |
 | 5.0 | 2026-11-18 | Version de entrega sin codigo, adaptada a la spec 1.4: regla unica de peticion para alertas (DEC-26) y su test; hueco H-11 (estilo de los errores de F2) |
+| 5.1 | 2026-11-18 | Spec 1.5: H-11 pasa a DEC-29 (decision del usuario: el aviso rojo de F1); `ErrorNotice` se extrae a un componente compartido (Tarea 2, paso 0) |

@@ -1,6 +1,6 @@
 # F3 - Vista comparativa B2B vs B2C: plan de implementacion
 
-**Version:** 5.0 | **Fecha:** 2026-11-18 | **Estado:** version de entrega, sin codigo; pendiente de ejecutar | **Spec:** v1.4
+**Version:** 5.1 | **Fecha:** 2026-11-18 | **Estado:** version de entrega, sin codigo; pendiente de ejecutar | **Spec:** v1.5
 
 **Como ejecutar:** tarea por tarea y en orden; marcar cada paso (`- [ ]`) al completarlo. No empezar una tarea sin que la anterior tenga sus tests en verde. Cada test se ve fallar antes de implementar.
 
@@ -12,7 +12,7 @@
 
 **Stack:** React 19.2, TypeScript ~6.0, Recharts 3.8 (`BarChart`), Vitest 4 + jsdom, Tailwind 4.
 
-**Spec:** [components.md v1.4](../../frontend/specs/components.md): F3, convenciones comunes, regla unica de peticion, disposicion de la pagina y DEC-07, DEC-10 a DEC-21, DEC-23 y DEC-26. Evidencia de la API en [verification.md](../../frontend/specs/verification.md#f3---vista-comparativa-b2b-vs-b2c).
+**Spec:** [components.md v1.5](../../frontend/specs/components.md): F3, convenciones comunes (incluido el aspecto de los errores), regla unica de peticion, disposicion de la pagina y DEC-07, DEC-10 a DEC-21, DEC-23, DEC-26 y DEC-29. Evidencia de la API en [verification.md](../../frontend/specs/verification.md#f3---vista-comparativa-b2b-vs-b2c).
 
 **Depende de:** [plan F1](f1-date-range-filter.md) y [plan F2](f2-anomaly-alerts.md) ejecutados.
 
@@ -29,13 +29,8 @@
 - Colores B2B `var(--chart-1)`, B2C `var(--chart-5)`; eje Y y tooltip con `formatCurrency`.
 - Estados con precedencia `loading` > `error` > vacio > datos (DEC-16); errores `role="alert"`, vacios `role="status"` (DEC-18).
 - Un unico selector de fechas (INV-5). Sin cambios de firma en `DashboardHeader`, `KPIRow` ni graficos existentes; sin backend.
+- Errores de los paneles y del grafico con `ErrorNotice`, el aviso rojo compartido que extrae el plan F2 (DEC-29).
 - Build sin aviso de chunk > 500 kB (DEC-13). Estilo de cada archivo como en F1.
-
-## Hueco de la spec v1.4 detectado al adaptar el plan
-
-| ID | Hueco | Propuesta provisional (a confirmar en la prueba visual de la fase 8) |
-| --- | --- | --- |
-| H-11 | Igual que en F2: la spec no fija el estilo de `Could not load {group} income data.` ni de `Could not load the comparison.` | El aviso rojo de F1, si se confirma en la fase 7 para F2 |
 
 ## Mapa de archivos
 
@@ -109,7 +104,7 @@
 
 **Archivos:** crear `src/components/dashboard/group-top-table.tsx`; test `group-top-table.test.tsx` (jsdom).
 
-**Interfaces (produce):** `GroupTopTable(props: GroupTopTableProps)`. `Card` con titulo `{group} - Top income categories` y descripcion `Top 5 categories by total income`, visibles siempre. Cuerpo segun la precedencia: carga -> 3 filas de `Skeleton` (DEC-17); error -> `Could not load {group} income data.` con `role="alert"` (estilo: H-11); vacio -> `No income in the selected range for {group}.` con `role="status"`; con filas -> tabla `Category` (`formatCategoryLabel`), `Total income` (`formatCurrency`), `Share of group` (`formatPercent(share * 100)`).
+**Interfaces (produce):** `GroupTopTable(props: GroupTopTableProps)`. `Card` con titulo `{group} - Top income categories` y descripcion `Top 5 categories by total income`, visibles siempre. Cuerpo segun la precedencia: carga -> 3 filas de `Skeleton` (DEC-17); error -> `Could not load {group} income data.` con `ErrorNotice` (DEC-29); vacio -> `No income in the selected range for {group}.` con `role="status"`; con filas -> tabla `Category` (`formatCategoryLabel`), `Total income` (`formatCurrency`), `Share of group` (`formatPercent(share * 100)`).
 
 - [ ] **Paso 1: tests que fallan** (filas con `toGroupRows` de la fixture)
 
@@ -132,7 +127,7 @@
 
 **Archivos:** crear `src/components/dashboard/group-comparison-chart.tsx`; test `group-comparison-chart.test.tsx` (jsdom).
 
-**Interfaces (produce):** `GroupComparisonChart(props: GroupComparisonChartProps)`. Carga: el mismo marcado de carga que los graficos existentes (DEC-17). Si no: `Card` con titulo `Income: B2B vs B2C` y, segun la precedencia, error `Could not load the comparison.` (`role="alert"`, estilo H-11), vacio `No income to compare in the selected range.` (`role="status"`) si ambos totales son 0, o un `BarChart` de Recharts (DEC-20): `XAxis dataKey="business_type"`, `Bar dataKey="total_income" name="Income"`, color por barra con `Cell` (B2B `var(--chart-1)`, B2C `var(--chart-5)`), eje Y y tooltip con `formatCurrency`, `title="Income: B2B vs B2C"` y `desc="Total income of B2B and B2C in the selected range."`.
+**Interfaces (produce):** `GroupComparisonChart(props: GroupComparisonChartProps)`. Carga: el mismo marcado de carga que los graficos existentes (DEC-17). Si no: `Card` con titulo `Income: B2B vs B2C` y, segun la precedencia, error `Could not load the comparison.` con `ErrorNotice` (DEC-29), vacio `No income to compare in the selected range.` (`role="status"`) si ambos totales son 0, o un `BarChart` de Recharts (DEC-20): `XAxis dataKey="business_type"`, `Bar dataKey="total_income" name="Income"`, color por barra con `Cell` (B2B `var(--chart-1)`, B2C `var(--chart-5)`), eje Y y tooltip con `formatCurrency`, `title="Income: B2B vs B2C"` y `desc="Total income of B2B and B2C in the selected range."`.
 
 - [ ] **Paso 1: tests que fallan**
 
@@ -206,7 +201,7 @@ Procedimiento del repositorio para verificar cambios del frontend: [.skills/veri
 
 - [ ] **Paso 1:** lint, tests y build -> sin errores; tamanos de chunk frente a la linea base.
 - [ ] **Paso 2: los tests detectan la rotura:** quitar `operation_type: "income"` de la ruta -> falla `requests income top categories for each group`; quitar la condicion de vista en `App` -> falla `does not request dashboard data while comparing`; pedir sin la regla unica -> falla `shows empty states without requests…`. Restaurar tras cada una.
-- [ ] **Paso 3: app en ejecucion** (usuario; confirmar con `curl` que Vite sirve `comparison-page.tsx`): comparar con `curl "http://localhost:8000/api/metrics/categories/top?operation_type=income&limit=5&business_type=B2B"` y B2C; porcentajes que suman ~100 %; dos barras con sus colores y tooltip; un rango sin datos -> ambos vacios; un grupo vacio y el otro no (barra `$0`, AC-F3-10), o dejarlo como no verificado; cambio de pestana sin salto de altura (DEC-23); aspecto de los errores (H-11).
+- [ ] **Paso 3: app en ejecucion** (usuario; confirmar con `curl` que Vite sirve `comparison-page.tsx`): comparar con `curl "http://localhost:8000/api/metrics/categories/top?operation_type=income&limit=5&business_type=B2B"` y B2C; porcentajes que suman ~100 %; dos barras con sus colores y tooltip; un rango sin datos -> ambos vacios; un grupo vacio y el otro no (barra `$0`, AC-F3-10), o dejarlo como no verificado; cambio de pestana sin salto de altura (DEC-23); errores con el mismo aviso rojo que el filtro de fechas (DEC-29).
 - [ ] **Paso 4:** pasar a la spec las decisiones de la prueba visual; registrar evidencia; actualizar memory-bank; `git diff --check`.
 - [ ] **Paso 5: commit** `docs(f3): record verification evidence`.
 
@@ -220,3 +215,4 @@ Procedimiento del repositorio para verificar cambios del frontend: [.skills/veri
 | 3.1 | 2026-11-18 | Referencia a la spec 1.3; sin cambios de contenido |
 | 4.0 | 2026-11-18 | Ejemplos de codigo de implementacion en cada tarea (commit `9297324`) |
 | 5.0 | 2026-11-18 | Version de entrega sin codigo, adaptada a la spec 1.4: `ComparisonPage` recibe `bounds` y aplica la regla unica (DEC-26), con su test; hueco H-11 (estilo de los errores) |
+| 5.1 | 2026-11-18 | Spec 1.5: H-11 pasa a DEC-29 (decision del usuario); los errores usan `ErrorNotice`, extraido en el plan F2 |
