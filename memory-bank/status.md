@@ -1,6 +1,6 @@
 # Status
 
-Revision: 2026-11-18, F1 de la ampliacion v2 del proyecto 3 (antes: 2026-11-17, cierre del proyecto 4). Fuentes: [01-structure.md](../docs/validations/01-structure.md),
+Revision: 2026-11-19, F1 y F2 de la ampliacion v2 del proyecto 3 (antes: 2026-11-17, cierre del proyecto 4). Fuentes: [01-structure.md](../docs/validations/01-structure.md),
 [03-verification-resume.md](../docs/validations/03-verification-resume.md),
 [02-handover-checks.md](../docs/validations/02-handover-checks.md),
 [05-rules-checks.md](../docs/validations/05-rules-checks.md),
@@ -36,14 +36,17 @@ enlaza el check que lo demuestra.
   alertas de anomalias (`/alerts?threshold=`) y F3 comparativa B2B vs B2C
   (`/categories/top`). Tipos verificados contra `/openapi.json` en vivo;
   evidencia en [verification.md](../frontend/specs/verification.md).
-- Revision 2026-11-18 (ampliacion v2 de [ROADMAP-Project-3](../docs/entregables/ROADMAP-Project-3.md)):
-  spec v1.4 con decisiones `DEC-01` a `DEC-28` y planes en [docs/plans](../docs/plans).
+- Revision 2026-11-19 (ampliacion v2 de [ROADMAP-Project-3](../docs/entregables/ROADMAP-Project-3.md)):
+  spec v1.8 con decisiones `DEC-01` a `DEC-32` y planes en [docs/plans](../docs/plans).
 - **F1 implementado** (iteracion 1, fase 6): filtro de fechas con `facets`,
   validacion unica de peticion (`getDateRangeIssue`), capa de datos
-  compartida (`api.ts`, `useApiResource`). 51 tests frontend; prueba visual
-  del usuario aprobada en dos rondas. Evidencia en
-  [08-features-checks.md](../docs/validations/08-features-checks.md).
-- F2 y F3: especificadas y planificadas, sin implementar.
+  compartida (`api.ts`, `useApiResource`); prueba visual del usuario
+  aprobada en dos rondas.
+- **F2 implementado** (iteracion 1, fase 7): tabla de alertas con umbral
+  configurable, aviso rojo compartido (`ErrorNotice`); prueba visual del
+  usuario aprobada en cuatro rondas (spec v1.6 a v1.8). 76 tests frontend.
+- Evidencia de F1 y F2 en [08-features-checks.md](../docs/validations/08-features-checks.md).
+- F3: especificada y planificada, sin implementar.
 
 ## Gaps conocidos (no corregidos; fuera de alcance sin acuerdo explicito)
 

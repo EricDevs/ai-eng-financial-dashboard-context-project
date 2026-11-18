@@ -169,7 +169,7 @@ Mismas reglas que la seccion 2: rama de integracion `feature/frontend-specs-v2` 
 | --- | --- | --- | --- | --- |
 | 5 Planes y specs | `feature/frontend-specs-v2-fase5-plans` | PR #18 | `b880d90` (spec v1.4), `9297324` (planes de la iteracion 1, con codigo), `4e51f0a` (planes de entrega, sin codigo), `f486623` (spec v1.5 y planes F2/F3 v5.1), `a6aaf55` (registro del PR) (merge `87be002`) | completada 2026-11-18 |
 | 6 F1 | `feature/frontend-specs-v2-fase6-f1` (creada sobre la fase 5, no sobre la integracion: el codigo implementa la spec v1.4 y la evidencia enlaza a los planes) | PR #19 | `e5a08bb` (codigo), `3189afa` (evidencia) y el commit de este registro | PR abierto, pendiente de aprobacion; prueba visual aprobada (2 rondas) |
-| 7 F2 | `feature/frontend-specs-v2-fase7-f2` | — | — | pendiente |
+| 7 F2 | `feature/frontend-specs-v2-fase7-f2` (creada sobre la fase 6: F2 usa el codigo de F1) | — | `acc8080`, `3662688`, `13c7917`, `afd274c` (tareas 1-4); `6ad24d6`, `ea98a96`, `b3a0a1b`, `4a47b1f`, `ba7b337`, `04ab5df` (spec v1.6-v1.8 y sus cambios); y el commit de la evidencia | commits hechos; prueba visual aprobada (4 rondas); PR pendiente |
 | 8 F3 | `feature/frontend-specs-v2-fase8-f3` | — | — | pendiente |
 | 9 Traspaso | `feature/frontend-specs-v2-fase9-handover` | — | — | pendiente |
 | Final | `feature/frontend-specs-v2` -> `main` | — | — | pendiente |
