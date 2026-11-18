@@ -13,7 +13,7 @@ export function ThresholdInput({ value, onChange }: ThresholdInputProps) {
 
   return (
     <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5">
-      <label htmlFor={id} className="text-sm font-medium text-foreground">
+      <label htmlFor={id} className="text-sm font-medium text-muted-foreground">
         Alert threshold
       </label>
       <input
