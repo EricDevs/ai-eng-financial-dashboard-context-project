@@ -1,6 +1,6 @@
 # Especificaciones frontend: contrato de datos
 
-**Version:** 1.6 | **Fecha:** 2026-11-18. Las versiones 1.1 a 1.6 anaden decisiones de implementacion (`DEC-01` a `DEC-30`) y doce criterios nuevos. Los tipos de la API no cambian; la 1.4 cambia un comportamiento de la 1.0 (una fecha fuera del rango disponible pasa a ser error de validacion, DEC-26); detalle en el [historial de components.md](components.md#historial-de-versiones). Planes de implementacion en [docs/plans](../../docs/plans).
+**Version:** 1.7 | **Fecha:** 2026-11-19. Las versiones 1.1 a 1.7 anaden decisiones de implementacion (`DEC-01` a `DEC-31`) y doce criterios nuevos. Los tipos de la API no cambian; la 1.4 cambia un comportamiento de la 1.0 (una fecha fuera del rango disponible pasa a ser error de validacion, DEC-26); detalle en el [historial de components.md](components.md#historial-de-versiones). Planes de implementacion en [docs/plans](../../docs/plans).
 
 Tres funcionalidades nuevas del dashboard financiero, especificadas antes de construirlas. Este documento es el punto de entrada: dice que endpoint consume cada funcionalidad, que tipos usan sus peticiones y respuestas, que valores son validos y que debe mostrar la interfaz en los casos limite. **No hay codigo React ni llamadas a la API en esta entrega**; se implementa a partir de estos archivos, sin hacer preguntas.
 
