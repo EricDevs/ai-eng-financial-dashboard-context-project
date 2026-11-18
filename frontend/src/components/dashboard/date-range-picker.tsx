@@ -1,6 +1,7 @@
 import { useId, useRef, type Ref } from 'react'
-import { AlertCircle, X } from 'lucide-react'
+import { X } from 'lucide-react'
 import { Skeleton } from '@/components/ui/skeleton'
+import { ErrorNotice } from './error-notice'
 import { type FacetsResponse } from '@/lib/api-types'
 import { getDateRangeIssue } from '@/lib/financial-utils'
 import { type DateRangeFilter } from '@/lib/param-types'
@@ -43,18 +44,6 @@ function DateField({ label, value, onChange, invalid, min, max, inputRef }: Date
         onChange={(event) => onChange(event.target.value)}
         className="h-11 min-w-44 rounded-md border border-border bg-card px-3 text-base text-foreground [color-scheme:dark] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring aria-[invalid=true]:border-red-400"
       />
-    </div>
-  )
-}
-
-function ErrorNotice({ children }: { children: string }) {
-  return (
-    <div
-      role="alert"
-      className="flex items-start gap-2 rounded-lg border border-red-500/40 bg-red-500/10 px-3 py-2 text-sm text-red-300"
-    >
-      <AlertCircle size={16} aria-hidden="true" className="mt-0.5 shrink-0" />
-      <p>{children}</p>
     </div>
   )
 }
