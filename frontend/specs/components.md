@@ -1,10 +1,10 @@
 # Especificacion de componentes
 
-**Version:** 1.9 | **Fecha:** 2026-11-19 | Cambios en el [Historial de versiones](#historial-de-versiones).
+**Version:** 1.10 | **Fecha:** 2026-11-19 | Cambios en el [Historial de versiones](#historial-de-versiones).
 
 Capa frontend de tres funcionalidades del dashboard financiero. Es una especificacion: no hay codigo React ni llamadas a la API. Tipos en [api-types.ts](api-types.ts) y [param-types.ts](param-types.ts); evidencia de la API en [verification.md](verification.md).
 
-Las versiones 1.1 a 1.3 no cambian el comportamiento de la 1.0: cierran decisiones que la 1.0 dejaba abiertas para poder implementar sin preguntas. La 1.4 **si cambia** un comportamiento de la 1.0, tras la prueba visual de F1: una fecha fuera del rango disponible pasa a ser un error de validacion (DEC-26). La 1.5 fija el aspecto de los errores de F2 y F3 (DEC-29) y la 1.6 la disposicion de la tarjeta de alertas (DEC-30), revisada en la 1.7 (DEC-31); la 1.8 fija el color de la etiqueta del umbral (DEC-32) y corrige el caso `0,3`. La 1.9 cierra los huecos que encontro la prueba de traspaso (DEC-33 a DEC-40) y anade al grafico de F3 la etiqueta de cada barra y una descripcion visible (DEC-38, DEC-39). Cada una tiene un ID `DEC-xx` y se explica en [Decisiones de implementacion](#decisiones-de-implementacion); en el texto se marcan con la version que la introdujo, por ejemplo `(v1.1, DEC-xx)`.
+Las versiones 1.1 a 1.3 no cambian el comportamiento de la 1.0: cierran decisiones que la 1.0 dejaba abiertas para poder implementar sin preguntas. La 1.4 **si cambia** un comportamiento de la 1.0, tras la prueba visual de F1: una fecha fuera del rango disponible pasa a ser un error de validacion (DEC-26). La 1.5 fija el aspecto de los errores de F2 y F3 (DEC-29) y la 1.6 la disposicion de la tarjeta de alertas (DEC-30), revisada en la 1.7 (DEC-31); la 1.8 fija el color de la etiqueta del umbral (DEC-32) y corrige el caso `0,3`. La 1.9 cierra los huecos que encontro la prueba de traspaso (DEC-33 a DEC-40) y anade al grafico de F3 la etiqueta de cada barra y una descripcion visible (DEC-38, DEC-39). La 1.10 cierra las tres dudas que el agente encontro al releer la 1.9 (DEC-41 a DEC-43), sin cambiar el comportamiento. Cada una tiene un ID `DEC-xx` y se explica en [Decisiones de implementacion](#decisiones-de-implementacion); en el texto se marcan con la version que la introdujo, por ejemplo `(v1.1, DEC-xx)`.
 
 ## Convenciones comunes
 
@@ -76,7 +76,8 @@ export function getJson<T>(path: string): Promise<T>
  *   con path null, loading es false.
  * - (v1.9, DEC-33) Si `path` vuelve a ser igual al del ultimo resultado (pasando antes por null,
  *   por ejemplo al volver a `Dashboard` sin cambiar el filtro), se pide de nuevo; mientras llega,
- *   loading es false y se ven los datos anteriores.
+ *   loading es false y se ve el ultimo resultado: los datos anteriores o, si la ultima peticion
+ *   fallo, el error (v1.10, DEC-41).
  */
 export function useApiResource<T>(path: string | null): { data: T | null; loading: boolean; error: boolean }
 ```
@@ -452,7 +453,7 @@ interface GroupComparisonChartProps {
 
 Las filas de cada tabla salen **de la respuesta de `top`**, no de `facets.categories` (lista global que incluye categorias sin ingresos; ver verification.md). Las dos secciones son siempre B2B y B2C, en ese orden; `facets.business_types` confirma esos dos valores pero la vista no lo consulta.
 
-Si la vista se abre con un filtro que no se puede pedir (rango invertido, fecha fuera de rango o ano a medio escribir; v1.9, DEC-35) y todavia no hay ningun resultado, no se pide nada y cada panel muestra su estado vacio (`No income in the selected range for {group}.`), y el grafico el suyo; el aviso del filtro, si lo hay, ya se ve en `DateRangePicker` (v1.1, DEC-14).
+Si la vista se abre con un filtro que no se puede pedir (rango invertido, fecha fuera de rango o ano a medio escribir; v1.9, DEC-35) y todavia no hay ningun resultado, no se pide nada y cada panel muestra su estado vacio (`No income in the selected range for {group}.`), y el grafico el suyo; el aviso del filtro, si lo hay, ya se ve en `DateRangePicker` (v1.1, DEC-14). "Sin resultado previo" cuenta desde que se abre la vista: `ComparisonPage` se desmonta al cambiar de pestana y no conserva sus datos, de modo que al reabrirla con un filtro que no se puede pedir muestra de nuevo los estados vacios. El dashboard, en cambio, conserva los suyos porque sus peticiones viven en `App` (v1.10, DEC-42).
 
 ### Navegacion entre vistas (v1.1, DEC-12)
 
@@ -491,6 +492,7 @@ Etiquetas y descripcion (v1.9, DEC-38, DEC-39): cada barra lleva encima su impor
 | `GroupTopTable` | Titulo y descripcion siempre visibles. En carga, vacio o error el contenido sustituye a la tabla (no se pinta tabla). Carga: 3 barras `Skeleton` `h-5` a todo el ancho. Vacio: texto `text-sm` en `muted-foreground` |
 | Tabla de `GroupTopTable` | El estilo de la tabla de alertas (ver [Presentacion de F2](#presentacion-de-f2-v16-dec-30)): `Category` a la izquierda y `Total income` y `Share of group` a la derecha |
 | Errores | Aviso rojo de DEC-29; en el grafico, centrado en el area de 280 px |
+| Vacio del grafico | (v1.10, DEC-43) Como el de los graficos existentes: titulo y descripcion visibles y, en lugar de las barras, el mensaje centrado en el area de 280 px, `text-sm` en `muted-foreground`, con `role="status"` |
 
 ### Criterios de aceptacion (EARS)
 
@@ -554,7 +556,7 @@ Valen para las tres funcionalidades. Los invariantes son condiciones que nunca d
 
 ## Decisiones de implementacion
 
-Puntos que la version 1.0 no fijaba y que habia que decidir para implementar y escribir tests con valores exactos. Salieron de la revision de los planes de implementacion del 2026-11-18 y el usuario las acepto: DEC-01 a DEC-14 en la v1.1, DEC-15 a DEC-23 en la v1.2 (tras regenerar los planes sobre la v1.1) y DEC-24 en la v1.3 (tras regenerarlos sobre la v1.2). DEC-25 a DEC-28 salen de la prueba visual y de funcionamiento de F1 hecha por el usuario (v1.4). DEC-29 sale de adaptar los planes de F2 y F3 a la v1.4 (hueco H-11) y la decidio el usuario (v1.5). DEC-30 a DEC-32 salen de las pruebas visuales de F2 (v1.6 a v1.8). DEC-33 a DEC-40 salen de la prueba de traspaso: un agente sin contexto planifico desde la 1.8 y anoto sus dudas (Q-01 a Q-21 de `docs/handover/decisions.md`, en la rama de la fase 9); fijan lo que hace la iteracion 1, aprobada en las pruebas visuales, salvo DEC-38 y DEC-39, que decidio el usuario (v1.9). Los IDs no se renumeran ni se reutilizan; una decision retirada se marca como obsoleta.
+Puntos que la version 1.0 no fijaba y que habia que decidir para implementar y escribir tests con valores exactos. Salieron de la revision de los planes de implementacion del 2026-11-18 y el usuario las acepto: DEC-01 a DEC-14 en la v1.1, DEC-15 a DEC-23 en la v1.2 (tras regenerar los planes sobre la v1.1) y DEC-24 en la v1.3 (tras regenerarlos sobre la v1.2). DEC-25 a DEC-28 salen de la prueba visual y de funcionamiento de F1 hecha por el usuario (v1.4). DEC-29 sale de adaptar los planes de F2 y F3 a la v1.4 (hueco H-11) y la decidio el usuario (v1.5). DEC-30 a DEC-32 salen de las pruebas visuales de F2 (v1.6 a v1.8). DEC-33 a DEC-40 salen de la prueba de traspaso: un agente sin contexto planifico desde la 1.8 y anoto sus dudas (Q-01 a Q-21 de `docs/handover/decisions.md`, en la rama de la fase 9); fijan lo que hace la iteracion 1, aprobada en las pruebas visuales, salvo DEC-38 y DEC-39, que decidio el usuario (v1.9). DEC-41 a DEC-43 salen de las dudas Q-22 a Q-24 del mismo agente al releer la 1.9 y tambien fijan lo que hace la iteracion 1 (v1.10). Los IDs no se renumeran ni se reutilizan; una decision retirada se marca como obsoleta.
 
 | ID | Decision | Motivo | Alternativa descartada |
 | --- | --- | --- | --- |
@@ -598,6 +600,9 @@ Puntos que la version 1.0 no fijaba y que habia que decidir para implementar y e
 | DEC-38 | Cada barra del grafico de F3 lleva encima su importe con `formatCurrency`; el grupo vacio muestra `$0` | Q-07, decidido por el usuario: una barra de valor 0 no tiene altura, y en la iteracion 1 el `$0` solo se veia en el tooltip | Solo el tooltip |
 | DEC-39 | Descripcion visible en el grafico de F3, el mismo texto que `desc`; 280 px de alto, sin leyenda, tooltip como los graficos existentes | Q-20, decidido por el usuario: el marcado de carga (DEC-17) tiene una linea de descripcion; sin ella, en la iteracion 1 habia un salto de altura al terminar de cargar | Quitar la linea del marcado de carga |
 | DEC-40 | Detalles de presentacion que la 1.8 no fijaba: carga de `Available data`, aviso `No movements found...`, estilo de las tablas y de sus estados, pestanas, columnas de la vista comparativa (desde `xl`, decidido por el usuario) y validez de `0.015` | Q-13 a Q-19 y Q-21: la iteracion 1 los resolvio sin anotarlos; se copian sus valores, ya aprobados en las pruebas visuales | Dejarlos a quien implemente |
+| DEC-41 | Al volver a la ruta del ultimo resultado se ve ese resultado mientras se pide de nuevo: los datos o, si la ultima peticion fallo, el error | Q-22: DEC-33 decia "los datos anteriores", que no existen si el ultimo resultado fue un error | Mostrar `Skeleton` o vaciar el error mientras llega |
+| DEC-42 | "Sin resultado previo" (DEC-14) cuenta desde que se abre la vista comparativa: al reabrirla con un filtro que no se puede pedir, estados vacios | Q-23: `ComparisonPage` se desmonta al cambiar de pestana y no conserva sus datos; conservarlos exigiria subir sus peticiones a `App` | Subir las peticiones de la comparativa a `App` para conservar el ultimo resultado |
+| DEC-43 | Vacio del grafico de F3 como el de los graficos existentes, con titulo y descripcion visibles | Q-24: la spec daba el texto y el rol, no el aspecto | Un aspecto propio |
 
 ## Historial de versiones
 
@@ -613,3 +618,4 @@ Puntos que la version 1.0 no fijaba y que habia que decidir para implementar y e
 | 1.7 | 2026-11-19 | Tras la segunda prueba visual de F2: DEC-31 (control del umbral a la derecha del titulo, aviso a todo el ancho colocado por `AlertsTable`, campo con fondo `secondary`); la disposicion de DEC-30 queda obsoleta. Sin cambios de comportamiento ni de tipos |
 | 1.8 | 2026-11-19 | Tras la tercera prueba visual de F2: DEC-32 (color de la etiqueta del umbral) y correccion del caso `0,3`, que depende del idioma del navegador. Sin cambios de comportamiento ni de tipos |
 | 1.9 | 2026-11-19 | Tras la etapa de planificacion de la prueba de traspaso: DEC-33 a DEC-40; se resuelve la contradiccion entre AC-F2-04 y AC-F2-05 (DEC-34); AC-F2-04, AC-F2-05, AC-F3-10 y AC-F3-16 ajustados; seccion [Presentacion de F3](#presentacion-de-f3-v19-dec-40). **Cambia la presentacion** del grafico de F3 (etiqueta en cada barra y descripcion visible, DEC-38 y DEC-39); el resto fija lo que ya hacia la iteracion 1. Tipos sin cambios |
+| 1.10 | 2026-11-19 | Tras la segunda revision de los planes del agente de traspaso: DEC-41 a DEC-43 (resultado visible al volver a una ruta con error, alcance de "sin resultado previo" en la vista comparativa y aspecto del vacio de su grafico). Sin cambios de comportamiento ni de tipos |
