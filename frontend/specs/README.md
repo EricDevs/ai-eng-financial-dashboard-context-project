@@ -1,6 +1,6 @@
 # Especificaciones frontend: contrato de datos
 
-**Version:** 1.8 | **Fecha:** 2026-11-19. Las versiones 1.1 a 1.8 anaden decisiones de implementacion (`DEC-01` a `DEC-32`) y doce criterios nuevos. Los tipos de la API no cambian; la 1.4 cambia un comportamiento de la 1.0 (una fecha fuera del rango disponible pasa a ser error de validacion, DEC-26); detalle en el [historial de components.md](components.md#historial-de-versiones). Planes de implementacion en [docs/plans](../../docs/plans).
+**Version:** 1.9 | **Fecha:** 2026-11-19. Las versiones 1.1 a 1.9 anaden decisiones de implementacion (`DEC-01` a `DEC-40`) y doce criterios nuevos. Los tipos de la API no cambian; la 1.4 cambia un comportamiento de la 1.0 (una fecha fuera del rango disponible pasa a ser error de validacion, DEC-26); detalle en el [historial de components.md](components.md#historial-de-versiones). Planes de implementacion en [docs/plans](../../docs/plans).
 
 Tres funcionalidades nuevas del dashboard financiero, especificadas antes de construirlas. Este documento es el punto de entrada: dice que endpoint consume cada funcionalidad, que tipos usan sus peticiones y respuestas, que valores son validos y que debe mostrar la interfaz en los casos limite. **No hay codigo React ni llamadas a la API en esta entrega**; se implementa a partir de estos archivos, sin hacer preguntas.
 
@@ -10,7 +10,7 @@ Tres funcionalidades nuevas del dashboard financiero, especificadas antes de con
 | --- | --- |
 | [api-types.ts](api-types.ts) | Tipos de respuesta: `FacetsResponse`, `AlertEntry`, `AlertsResponse`, `CategoryEntry`, `TopCategoriesResponse` |
 | [param-types.ts](param-types.ts) | Tipos de parametros de query: `DateRangeFilter`, `AlertsParams`, `TopCategoriesParams` |
-| [components.md](components.md) | Componentes, props, estados y **criterios de aceptacion** (IDs `AC-F1-xx`, `AC-F2-xx`, `AC-F3-xx`), invariantes, restricciones y [decisiones de implementacion](components.md#decisiones-de-implementacion) (IDs `DEC-xx`, v1.1 a v1.3) |
+| [components.md](components.md) | Componentes, props, estados y **criterios de aceptacion** (IDs `AC-F1-xx`, `AC-F2-xx`, `AC-F3-xx`), invariantes, restricciones y [decisiones de implementacion](components.md#decisiones-de-implementacion) (IDs `DEC-xx`, v1.1 a v1.9) |
 | [verification.md](verification.md) | Evidencia: cada afirmacion sobre la API marcada ✅ / ❌ / ❓ con la llamada que la comprueba |
 
 Los criterios de aceptacion estan escritos en notacion EARS y sus IDs no se renumeran. Este README **los enlaza, no los repite**: la fuente de verdad del comportamiento es [components.md](components.md).
