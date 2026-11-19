@@ -85,4 +85,37 @@ Prueba visual del usuario (2026-11-19, tras `docker compose restart frontend` y 
 
 ### Ronda 1, etapa 1 repetida con la spec v1.9
 
+Mensaje al agente: releer la spec v1.9, marcar cada entrada como resuelta o abierta, anadir dudas nuevas, actualizar los planes y responder a Q-10 a Q-12 (Q-10: actualizar los valores de los tests existentes sin relajarlos; Q-11: paso rojo de TDD y mutaciones de los comportamientos clave; Q-12: seccion "Registro de ejecucion" en cada plan; no tocar memory-bank).
+
+Resultado en `a4cc8bf` (sin push ni codigo):
+
+- Intento ver el diff de `0102f10` y el entorno lo bloqueo por la prohibicion de consultar el historial; releyo la spec y lo anoto en `decisions.md`.
+- Q-01 a Q-09 y Q-13 a Q-21: resueltas por la v1.9. En Q-14 a Q-18 la spec no coincidia con su propuesta y los planes siguen la spec. Q-10 a Q-12: abiertas en la spec por ser de proceso, con las respuestas anotadas.
+- Tres dudas nuevas:
+
+| Entrada | Duda | Contraste | Resultado |
+| --- | --- | --- | --- |
+| Q-22 | Al volver a una ruta cuyo ultimo resultado fue un error, DEC-33 dice "los datos anteriores", que no existen | La iteracion 1 sigue mostrando el error mientras vuelve a pedir, que es la propuesta del agente | DEC-41 |
+| Q-23 | Alcance de "sin resultado previo" al reabrir la vista comparativa, que se desmonta | La iteracion 1 muestra los estados vacios, que es la propuesta del agente | DEC-42 |
+| Q-24 | Aspecto del vacio del grafico de F3 | La iteracion 1 usa el de los graficos existentes, que es la propuesta del agente | DEC-43 |
+
+Correcciones, sin cambios de comportamiento ni prueba visual:
+
+| Commit | Contenido |
+| --- | --- |
+| `670fe6c` | Spec v1.10: DEC-41 a DEC-43 |
+| `4be8574` | Planes F1 v8.2 y F3 v5.5 |
+| `3ecc51e` | Tests de DEC-41 (hook) y DEC-42 (`App`) |
+
+| Comando o rotura | Resultado |
+| --- | --- |
+| `npm --prefix frontend test` | 11 archivos, 117 passed |
+| `npm --prefix frontend run lint` y `run build` | Sin errores ni avisos; chunk principal 193.74 kB |
+| Hook en carga al volver a una ruta con error | Fallan `sets error and drops data on a failed request` y `shows the last error when returning to a failed path` |
+| `ComparisonPage` montada y oculta en lugar de desmontada | Falla `shows empty states when reopening the comparison with a filter that cannot be requested` |
+
+El nuevo test de `App` paso 3 de 3 veces.
+
+### Ronda 1, etapa 1 con la spec v1.10
+
 Pendiente.
