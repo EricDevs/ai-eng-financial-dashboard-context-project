@@ -214,3 +214,12 @@ Reglas leidas antes de editar: WF, FIN, API, CAL y FE. DX no aplica (sin cambios
   - Log quitado (el archivo de test quedo sin `RENDER`). Correccion: esperar con `await settle()` (20 ms) entre `render(null)` y `render("A")`. Las aserciones no cambian.
   - Ese fallo es tambien la prueba de que esos dos tests detectan un hook que no vuelve a pedir.
 - Verde: mismo comando -> 13 pasados. Lint y `npx tsc -b` sin errores. Lint pasa con `react-hooks/set-state-in-effect`: el hook solo llama a `setState` dentro de `then`/`catch`.
+
+### Tarea 3 (2026-11-19)
+
+- Rojo: `npm --prefix frontend test -- src/components/dashboard/date-range-picker.test.tsx` -> `Failed to resolve import "./date-range-picker"`, porque el componente aun no existe.
+- Primera ejecucion tras implementar: 10 pasados y 1 fallido. `toggles Clear dates and moves the focus to Start date` falla con `expected undefined to be defined` al buscar el boton.
+  - **Causa demostrada antes de corregir:** el test renderiza dos veces. En la segunda, `renderPicker` esperaba a que existiera el `role="group"`, pero ese grupo ya estaba del primer render, asi que volvia antes de que React confirmara las props nuevas.
+  - Prueba temporal con aserciones en lugar de la llamada original: `expect(clearButton()).toBeUndefined()` justo despues de `renderPicker` y `expect(clearButton()).toBeDefined()` tras 20 ms. Las dos pasaron (`1 passed`). El archivo se restauro desde una copia en el scratchpad.
+  - Correccion en el test: `renderPicker` espera con `settle()` en lugar de buscar el grupo. `settle` pasa a `src/test-utils.ts`, compartido con el test del hook. Las aserciones no cambian.
+- Verde: `npm --prefix frontend test` -> 5 archivos, 35 pasados. Lint y `npx tsc -b` sin errores.

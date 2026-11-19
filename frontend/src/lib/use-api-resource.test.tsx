@@ -3,6 +3,7 @@ import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { useApiResource } from "./use-api-resource";
+import { settle } from "@/test-utils";
 
 type Call = { url: string; resolve: (body: unknown) => void; fail: () => void };
 
@@ -47,11 +48,6 @@ afterEach(() => {
   container.remove();
   vi.unstubAllGlobals();
 });
-
-/** Lets React commit pending renders and pending fetch callbacks run; consecutive renders in one tick are batched. */
-function settle() {
-  return new Promise((resolve) => setTimeout(resolve, 20));
-}
 
 async function loadA(body: unknown) {
   render("A");
