@@ -204,3 +204,13 @@ Reglas leidas antes de editar: WF, FIN, API, CAL y FE. DX no aplica (sin cambios
 - Rojo: `npm --prefix frontend test -- src/lib/financial-utils.test.ts` -> 3 fallidos, 6 pasados. Causa: `TypeError: isValidDateRange is not a function` (y lo mismo para `formatPeriodLabel` y `getDateRangeIssue`), es decir, funciones aun no exportadas.
 - Verde: mismo comando -> 9 pasados. `npm --prefix frontend run lint` sin errores; `npx tsc -b` sin errores.
 - CAL: las funciones comparan cadenas `YYYY-MM-DD` y no crean `Date`, asi que el huso horario no interviene; no se repite con otro `TZ`.
+
+### Tarea 2 (2026-11-19)
+
+- Rojo: `npm --prefix frontend test -- src/lib/api.test.ts src/lib/use-api-resource.test.tsx` -> los 2 archivos fallan: `Cannot find module './api'` y `Failed to resolve import "./use-api-resource"`, porque los modulos aun no existen.
+- Primera ejecucion tras implementar: 11 pasados y 2 fallidos (`refetches when the same path comes back after null` y `keeps showing the error while the same path is refetched`), los dos con `expected [...] to have a length of 2 but got 1`.
+  - **Causa demostrada antes de corregir:** anadi temporalmente un `console.log` del `path` en cada render de `Probe` y ejecute solo el primero de esos tests. Salida: `RENDER path=A` tres veces y ninguna `RENDER path=null`. Los dos `root.render` seguidos (`null` y despues `A`) caen en el mismo tick y React los agrupa, asi que `null` nunca llega a confirmarse y el efecto no ve cambiar la ruta.
+  - El fallo estaba en el montaje del test, no en el hook. En la app, el paso a `null` y la vuelta a la misma ruta salen de acciones distintas del usuario.
+  - Log quitado (el archivo de test quedo sin `RENDER`). Correccion: esperar con `await settle()` (20 ms) entre `render(null)` y `render("A")`. Las aserciones no cambian.
+  - Ese fallo es tambien la prueba de que esos dos tests detectan un hook que no vuelve a pedir.
+- Verde: mismo comando -> 13 pasados. Lint y `npx tsc -b` sin errores. Lint pasa con `react-hooks/set-state-in-effect`: el hook solo llama a `setState` dentro de `then`/`catch`.
