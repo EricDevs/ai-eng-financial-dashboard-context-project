@@ -1,6 +1,6 @@
 # F3 - Vista comparativa B2B vs B2C: plan de implementacion
 
-**Version:** 5.2 | **Fecha:** 2026-11-19 | **Estado:** version de entrega, sin codigo; iteracion 1 en curso (fase 8) | **Spec:** v1.8
+**Version:** 5.3 | **Fecha:** 2026-11-19 | **Estado:** version de entrega, sin codigo; iteracion 1 en curso (fase 8) | **Spec:** v1.8
 
 **Como ejecutar:** tarea por tarea y en orden; marcar cada paso (`- [ ]`) al completarlo. No empezar una tarea sin que la anterior tenga sus tests en verde. Cada test se ve fallar antes de implementar.
 
@@ -51,6 +51,8 @@
 - El fallback de `Suspense` (DEC-23) reutiliza `GroupTopTable` con `loading` y el `ChartFallback` existente de `App`.
 - La ruta de cada grupo se calcula con una funcion local de `comparison-page.tsx` (`topPath(filter, bounds, businessType)`).
 - En `App.test.tsx`, las esperas que dependen de la vista comparativa usan `LAZY_CHARTS` (5 s): `ComparisonPage` se carga en diferido con Recharts, como los graficos de F1, y en jsdom tarda mas de 1 s en esta maquina.
+- Cada `fetch` simulado devuelve su propio `Response`: el cuerpo solo se lee una vez, y los dos grupos se piden en paralelo. Para controlar el orden de llegada (test de la ultima respuesta) se usan compuertas `deferred<void>` que crean la respuesta al resolverse, no un `Response` compartido.
+- En `App.test.tsx`, cambiar el filtro solo despues de que la pagina haya cargado (`renderLoaded`): el selector de fechas no existe antes del primer render.
 
 ## Foco de revision
 
@@ -218,3 +220,4 @@ Procedimiento del repositorio para verificar cambios del frontend: [.skills/veri
 | 5.0 | 2026-11-18 | Version de entrega sin codigo, adaptada a la spec 1.4: `ComparisonPage` recibe `bounds` y aplica la regla unica (DEC-26), con su test; hueco H-11 (estilo de los errores) |
 | 5.1 | 2026-11-18 | Spec 1.5: H-11 pasa a DEC-29 (decision del usuario); los errores usan `ErrorNotice`, extraido en el plan F2 |
 | 5.2 | 2026-11-19 | Revisado contra la spec 1.8 antes de ejecutarlo: sin cambios de comportamiento (DEC-30 a DEC-32 son de F2); `LAZY_CHARTS` para las esperas de la vista comparativa en `App.test.tsx` |
+| 5.3 | 2026-11-19 | Tras ejecutar la iteracion 1: dos notas de los tests (un `Response` por `fetch` simulado; cambiar el filtro tras el primer render). Prueba visual aprobada sin hallazgos: la spec sigue en 1.8 |
