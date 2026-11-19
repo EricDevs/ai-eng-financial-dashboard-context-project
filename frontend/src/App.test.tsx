@@ -459,3 +459,122 @@ describe("anomaly alerts", () => {
     }
   });
 });
+
+const TOP = "/api/metrics/categories/top?operation_type=income&limit=5&business_type=";
+const topEntries = () => [
+  { category: "sales", operation_type: "income", total_amount: 1000 },
+  { category: "others", operation_type: "income", total_amount: 250 },
+];
+const withTop = (url: string) =>
+  url.startsWith(TOP) ? Promise.resolve(jsonResponse(topEntries())) : undefined;
+const tabPanel = () => container.querySelector('[role="tabpanel"]');
+const dashboardCalls = (fetchMock: FetchMock) =>
+  calledUrls(fetchMock).filter(
+    (url) => isMovementsUrl(url) || url.startsWith("/api/metrics/alerts"),
+  );
+
+async function openComparison() {
+  buttonByText(container, "B2B vs B2C").click();
+  await vi.waitFor(
+    () => expect(container.textContent).toContain("B2B - Top income categories"),
+    LAZY_CHARTS,
+  );
+}
+
+describe("view tabs", () => {
+  it("starts on the dashboard tab", async () => {
+    stubApi();
+    await renderLoaded();
+
+    expect(tabPanel()?.getAttribute("aria-labelledby")).toBe("tab-dashboard");
+    expect(buttonByText(container, "Dashboard").getAttribute("aria-selected")).toBe("true");
+  });
+
+  it("switches to the comparison view and keeps the date picker", async () => {
+    stubApi(withTop);
+    await renderLoaded();
+    await openComparison();
+
+    expect(kpiSection()).toBeNull();
+    expect(container.textContent).not.toContain("Anomaly Alerts");
+    expect(tabPanel()?.getAttribute("aria-labelledby")).toBe("tab-comparison");
+    expect(container.querySelectorAll('input[type="date"]')).toHaveLength(2);
+    expect(tabPanel()?.querySelector('input[type="date"]')).toBeNull();
+  });
+
+  it("does not request dashboard data while comparing", async () => {
+    const fetchMock = stubApi(withTop);
+    await renderLoaded();
+    await openComparison();
+    const callsBefore = dashboardCalls(fetchMock).length;
+
+    await setDate("Start date", "2026-01-01");
+    await vi.waitFor(() =>
+      expect(calledUrls(fetchMock)).toContain(`${TOP}B2B&start_date=2026-01-01`),
+    );
+    expect(dashboardCalls(fetchMock)).toHaveLength(callsBefore);
+  });
+
+  it("returns to the dashboard with the same filter", async () => {
+    const fetchMock = stubApi(withTop);
+    await renderLoaded();
+    await openComparison();
+    await setDate("Start date", "2026-01-01");
+
+    buttonByText(container, "Dashboard").click();
+    await vi.waitFor(() => {
+      expect(inputByLabel(container, "Start date").value).toBe("2026-01-01");
+      expect(calledUrls(fetchMock)).toContain("/api/metrics?start_date=2026-01-01");
+      expect(calledUrls(fetchMock)).toContain(
+        "/api/metrics/alerts?threshold=0.3&start_date=2026-01-01",
+      );
+      expect(kpiValues()).toEqual(["$100", "$25", "$75", "75.0%"]);
+    });
+  });
+
+  it("hides the movements banner and empty notice in the comparison view", async () => {
+    stubApi((url) =>
+      url === "/api/metrics" ? Promise.resolve(jsonResponse(null, 500)) : withTop(url),
+    );
+    root.render(<App />);
+    await vi.waitFor(() => expect(container.textContent).toContain("No se pudo cargar"));
+    await openComparison();
+    expect(container.textContent).not.toContain("No se pudo cargar");
+
+    root.unmount();
+    root = createRoot(container);
+    stubApi((url) =>
+      url.startsWith("/api/metrics?") ? Promise.resolve(jsonResponse([])) : withTop(url),
+    );
+    await renderLoaded();
+    await setDate("Start date", "2026-10-28");
+    await vi.waitFor(() =>
+      expect(container.textContent).toContain("No movements found for the selected range."),
+    );
+    await openComparison();
+    expect(container.textContent).not.toContain("No movements found for the selected range.");
+  });
+
+  it("ignores comparison responses after leaving the tab", async () => {
+    const gate = deferred<void>();
+    const consoleError = vi.spyOn(console, "error");
+    stubApi((url) =>
+      url.startsWith(TOP) ? gate.promise.then(() => jsonResponse(topEntries())) : undefined,
+    );
+    await renderLoaded();
+    buttonByText(container, "B2B vs B2C").click();
+    await vi.waitFor(
+      () => expect(tabPanel()?.getAttribute("aria-labelledby")).toBe("tab-comparison"),
+      LAZY_CHARTS,
+    );
+
+    buttonByText(container, "Dashboard").click();
+    await vi.waitFor(() => expect(kpiSection()).not.toBeNull());
+    gate.resolve();
+    await tick();
+
+    expect(container.textContent).not.toContain("Top income categories");
+    expect(consoleError).not.toHaveBeenCalled();
+    consoleError.mockRestore();
+  });
+});
