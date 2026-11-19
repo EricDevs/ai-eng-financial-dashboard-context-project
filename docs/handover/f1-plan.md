@@ -6,7 +6,14 @@
 
 **Stack:** React 19, TypeScript 6, Tailwind 4, Vitest 4 + jsdom (sin Testing Library: no se anaden dependencias).
 
-**Spec:** [README](../../frontend/specs/README.md#f1---filtro-de-rango-de-fechas) y [components.md, F1](../../frontend/specs/components.md#f1---filtro-de-rango-de-fechas). Dudas abiertas en [decisions.md](decisions.md) (Q-01 a Q-04, Q-09 a Q-14).
+**Spec:** v1.9. [README](../../frontend/specs/README.md#f1---filtro-de-rango-de-fechas) y [components.md, F1](../../frontend/specs/components.md#f1---filtro-de-rango-de-fechas). Las dudas de la etapa 1 que afectan a F1 (Q-01 a Q-04, Q-09, Q-13, Q-14) las cierra la v1.9 y las de proceso (Q-10 a Q-12) las respondio el mantenedor; abierta: Q-22 ([decisions.md](decisions.md)).
+
+## Cambios respecto a la version anterior (spec v1.8 a v1.9)
+
+- Tarea 2: los casos limite del hook dejan de depender de respuestas (DEC-33). Hay un test nuevo, `keeps the previous data while a new path loads`, y el de volver a la misma ruta fija `loading: false` con los datos anteriores visibles. Se anade una variante con error, que depende de Q-22.
+- Tarea 3: `aria-invalid` solo en el input fuera de rango cuando ademas el rango esta invertido (DEC-37). El `Skeleton` de `Available data` mide `h-4 w-64` (DEC-40; la propuesta era `h-5`).
+- Tarea 4: el aviso `No movements found...` es texto `text-sm` en `muted-foreground`, sin caja ni icono (DEC-40). No se muestra mientras cargan los movimientos (DEC-33), con un test nuevo: `hides the empty notice while reloading`.
+- Proceso. Q-10: los tests existentes se adaptan en la Tarea 4 sin relajar las comparaciones exactas. Q-11: hay una mutacion nueva (6) y cada mutacion se registra con el test que fallo. Q-12: se anade al final la seccion `Registro de ejecucion`.
 
 ## Restricciones globales
 
@@ -103,12 +110,13 @@ await expect(getJson("/api/metrics")).rejects.toThrow()             // 500
   - `loads and exposes the data`: `loading: true` y luego `{ data: [1], loading: false, error: false }`.
   - `reports an error with null data`: 500 -> `{ data: null, loading: false, error: true }`.
   - `keeps only the response of the current path`: ruta A (pendiente), cambio a B, B resuelve `"b"`, A resuelve `"a"` despues -> `data` es `"b"`.
+  - `keeps the previous data while a new path loads` (DEC-33): tras cargar A con `[1]`, ruta B pendiente -> `{ data: [1], loading: true, error: false }`.
   - `keeps the last data when the path becomes null`: tras cargar A, ruta `null` -> mismo `data`, `loading: false`, sin fetch nuevo.
-  - `discards an in-flight response when the path becomes null` (Q-02).
-  - `refetches when the same path comes back after null` (Q-01: segunda llamada a fetch; segun la respuesta, `loading` false o true durante la recarga).
+  - `discards an in-flight response when the path becomes null` (DEC-33): tras cargar A con `[1]`, ruta B pendiente y despues `null`; B resuelve `[2]` -> `{ data: [1], loading: false, error: false }`.
+  - `refetches when the same path comes back after null` (DEC-33): tras cargar A con `[1]`, ruta `null` y otra vez A -> segunda llamada a fetch con A y, mientras esta pendiente, `{ data: [1], loading: false, error: false }`; al resolver `[3]`, `data` es `[3]`. Variante con error (Q-22, opcion (a)): A falla, `null`, A otra vez -> mientras esta pendiente, `{ data: null, loading: false, error: true }`.
 
 - [ ] **Paso 2:** `npm --prefix frontend test -- src/lib/api.test.ts src/lib/use-api-resource.test.tsx` -> FAIL.
-- [ ] **Paso 3:** implementar. `buildQuery` con `URLSearchParams` sobre `Object.entries`, saltando `undefined` y `''`. El hook guarda `{ path, data, error }` del ultimo resultado asentado; el efecto (dependencia `[path]`) pide si `path !== null` y marca la peticion como obsoleta en el cleanup; `setState` solo en el `then`. Deriva `loading = path !== null && resultado.path !== path`; con Q-03 (a), `data` es el del ultimo resultado.
+- [ ] **Paso 3:** implementar. `buildQuery` con `URLSearchParams` sobre `Object.entries`, saltando `undefined` y `''`. El hook guarda `{ path, data, error }` del ultimo resultado asentado; el efecto (dependencia `[path]`) pide si `path !== null` y marca la peticion como obsoleta en el cleanup; `setState` solo en el `then`. Deriva `loading = path !== null && resultado.path !== path`; `data` y `error` son siempre los del ultimo resultado (DEC-33). Con esa derivacion, volver a la ruta del ultimo resultado da `loading` false sin codigo extra.
 - [ ] **Paso 4:** mismo comando -> PASS. `npm --prefix frontend run lint` -> sin errores (comprueba la regla del efecto).
 - [ ] **Paso 5:** commit `feat(f1): add shared API layer and useApiResource hook`.
 
@@ -132,10 +140,10 @@ await expect(getJson("/api/metrics")).rejects.toThrow()             // 500
   - `toggles Clear dates`: sin fechas no hay boton `Clear dates`; con una fecha si; al pulsarlo `onChange({})` y `document.activeElement` es el input `Start date` (AC-F1-16).
   - `warns about an inverted range`: un solo `role="alert"` con `Start date must be on or before end date.`; ambos inputs `aria-invalid="true"`.
   - `warns about an out-of-bounds date`: `start_date: "2025-10-31"` -> alerta `Dates must be between 2025-11-01 and 2026-10-28.`; `aria-invalid` solo en `Start date`.
-  - `shows only the first problem`: `start_date: "2030-01-01", end_date: "2026-01-01"` -> un unico `role="alert"`, el de fuera de rango; `aria-invalid` segun Q-09.
+  - `shows only the first problem`: `start_date: "2030-01-01", end_date: "2026-01-01"` -> un unico `role="alert"`, el de fuera de rango; `aria-invalid="true"` solo en `Start date` y `End date` sin `aria-invalid` (DEC-37).
   - `stays silent while a year is typed`: `start_date: "0019-02-02"` -> ningun `role="alert"` ni `aria-invalid`.
 - [ ] **Paso 2:** `npm --prefix frontend test -- src/components/dashboard/date-range-picker.test.tsx` -> FAIL.
-- [ ] **Paso 3:** implementar con las clases de la [presentacion de F1](../../frontend/specs/components.md#presentacion-v14-dec-27-dec-28): fila con inputs y boton; debajo `Available data` y el aviso. Inputs `h-11 text-base min-w-44 bg-card scheme-dark`, borde rojo con `aria-invalid:border-red-500`; etiquetas `text-sm text-foreground`; boton `h-11 border-primary/60 bg-primary/15 text-foreground` con icono `X`; aviso `border-red-500/40 bg-red-500/10 text-red-300` con `AlertCircle`; anillo de foco `focus-visible:ring-ring`. El foco tras `Clear dates` se mueve con un `ref` al input de inicio.
+- [ ] **Paso 3:** implementar con las clases de la [presentacion de F1](../../frontend/specs/components.md#presentacion-v14-dec-27-dec-28): fila con inputs y boton; debajo `Available data` y el aviso. Inputs `h-11 text-base min-w-44 bg-card scheme-dark`, borde rojo con `aria-invalid:border-red-500`; etiquetas `text-sm text-foreground`; boton `h-11 border-primary/60 bg-primary/15 text-foreground` con icono `X`; aviso `border-red-500/40 bg-red-500/10 text-red-300` con `AlertCircle`; anillo de foco `focus-visible:ring-ring`; `Skeleton` de `Available data` `h-4 w-64` (DEC-40). El foco tras `Clear dates` se mueve con un `ref` al input de inicio.
 - [ ] **Paso 4:** mismo comando -> PASS; lint sin errores.
 - [ ] **Paso 5:** commit `feat(f1): add DateRangePicker component`.
 
@@ -148,7 +156,7 @@ await expect(getJson("/api/metrics")).rejects.toThrow()             // 500
 - Consume: Tareas 1-3. `API_BASE_URL` sale de `App.tsx` y pasa a `@/lib/api`.
 - Produce para F2/F3: en `App`, `filter: DateRangeFilter`, `bounds: DateBounds | null` y `dateIssue = getDateRangeIssue(filter, bounds)`.
 
-Comportamiento: `facets = useApiResource<FacetsResponse>("/api/metrics/facets")`; ruta de movimientos `dateIssue === null ? "/api/metrics" + buildQuery({ start_date, end_date }) : null`. KPI: `metrics = data && data.length > 0 ? computeKPIs(data) : null`; graficos con `computeMonthlyData(data ?? [])`. Bajo el picker, `No movements found for the selected range.` con `role="status"` cuando `data` es `[]` y no carga (Q-04). Banner de error actual con `error`. `DashboardHeader period={formatPeriodLabel(filter) ?? "2024 - Full Year"}`. El picker va justo debajo del encabezado; las pestanas y el panel de vista llegan en F3.
+Comportamiento: `facets = useApiResource<FacetsResponse>("/api/metrics/facets")`; ruta de movimientos `dateIssue === null ? "/api/metrics" + buildQuery({ start_date, end_date }) : null`. KPI: `metrics = data && data.length > 0 ? computeKPIs(data) : null`; graficos con `computeMonthlyData(data ?? [])`. Bajo el picker, `No movements found for the selected range.` con `role="status"` cuando `data` es `[]` y no carga (DEC-33), como texto `text-sm text-muted-foreground` sin caja ni icono (DEC-40). Banner de error actual con `error`. `DashboardHeader period={formatPeriodLabel(filter) ?? "2024 - Full Year"}`. El picker va justo debajo del encabezado; las pestanas y el panel de vista llegan en F3.
 
 - [ ] **Paso 1: tests que fallan.** Helper de test `routeFetch(routes: Record<string, () => Promise<Response>>)` que responde segun la URL y guarda las URLs pedidas en `requested`. Fixture de movimientos (regla FIN): ingreso 100 y gasto 25 -> KPI `$100`, `$25`, `$75`, `75.0%`. Tests en `describe("F1 date range filter")`:
   - `requests facets and unfiltered movements on mount`: `requested` contiene exactamente `/api/metrics/facets` y `/api/metrics`; aparece `Available data: 2025-11-01 to 2026-10-28`; KPI con los cuatro valores.
@@ -158,12 +166,13 @@ Comportamiento: `facets = useApiResource<FacetsResponse>("/api/metrics/facets")`
   - `does not request while the year is being typed`: start `0001-02-02`, `0019-02-02`, `0190-02-02` -> ninguna URL nueva ni alerta; `1900-02-02` -> aviso de fuera de rango y ninguna URL nueva (AC-F1-17, AC-F1-18).
   - `blocks a date that becomes out of bounds when facets arrives`: facets pendiente, start `2030-01-01` -> se pide `?start_date=2030-01-01`; resolver facets -> aparece el aviso y no hay URL nueva al cambiar end.
   - `shows the empty range state`: movimientos `[]` -> cuatro `—`, `No movements found for the selected range.` con `role="status"`, los dos graficos con `No data available to display`.
+  - `hides the empty notice while reloading` (DEC-33): con movimientos `[]` ya mostrados, cambiar start con la respuesta pendiente -> no aparece `No movements found for the selected range.`; al resolver `[]`, vuelve a aparecer.
   - `works without facets`: facets 500 -> sin `Available data`, sin `role="alert"`, KPI con valores, inputs sin `min`.
   - `clears both dates`: con fechas, pulsar `Clear dates` -> ultima URL `/api/metrics`, cabecera `2024 - Full Year`.
   - `omits an emptied date` (AC-F1-08): start y luego vaciar -> ultima URL `/api/metrics`.
   - Error de movimientos (AC-F1-13): cubierto por el test existente de error, adaptado (Q-10).
 - [ ] **Paso 2:** `npm --prefix frontend test -- src/App.test.tsx` -> FAIL en los nuevos.
-- [ ] **Paso 3:** implementar en `App.tsx` y adaptar los dos tests existentes a las peticiones nuevas (`fetch` responde 500 a todo: siguen dos secciones `aria-busy` en F1).
+- [ ] **Paso 3:** implementar en `App.tsx` y adaptar los dos tests existentes a las peticiones nuevas (`fetch` responde 500 a todo: siguen dos secciones `aria-busy` en F1). Segun Q-10, si cambia algun valor esperado se actualiza en esta tarea con la misma comparacion exacta, sin relajarla.
 - [ ] **Paso 4:** mismo comando -> PASS; despues `npm --prefix frontend test` completo -> PASS.
 - [ ] **Paso 5:** commit `feat(f1): wire the date range filter into the dashboard`.
 
@@ -173,6 +182,10 @@ Sigue [verify-frontend-change](../../.skills/verify-frontend-change/SKILL.md).
 
 - [ ] `git diff --stat main -- frontend/` muestra los archivos de F1.
 - [ ] `npm --prefix frontend run lint` -> sin errores; `npm --prefix frontend test` -> todo PASS; `npm --prefix frontend run build` -> sin avisos nuevos frente a la base (chunk principal ~188 kB, sin aviso de 500 kB).
-- [ ] Mutaciones (Q-11), cada una con su test que debe fallar y restauracion con `git checkout -- <archivo>`: (1) quitar el filtro de `''` en `buildQuery`; (2) no descartar respuestas obsoletas en el hook; (3) ignorar `outOfBounds` en `getDateRangeIssue`; (4) quitar `role="alert"` del aviso; (5) devolver `computeKPIs([])` en vez de `null` con `[]`.
+- [ ] Mutaciones (Q-11), cada una con su test que debe fallar y restauracion con `git checkout -- <archivo>`: (1) quitar el filtro de `''` en `buildQuery`; (2) no descartar respuestas obsoletas en el hook; (3) ignorar `outOfBounds` en `getDateRangeIssue`; (4) quitar `role="alert"` del aviso; (5) devolver `computeKPIs([])` en vez de `null` con `[]`; (6) mostrar `No movements found...` tambien mientras carga (DEC-33). En el `Registro de ejecucion` se anota cada mutacion con el cambio, el test que fallo y la restauracion.
 - [ ] App en Docker sirviendo el codigo nuevo: `curl -s http://localhost:5173/src/App.tsx | grep -c DateRangePicker` > 0; si no, `docker compose restart frontend` y repetir.
-- [ ] Registrar comandos y resultados (Q-12) y **parar** para la prueba visual en http://localhost:5173. Lista para el mantenedor: tamanos y colores de la [presentacion de F1](../../frontend/specs/components.md#presentacion-v14-dec-27-dec-28) (AC-F1-20); foco con teclado; teclear un ano a mano y comprobar en `docker compose logs backend` que no hay peticiones `0001`/`0019`/`0190` (las del montaje salen dobles por `StrictMode`).
+- [ ] Registrar comandos y resultados en el [Registro de ejecucion](#registro-de-ejecucion) (Q-12) y **parar** para la prueba visual en http://localhost:5173. Lista para el mantenedor: tamanos y colores de la [presentacion de F1](../../frontend/specs/components.md#presentacion-v14-dec-27-dec-28) (AC-F1-20), incluidos el `Skeleton` `h-4 w-64` de `Available data` y el aviso `No movements found...` sin caja; foco con teclado; teclear un ano a mano y comprobar en `docker compose logs backend` que no hay peticiones `0001`/`0019`/`0190` (las del montaje salen dobles por `StrictMode`).
+
+## Registro de ejecucion
+
+Se rellena en la etapa 2 (Q-12): por tarea, cada comando con su resultado (tests, lint y build, con el tamano del chunk principal), cada mutacion con el cambio, el test que fallo y la restauracion (Q-11), la comprobacion de que Vite sirve el codigo nuevo y los limites encontrados.
