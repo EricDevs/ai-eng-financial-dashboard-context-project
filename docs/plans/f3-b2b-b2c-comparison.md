@@ -1,6 +1,6 @@
 # F3 - Vista comparativa B2B vs B2C: plan de implementacion
 
-**Version:** 5.1 | **Fecha:** 2026-11-18 | **Estado:** version de entrega, sin codigo; pendiente de ejecutar | **Spec:** v1.5
+**Version:** 5.2 | **Fecha:** 2026-11-19 | **Estado:** version de entrega, sin codigo; iteracion 1 en curso (fase 8) | **Spec:** v1.8
 
 **Como ejecutar:** tarea por tarea y en orden; marcar cada paso (`- [ ]`) al completarlo. No empezar una tarea sin que la anterior tenga sus tests en verde. Cada test se ve fallar antes de implementar.
 
@@ -12,7 +12,7 @@
 
 **Stack:** React 19.2, TypeScript ~6.0, Recharts 3.8 (`BarChart`), Vitest 4 + jsdom, Tailwind 4.
 
-**Spec:** [components.md v1.5](../../frontend/specs/components.md): F3, convenciones comunes (incluido el aspecto de los errores), regla unica de peticion, disposicion de la pagina y DEC-07, DEC-10 a DEC-21, DEC-23, DEC-26 y DEC-29. Evidencia de la API en [verification.md](../../frontend/specs/verification.md#f3---vista-comparativa-b2b-vs-b2c).
+**Spec:** [components.md v1.8](../../frontend/specs/components.md) (DEC-30 a DEC-32 son de la tarjeta de alertas y no afectan a F3): F3, convenciones comunes (incluido el aspecto de los errores), regla unica de peticion, disposicion de la pagina y DEC-07, DEC-10 a DEC-21, DEC-23, DEC-26 y DEC-29. Evidencia de la API en [verification.md](../../frontend/specs/verification.md#f3---vista-comparativa-b2b-vs-b2c).
 
 **Depende de:** [plan F1](f1-date-range-filter.md) y [plan F2](f2-anomaly-alerts.md) ejecutados.
 
@@ -50,6 +50,7 @@
 - Fixture B2B verificada (verification.md): `sales` 557903.97 y `others` 57636.75; suma 615540.72 -> `Sales`, `$557,904`, `90.6%`; `Others`, `$57,637`, `9.4%`.
 - El fallback de `Suspense` (DEC-23) reutiliza `GroupTopTable` con `loading` y el `ChartFallback` existente de `App`.
 - La ruta de cada grupo se calcula con una funcion local de `comparison-page.tsx` (`topPath(filter, bounds, businessType)`).
+- En `App.test.tsx`, las esperas que dependen de la vista comparativa usan `LAZY_CHARTS` (5 s): `ComparisonPage` se carga en diferido con Recharts, como los graficos de F1, y en jsdom tarda mas de 1 s en esta maquina.
 
 ## Foco de revision
 
@@ -216,3 +217,4 @@ Procedimiento del repositorio para verificar cambios del frontend: [.skills/veri
 | 4.0 | 2026-11-18 | Ejemplos de codigo de implementacion en cada tarea (commit `9297324`) |
 | 5.0 | 2026-11-18 | Version de entrega sin codigo, adaptada a la spec 1.4: `ComparisonPage` recibe `bounds` y aplica la regla unica (DEC-26), con su test; hueco H-11 (estilo de los errores) |
 | 5.1 | 2026-11-18 | Spec 1.5: H-11 pasa a DEC-29 (decision del usuario); los errores usan `ErrorNotice`, extraido en el plan F2 |
+| 5.2 | 2026-11-19 | Revisado contra la spec 1.8 antes de ejecutarlo: sin cambios de comportamiento (DEC-30 a DEC-32 son de F2); `LAZY_CHARTS` para las esperas de la vista comparativa en `App.test.tsx` |
