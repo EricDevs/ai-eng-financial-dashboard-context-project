@@ -137,6 +137,9 @@ describe('DateRangePicker', () => {
       const alerts = [...view.container.querySelectorAll('[role="alert"]')].map((alert) => alert.textContent)
       expect(alerts).toEqual(['Dates must be between 2025-11-01 and 2026-10-28.'])
     })
+    // aria-invalid follows the notice shown: only the out-of-range input (spec DEC-37).
+    expect(inputByLabel(view.container, 'Start date').getAttribute('aria-invalid')).toBe('true')
+    expect(inputByLabel(view.container, 'End date').hasAttribute('aria-invalid')).toBe(false)
   })
 
   it('shows no message while a year is being typed', async () => {
