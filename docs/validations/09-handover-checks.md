@@ -118,4 +118,17 @@ El nuevo test de `App` paso 3 de 3 veces.
 
 ### Ronda 1, etapa 1 con la spec v1.10
 
+Mensaje al agente: releer la v1.10, marcar Q-22 a Q-24, anadir dudas nuevas como Q-25 en adelante, actualizar los planes y decir explicitamente si queda alguna entrada abierta.
+
+Resultado en `9fadde7` (sin push ni codigo):
+
+- Q-22 a Q-24: resueltas por DEC-41 a DEC-43, las tres con su propuesta.
+- Sin Q-25: la v1.10 no le genero dudas nuevas. Solo quedan las de proceso (Q-10 a Q-12), ya respondidas.
+- Una inferencia anotada en Q-24, no una pregunta: con error, el grafico de F3 tambien muestra titulo y descripcion, porque la spec centra el error "en el area de 280 px", bajo la cabecera. Coincide con la iteracion 1 (`shows the description under the title` lo comprueba en el estado de error); confirmada sin cambiar la spec.
+- Planes: F1 fija la variante con error del test del hook (DEC-41); F2 sin cambios; F3 fija el test de reabrir la vista y cita DEC-43 en el vacio del grafico.
+
+Conclusion de la etapa 1: con la spec v1.10, un agente sin contexto planifica F1 a F3 sin preguntas abiertas. Hicieron falta tres versiones de la spec (v1.8 a v1.10) y 24 entradas; 19 eran decisiones que la iteracion 1 tomo con contexto y no paso a la spec, 2 las decidio el usuario (DEC-38, DEC-39) y 3 eran de proceso.
+
+### Ronda 1, etapa 2: implementacion
+
 Pendiente.
