@@ -32,4 +32,57 @@ Si algo no esta en la spec, no lo decidas en silencio: anotalo y preguntame. Pue
 
 ## Resultados
 
-Pendiente de la ejecucion.
+### Ronda 1, etapa 1: planes desde la spec v1.8
+
+El agente entrego en `be5d451` (rama de traspaso, sin push) tres planes (`docs/handover/f1-plan.md`, `f2-plan.md` y `f3-plan.md`, con 5, 4 y 6 tareas) y `docs/handover/decisions.md` con 21 entradas (Q-01 a Q-21), todas pendientes de respuesta. No toco codigo. Su linea base: 8 tests pasan y lint sin errores; el test de graficos diferidos que fallo en F1 no fallo esta vez, porque depende del tiempo de carga.
+
+Contraste de cada entrada con la spec v1.8 y con la iteracion 1:
+
+| Entradas | Que eran | Resultado |
+| --- | --- | --- |
+| Q-01 a Q-04 | Casos limite de `useApiResource` y del aviso de rango vacio | Hueco real. La iteracion 1 los resolvio sin anotarlos y las propuestas del agente coinciden con ella. DEC-33 |
+| Q-05 | AC-F2-04 y AC-F2-05 se contradicen con un texto de umbral invalido y un cambio de fechas | Contradiccion real de la spec; la iteracion 1 hace la propuesta (a). DEC-34 |
+| Q-06 | DEC-14 y AC-F3-16 solo nombran el rango invertido | Texto incoherente con la regla unica de la 1.4. DEC-35 |
+| Q-08, Q-09 | Fallback de `Suspense` y `aria-invalid` con dos problemas | Deducibles de DEC-17 y de la tabla de F1; el agente los dedujo bien. Se escriben de forma explicita: DEC-36 y DEC-37 |
+| Q-07, Q-20 | `$0` de la barra vacia y descripcion del grafico | Hueco real. La iteracion 1 solo mostraba el `$0` en el tooltip, y su marcado de carga tenia una linea de descripcion que el grafico no tenia, lo que provocaba un salto de altura. El usuario eligio las propuestas del agente: DEC-38 y DEC-39 |
+| Q-13 a Q-19, Q-21 | Detalles de presentacion | La iteracion 1 los resolvio sin anotarlos. Se copian sus valores aprobados; columnas desde `xl` por decision del usuario (el agente proponia `lg`). DEC-40 |
+| Q-10 a Q-12 | Proceso: tests existentes de `App`, mutaciones y registro de evidencia | No son huecos de la spec; se responden en el chat del agente |
+
+Otros hallazgos del agente:
+
+- `Cell`, que la iteracion 1 usaba para colorear las barras de F3, esta obsoleto en Recharts 3.8.1. Comprobado en `node_modules/recharts/types/component/Cell.d.ts` (`@deprecated`, "will be removed in Recharts 4.0").
+- El README de la spec decia "DEC-xx, v1.1 a v1.3".
+
+Conclusion de la etapa: la spec v1.8 no bastaba. La mayoria de los huecos son decisiones que la iteracion 1 tomo con todo el contexto y no paso a la spec; la prueba sin contexto los hizo visibles.
+
+### Correcciones (rama `feature/frontend-specs-v2-fase9-evidence`)
+
+| Commit | Contenido |
+| --- | --- |
+| `02cd62d` | Spec v1.9: DEC-33 a DEC-40, AC-F2-04, AC-F2-05, AC-F3-10 y AC-F3-16 ajustados, seccion "Presentacion de F3", README |
+| `197275c` | Planes F1 v8.1, F2 v5.5 y F3 v5.4 |
+| `46b2afd` | Grafico de F3: importe sobre cada barra con `LabelList`, descripcion visible y color con `shape` en lugar de `Cell` |
+| `4a7571d` | Tests de los comportamientos que la v1.9 fija y el codigo ya tenia |
+
+| Comando (desde la raiz) | Resultado |
+| --- | --- |
+| `npm --prefix frontend test` | 11 archivos, 115 passed (antes 110) |
+| `npm --prefix frontend run lint` | Sin errores ni avisos |
+| `npm --prefix frontend run build` | Sin avisos; chunk principal 193.74 kB, `comparison-page` 20.10 kB |
+
+| Rotura provocada | Test que falla |
+| --- | --- |
+| Hook sin la guarda `ignore` | `shows only the response for the latest path` y `discards a pending response when path becomes null` |
+| Hook con `data` a null mientras carga | `keeps the last data while a new path loads` |
+| Hook que no vuelve a pedir la ruta del ultimo resultado | `does not stay loading when returning to the last loaded path` |
+| `App` sin pedir alertas con texto de umbral invalido | `refetches alerts with the applied threshold when dates change and the text is invalid` |
+| Aviso de rango vacio sin la condicion de carga | `hides the empty-range notice while reloading` |
+| `aria-invalid` en los dos inputs con fecha fuera de rango | `flags a date outside the available range` y `shows one notice at a time, out of range first` |
+
+Fallo de un test durante la correccion: al anadir al test de "volver a la ultima ruta" la comprobacion de 2 peticiones, solo hubo 1. Con una copia temporal del test que esperaba 50 ms entre renders salieron 2, asi que el hook era correcto: un `setTimeout` de 0 ms no dejaba a React confirmar el render con ruta `null`, y el test original pasaba sin ejercitar ese paso. Ahora el test espera a que React confirme cada ruta (atributo `data-path` de `Probe`); paso 3 de 3 veces.
+
+Prueba visual del usuario (2026-11-19, tras `docker compose restart frontend` y comprobar con `curl` que Vite servia `LabelList`): importe sobre cada barra, `$0` del grupo vacio y descripcion visible. Aprobada sin hallazgos.
+
+### Ronda 1, etapa 1 repetida con la spec v1.9
+
+Pendiente.
