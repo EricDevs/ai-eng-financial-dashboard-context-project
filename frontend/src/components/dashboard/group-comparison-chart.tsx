@@ -1,8 +1,19 @@
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
 import { type BusinessType, type GroupTotal } from '@/lib/financial-types'
 import { formatCurrency } from '@/lib/financial-utils'
-import { Bar, BarChart, CartesianGrid, Cell, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
+import {
+  Bar,
+  BarChart,
+  type BarShapeProps,
+  CartesianGrid,
+  LabelList,
+  Rectangle,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from 'recharts'
 import { ErrorNotice } from './error-notice'
 
 interface GroupComparisonChartProps {
@@ -12,6 +23,8 @@ interface GroupComparisonChartProps {
   /** True if the request of either group failed. */
   error?: boolean
 }
+
+const DESCRIPTION = 'Total income of B2B and B2C in the selected range.'
 
 const BAR_COLORS: Record<BusinessType, string> = {
   B2B: 'var(--chart-1)',
@@ -34,11 +47,15 @@ export function GroupComparisonChart({ totals, loading, error }: GroupComparison
   }
 
   const hasIncome = totals.some((total) => total.total_income > 0)
+  const groupBar = (props: BarShapeProps) => (
+    <Rectangle {...props} fill={BAR_COLORS[totals[props.index].business_type]} />
+  )
 
   return (
     <Card className="border-border/60">
       <CardHeader className="pb-4">
         <CardTitle className="text-base font-semibold">Income: B2B vs B2C</CardTitle>
+        <CardDescription>{DESCRIPTION}</CardDescription>
       </CardHeader>
       <CardContent>
         {error ? (
@@ -53,9 +70,9 @@ export function GroupComparisonChart({ totals, loading, error }: GroupComparison
           <ResponsiveContainer width="100%" height={280}>
             <BarChart
               data={totals}
-              margin={{ top: 4, right: 8, left: 0, bottom: 0 }}
+              margin={{ top: 24, right: 8, left: 0, bottom: 0 }}
               title="Income: B2B vs B2C"
-              desc="Total income of B2B and B2C in the selected range."
+              desc={DESCRIPTION}
             >
               <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" strokeOpacity={0.6} vertical={false} />
               <XAxis
@@ -78,10 +95,15 @@ export function GroupComparisonChart({ totals, loading, error }: GroupComparison
                 labelStyle={{ color: 'var(--foreground)' }}
                 itemStyle={{ color: 'var(--foreground)' }}
               />
-              <Bar dataKey="total_income" name="Income" radius={[6, 6, 0, 0]}>
-                {totals.map((total) => (
-                  <Cell key={total.business_type} fill={BAR_COLORS[total.business_type]} />
-                ))}
+              <Bar dataKey="total_income" name="Income" radius={[6, 6, 0, 0]} shape={groupBar}>
+                {/* Amount on top of each bar, so an empty group still shows $0 (spec DEC-38). */}
+                <LabelList
+                  dataKey="total_income"
+                  position="top"
+                  formatter={(value) => formatCurrency(Number(value))}
+                  fill="var(--foreground)"
+                  fontSize={12}
+                />
               </Bar>
             </BarChart>
           </ResponsiveContainer>
