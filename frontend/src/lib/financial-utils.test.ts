@@ -5,6 +5,9 @@ import {
   computeMonthlyData,
   formatCurrency,
   formatPercent,
+  formatPeriodLabel,
+  getDateRangeIssue,
+  isValidDateRange,
 } from "./financial-utils";
 import type { FinancialMovement } from "./financial-types";
 
@@ -148,5 +151,36 @@ describe("formatters", () => {
 
   it("formats percent with one decimal", () => {
     expect(formatPercent(15.555)).toBe("15.6%");
+  });
+});
+
+describe("date range utilities", () => {
+  const bounds = { min_date: "2025-11-01", max_date: "2026-10-28" };
+
+  it("validates the order of the range with inclusive bounds", () => {
+    expect(isValidDateRange({})).toBe(true);
+    expect(isValidDateRange({ start_date: "2026-02-01" })).toBe(true);
+    expect(isValidDateRange({ start_date: "2026-01-31", end_date: "2026-01-31" })).toBe(true);
+    expect(isValidDateRange({ start_date: "2026-02-01", end_date: "2026-01-31" })).toBe(false);
+  });
+
+  it("formats the period label with the dates as typed", () => {
+    expect(formatPeriodLabel({})).toBeNull();
+    expect(formatPeriodLabel({ start_date: "2026-01-01", end_date: "2026-01-31" })).toBe("2026-01-01 — 2026-01-31");
+    expect(formatPeriodLabel({ start_date: "2026-01-01" })).toBe("From 2026-01-01");
+    expect(formatPeriodLabel({ end_date: "2026-01-31" })).toBe("Until 2026-01-31");
+    expect(formatPeriodLabel({ start_date: "2026-02-01", end_date: "2026-01-01" })).toBe("2026-02-01 — 2026-01-01");
+  });
+
+  it("reports the first issue that blocks a request", () => {
+    expect(getDateRangeIssue({}, bounds)).toBeNull();
+    expect(getDateRangeIssue({ start_date: "2025-11-01", end_date: "2026-10-28" }, bounds)).toBeNull();
+    expect(getDateRangeIssue({ start_date: "0019-02-02" }, null)).toBe("incomplete");
+    expect(getDateRangeIssue({ end_date: "0190-02-02", start_date: "2026-01-01" }, bounds)).toBe("incomplete");
+    expect(getDateRangeIssue({ start_date: "2025-10-31" }, bounds)).toBe("outOfBounds");
+    expect(getDateRangeIssue({ end_date: "2026-10-29" }, bounds)).toBe("outOfBounds");
+    expect(getDateRangeIssue({ start_date: "2025-10-31" }, null)).toBeNull();
+    expect(getDateRangeIssue({ start_date: "2026-02-01", end_date: "2026-01-01" }, bounds)).toBe("inverted");
+    expect(getDateRangeIssue({ start_date: "2030-01-01", end_date: "2026-01-01" }, bounds)).toBe("outOfBounds");
   });
 });

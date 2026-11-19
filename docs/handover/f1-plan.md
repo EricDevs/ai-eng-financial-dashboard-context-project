@@ -195,3 +195,12 @@ Sigue [verify-frontend-change](../../.skills/verify-frontend-change/SKILL.md).
 ## Registro de ejecucion
 
 Se rellena en la etapa 2 (Q-12): por tarea, cada comando con su resultado (tests, lint y build, con el tamano del chunk principal), cada mutacion con el cambio, el test que fallo y la restauracion (Q-11), la comprobacion de que Vite sirve el codigo nuevo y los limites encontrados.
+
+Reglas leidas antes de editar: WF, FIN, API, CAL y FE. DX no aplica (sin cambios de configuracion). Base: 8 tests en 2 archivos, lint limpio.
+
+### Tarea 1 (2026-11-19)
+
+- Tipos copiados con `sed` del import `'../src/lib/financial-types'` a `'./financial-types'`; ningun otro cambio frente a `specs/`.
+- Rojo: `npm --prefix frontend test -- src/lib/financial-utils.test.ts` -> 3 fallidos, 6 pasados. Causa: `TypeError: isValidDateRange is not a function` (y lo mismo para `formatPeriodLabel` y `getDateRangeIssue`), es decir, funciones aun no exportadas.
+- Verde: mismo comando -> 9 pasados. `npm --prefix frontend run lint` sin errores; `npx tsc -b` sin errores.
+- CAL: las funciones comparan cadenas `YYYY-MM-DD` y no crean `Date`, asi que el huso horario no interviene; no se repite con otro `TZ`.

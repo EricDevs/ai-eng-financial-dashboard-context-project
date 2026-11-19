@@ -3,6 +3,7 @@ import {
   type KPIMetrics,
   type MonthlyDataPoint,
 } from "./financial-types";
+import type { DateRangeFilter } from "./param-types";
 
 function toYearMonthKey(value: Date): string {
   return `${value.getFullYear()}-${String(value.getMonth() + 1).padStart(2, "0")}`;
@@ -77,4 +78,36 @@ export function formatCurrency(value: number): string {
 
 export function formatPercent(value: number): string {
   return `${value.toFixed(1)}%`;
+}
+
+export type DateBounds = { min_date: string; max_date: string };
+export type DateRangeIssue = "incomplete" | "outOfBounds" | "inverted";
+
+/** True if a date is missing or start_date <= end_date (YYYY-MM-DD strings compare chronologically). */
+export function isValidDateRange(filter: DateRangeFilter): boolean {
+  const { start_date, end_date } = filter;
+  return !start_date || !end_date || start_date <= end_date;
+}
+
+/** Header label with the dates as typed: "{start} — {end}", "From {start}", "Until {end}"; null without dates. */
+export function formatPeriodLabel(filter: DateRangeFilter): string | null {
+  const { start_date, end_date } = filter;
+  if (start_date && end_date) return `${start_date} — ${end_date}`;
+  if (start_date) return `From ${start_date}`;
+  if (end_date) return `Until ${end_date}`;
+  return null;
+}
+
+/** Reason the filter cannot be requested, in order incomplete, outOfBounds, inverted; null if it can. */
+export function getDateRangeIssue(
+  filter: DateRangeFilter,
+  bounds: DateBounds | null,
+): DateRangeIssue | null {
+  const dates = [filter.start_date, filter.end_date].filter((date) => date !== undefined);
+  if (dates.some((date) => date.startsWith("0"))) return "incomplete";
+  if (bounds && dates.some((date) => date < bounds.min_date || date > bounds.max_date)) {
+    return "outOfBounds";
+  }
+  if (!isValidDateRange(filter)) return "inverted";
+  return null;
 }
