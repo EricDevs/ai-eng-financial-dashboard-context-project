@@ -235,3 +235,63 @@ Reglas leidas antes de editar: WF, FIN, API, CAL y FE. DX no aplica (sin cambios
 - Q-10: los dos tests existentes pasan sin cambiar ninguna expectativa. El picker es un `div` (no `section`) y no tiene `h2`; con `fetch` a 500, `facets` falla sin mostrar ningun `role="alert"`, asi que el primer `role="alert"` sigue siendo el banner.
 - `API_BASE_URL` sale de `App.tsx` y queda solo en `@/lib/api`. El texto del banner de error no cambia.
 - Comportamiento que cambia, y lo pide la spec (AC-F1-10): con una respuesta `[]` los KPI muestran `—`. Antes mostraban `$0`, porque se calculaba `computeKPIs([])`.
+
+### Tarea 5: verificacion (2026-11-19)
+
+**Cambio presente.** `git diff --stat main -- frontend/` muestra los 13 archivos de `frontend/src` de F1, ademas de `frontend/specs` (spec v1.9 y v1.10, ya en la rama).
+
+**Comandos:**
+
+| Comando | Resultado |
+| --- | --- |
+| `npm --prefix frontend run lint` | Sin errores ni avisos |
+| `npm --prefix frontend test` | 5 archivos, 46 tests pasados (base: 2 archivos, 8 tests) |
+| `npm --prefix frontend run build` | Exit 0, sin avisos |
+
+Tamanos del build frente a la base de [stack.md](../../memory-bank/stack.md):
+
+| Chunk | Base | F1 | Diferencia |
+| --- | --- | --- | --- |
+| Principal | 187.77 kB | 190.94 kB (gzip 60.89 kB) | +3.17 kB: picker, hook y `api.ts` |
+| Compartido | `financial-utils-*.js` 40.47 kB | `card-*.js` 40.85 kB | +0.38 kB; Vite le da otro nombre |
+| `LineChart-*.js` | 342.30 kB | 342.29 kB | Sin cambio |
+| Graficos | 9.86 y 6.68 kB | 9.86 y 6.68 kB | Sin cambio |
+
+**Mutaciones (Q-11).** Cada una se aplico con `sed`, se ejecuto `npx vitest run` completo y se restauro con `git checkout -- <archivo>`. Al final `git status --short src` quedo vacio.
+
+| # | Rotura | Tests que fallaron |
+| --- | --- | --- |
+| 1 | `buildQuery` deja de omitir `''` | `buildQuery > keeps the key order and skips empty values` |
+| 2 | El hook no descarta respuestas obsoletas (`if (current)` quitado) | `keeps only the response of the current path` y `discards an in-flight response when the path becomes null` |
+| 3 | `getDateRangeIssue` ignora `outOfBounds` | `reports the first issue that blocks a request`, `warns about an out-of-bounds date`, `shows only the first problem`, `does not request while the year is being typed` y `blocks a date that becomes out of bounds when facets arrives` |
+| 4 | Aviso del picker sin `role="alert"` | `warns about an inverted range`, `warns about an out-of-bounds date`, `shows only the first problem`, `keeps the last data on an inverted range`, `does not request while the year is being typed` y `blocks a date that becomes out of bounds when facets arrives` |
+| 5 | `computeKPIs([])` en vez de `null` con `[]` | `shows the empty range state` |
+| 6 | Aviso `No movements found...` tambien durante la carga (DEC-33) | `hides the empty notice while reloading` |
+
+**App en Docker:**
+
+- `docker compose ps`: `backend` y `frontend` arriba.
+- Primera comprobacion: `curl -s http://localhost:5173/src/App.tsx | grep -c DateRangePicker` dio 0, aunque el modulo del picker si se servia nuevo.
+  - **Causa demostrada:** el `App.tsx` servido aun contenia `fetchFinancialData`, el codigo viejo (2 coincidencias). `docker compose exec -T frontend grep -c DateRangePicker src/App.tsx` dio 2: el contenedor tenia el archivo nuevo, pero Vite servia la version anterior. Es la trampa que describe `verify-frontend-change`.
+  - `docker compose restart frontend` -> `DateRangePicker` 2, `fetchFinancialData` 0, y `use-api-resource.ts` servido con `result.path !== path`.
+- Proxy: `curl -s http://localhost:5173/api/metrics/facets` -> `min_date` `2025-11-01` y `max_date` `2026-10-28`.
+
+**Valores esperados para la prueba visual.** Calculados con Python sobre `GET /api/metrics` del backend, sin pasar por el frontend. Dependen de la fecha de hoy: el dataset es relativo a ella.
+
+| Filtro | Movimientos | Income | Outcome | Profit | Margen |
+| --- | --- | --- | --- | --- | --- |
+| Sin filtro | 360 | $1,258,147 | $762,132 | $496,015 | 39.4% |
+| `2026-01-01` a `2026-01-31` | 30 | $99,747 | $51,691 | $48,056 | 48.2% |
+| Desde `2026-10-01` | 30 | $106,910 | $60,944 | $45,966 | 43.0% |
+| `2025-11-05` a `2025-11-05` | 0 (`[]`, dia sin movimientos) | — | — | — | — |
+
+**Revision final:** autorrevision del diff completo (`main..HEAD` en `frontend/src`). No se lanzo un revisor independiente porque en esta sesion solo se lanzan agentes si el mantenedor lo pide. Sin hallazgos que corregir. Puntos para la prueba visual:
+
+- El aviso `No movements found...` queda a 32 px del picker (el `gap-8` de la pagina), porque sigue el orden de DEC-19 dentro del contenido de la vista.
+- `DateRangePicker` repite en una linea la comprobacion de fecha fuera de rango para decidir que input lleva `aria-invalid`. La alternativa era cambiar la firma de `getDateRangeIssue`, que fija la spec.
+
+**Limites:**
+
+- No se probo con un lector de pantalla real, ni con zoom, ni en navegadores distintos del de la prueba visual.
+- El aspecto visual (AC-F1-20) no lo cubren los tests.
+- jsdom no reproduce como un navegador real entrega los valores intermedios del ano al teclear; los tests los inyectan directamente.
