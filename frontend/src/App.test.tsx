@@ -522,6 +522,28 @@ async function openComparison() {
 }
 
 describe("view tabs", () => {
+  it("shows empty states when reopening the comparison with a filter that cannot be requested", async () => {
+    const fetchMock = stubApi(withTop);
+    const topCalls = () => calledUrls(fetchMock).filter((url) => url.startsWith(TOP));
+    await renderLoaded();
+    await openComparison();
+    await vi.waitFor(() => expect(container.textContent).toContain("Sales"));
+
+    buttonByText(container, "Dashboard").click();
+    await vi.waitFor(() => expect(kpiSection()).not.toBeNull());
+    await setDate("End date", "2026-01-01");
+    await setDate("Start date", "2026-02-01");
+    const topBefore = topCalls().length;
+
+    buttonByText(container, "B2B vs B2C").click();
+    await vi.waitFor(() => {
+      expect(container.textContent).toContain("No income in the selected range for B2B.");
+      expect(container.textContent).toContain("No income in the selected range for B2C.");
+      expect(container.textContent).toContain("No income to compare in the selected range.");
+    }, LAZY_CHARTS);
+    expect(topCalls()).toHaveLength(topBefore);
+  });
+
   it("starts on the dashboard tab", async () => {
     stubApi();
     await renderLoaded();

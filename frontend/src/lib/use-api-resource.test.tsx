@@ -91,6 +91,20 @@ describe("useApiResource", () => {
     expect(fetchMock).toHaveBeenCalledTimes(2);
   });
 
+  it("shows the last error when returning to a failed path", async () => {
+    const retry = deferred<Response>();
+    let calls = 0;
+    const fetchMock = vi.fn(() => (++calls === 1 ? Promise.resolve(jsonResponse(null, 500)) : retry.promise));
+    vi.stubGlobal("fetch", fetchMock);
+
+    view.root.render(<Probe path="/a" />);
+    await vi.waitFor(() => expect(state().error).toBe(true));
+    await show(null);
+    await show("/a");
+    expect(state()).toEqual({ data: null, loading: false, error: true });
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+  });
+
   it("keeps the last data while a new path loads", async () => {
     const b = deferred<Response>();
     vi.stubGlobal("fetch", vi.fn((url: string) => (url === "/a" ? Promise.resolve(jsonResponse("a")) : b.promise)));
