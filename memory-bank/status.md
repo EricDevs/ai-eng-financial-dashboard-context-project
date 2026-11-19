@@ -1,6 +1,6 @@
 # Status
 
-Revision: 2026-11-19, F1 y F2 de la ampliacion v2 del proyecto 3 (antes: 2026-11-17, cierre del proyecto 4). Fuentes: [01-structure.md](../docs/validations/01-structure.md),
+Revision: 2026-11-19, F1 a F3 de la ampliacion v2 del proyecto 3 (antes: 2026-11-17, cierre del proyecto 4). Fuentes: [01-structure.md](../docs/validations/01-structure.md),
 [03-verification-resume.md](../docs/validations/03-verification-resume.md),
 [02-handover-checks.md](../docs/validations/02-handover-checks.md),
 [05-rules-checks.md](../docs/validations/05-rules-checks.md),
@@ -45,8 +45,12 @@ enlaza el check que lo demuestra.
 - **F2 implementado** (iteracion 1, fase 7): tabla de alertas con umbral
   configurable, aviso rojo compartido (`ErrorNotice`); prueba visual del
   usuario aprobada en cuatro rondas (spec v1.6 a v1.8). 76 tests frontend.
-- Evidencia de F1 y F2 en [08-features-checks.md](../docs/validations/08-features-checks.md).
-- F3: especificada y planificada, sin implementar.
+- **F3 implementado** (iteracion 1, fase 8): pestanas `Dashboard` / `B2B vs B2C`,
+  categorias de ingreso por grupo y grafico de dos barras, cargado en
+  diferido; prueba visual del usuario aprobada en una ronda, sin cambios de
+  spec. 110 tests frontend.
+- Evidencia de F1, F2 y F3 en [08-features-checks.md](../docs/validations/08-features-checks.md).
+- Pendiente: prueba de traspaso sin contexto (fase 9 de ROADMAP-Project-3).
 
 ## Gaps conocidos (no corregidos; fuera de alcance sin acuerdo explicito)
 
