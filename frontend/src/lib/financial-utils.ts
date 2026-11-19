@@ -113,3 +113,15 @@ export function formatPeriodLabel(filter: DateRangeFilter): string | null {
   if (end_date) return `Until ${end_date}`;
   return null;
 }
+
+export const THRESHOLD_MIN = 0.01;
+export const THRESHOLD_MAX = 1;
+export const THRESHOLD_DEFAULT = 0.3;
+
+/** Threshold if the text is a finite number within THRESHOLD_MIN..THRESHOLD_MAX (inclusive); otherwise null. */
+export function parseThreshold(text: string): number | null {
+  if (text.trim() === "") return null;
+  const value = Number(text);
+  const inRange = Number.isFinite(value) && value >= THRESHOLD_MIN && value <= THRESHOLD_MAX;
+  return inRange ? value : null;
+}
