@@ -1,0 +1,178 @@
+# F1 - Filtro de rango de fechas: plan de implementacion
+
+**Objetivo:** un unico filtro de fechas (inicio y fin, opcionales) que filtra KPI y graficos, con el rango de `facets` como referencia y validacion antes de pedir.
+
+**Arquitectura:** utilidades puras de fechas en `financial-utils.ts`; capa de datos compartida (`api.ts` + hook `useApiResource`) que tambien usaran F2 y F3; componente controlado `DateRangePicker`; `App` guarda `filter`, deriva la ruta de movimientos con la regla unica de peticion y la pasa al hook.
+
+**Stack:** React 19, TypeScript 6, Tailwind 4, Vitest 4 + jsdom (sin Testing Library: no se anaden dependencias).
+
+**Spec:** [README](../../frontend/specs/README.md#f1---filtro-de-rango-de-fechas) y [components.md, F1](../../frontend/specs/components.md#f1---filtro-de-rango-de-fechas). Dudas abiertas en [decisions.md](decisions.md) (Q-01 a Q-04, Q-09 a Q-14).
+
+## Restricciones globales
+
+Valen para F1, F2 y F3.
+
+- Sin dependencias nuevas, sin router, sin cambios de backend (`backend/` no se toca).
+- Textos de la interfaz en ingles; `formatCurrency` y `formatPercent` sin cambios.
+- Sin `any`, `object` ni conversiones de tipo para ocultar diferencias con la API.
+- Un parametro `undefined` o `''` no se envia (INV-1). Orden fijo de parametros: propios del endpoint y luego `start_date`, `end_date` (DEC-07).
+- Los componentes de `components/dashboard/` no hacen fetch; archivos kebab-case, export PascalCase, imports con `@`.
+- Ningun `setState` sincrono en el cuerpo de un `useEffect` (regla `react-hooks/set-state-in-effect`).
+- Fechas como cadenas `YYYY-MM-DD`; nunca se convierten a `Date` (DEC-02, regla CAL). Ninguna fecha fija salvo `2024 - Full Year` sin filtro (DEC-22).
+- Reglas leidas: WF (todas las tareas), API (consumo de endpoints y tipos), CAL (fechas y etiqueta de periodo), FE (TSX, estilos, tests), FIN (fixtures de KPI en tests).
+
+## Foco de revision
+
+Casos que la spec implica y que pueden fallar a un usuario aunque los criterios pasen; cada uno tiene su test en la tarea indicada.
+
+1. Ano tecleado digito a digito (`0001`, `0019`, `0190`, `1900`): ninguna peticion intermedia (Tarea 4, test `does not request while the year is being typed`).
+2. `facets` llega despues de que el usuario escribio una fecha fuera de rango: la peticion ya salio, pero al llegar `bounds` el filtro pasa a no pedible y aparece el aviso (Tarea 4, test `blocks a date that becomes out of bounds when facets arrives`).
+3. Respuestas fuera de orden al cambiar fechas deprisa (Tarea 2, test del hook `keeps only the response of the current path`).
+4. Vaciar un input con el boton nativo del navegador entrega `''`: la clave se omite y no se envia `start_date=` (Tarea 3, test `omits the key of an emptied input`).
+5. Rango valido sin movimientos frente a error de red: `—` en ambos, pero el aviso `No movements found...` solo en el primero (Tarea 4, tests de vacio y de error).
+
+---
+
+### Tarea 1: tipos copiados y utilidades de fechas
+
+**Archivos:**
+- Crear: `frontend/src/lib/api-types.ts`, `frontend/src/lib/param-types.ts` (copia de `specs/`, import cambiado a `./financial-types`; DEC-01)
+- Modificar: `frontend/src/lib/financial-utils.ts`
+- Test: `frontend/src/lib/financial-utils.test.ts`
+
+**Interfaces:**
+- Produce (en `financial-utils.ts`): `type DateBounds = { min_date: string; max_date: string }`, `type DateRangeIssue = 'incomplete' | 'outOfBounds' | 'inverted'`, `isValidDateRange(filter: DateRangeFilter): boolean`, `formatPeriodLabel(filter: DateRangeFilter): string | null`, `getDateRangeIssue(filter: DateRangeFilter, bounds: DateBounds | null): DateRangeIssue | null`. Los dos tipos se exportan.
+
+- [ ] **Paso 1: tests que fallan** (`describe("date range utilities")`, `bounds = { min_date: "2025-11-01", max_date: "2026-10-28" }`):
+
+```ts
+expect(isValidDateRange({})).toBe(true)
+expect(isValidDateRange({ start_date: "2026-02-01" })).toBe(true)
+expect(isValidDateRange({ start_date: "2026-01-31", end_date: "2026-01-31" })).toBe(true)
+expect(isValidDateRange({ start_date: "2026-02-01", end_date: "2026-01-31" })).toBe(false)
+
+expect(formatPeriodLabel({})).toBeNull()
+expect(formatPeriodLabel({ start_date: "2026-01-01", end_date: "2026-01-31" })).toBe("2026-01-01 — 2026-01-31")
+expect(formatPeriodLabel({ start_date: "2026-01-01" })).toBe("From 2026-01-01")
+expect(formatPeriodLabel({ end_date: "2026-01-31" })).toBe("Until 2026-01-31")
+expect(formatPeriodLabel({ start_date: "2026-02-01", end_date: "2026-01-01" })).toBe("2026-02-01 — 2026-01-01")
+
+expect(getDateRangeIssue({}, bounds)).toBeNull()
+expect(getDateRangeIssue({ start_date: "2025-11-01", end_date: "2026-10-28" }, bounds)).toBeNull() // limites inclusivos
+expect(getDateRangeIssue({ start_date: "0019-02-02" }, null)).toBe("incomplete")
+expect(getDateRangeIssue({ end_date: "0190-02-02", start_date: "2026-01-01" }, bounds)).toBe("incomplete") // antes que inverted
+expect(getDateRangeIssue({ start_date: "2025-10-31" }, bounds)).toBe("outOfBounds")
+expect(getDateRangeIssue({ end_date: "2026-10-29" }, bounds)).toBe("outOfBounds")
+expect(getDateRangeIssue({ start_date: "2025-10-31" }, null)).toBeNull() // sin bounds no se comprueba
+expect(getDateRangeIssue({ start_date: "2026-02-01", end_date: "2026-01-01" }, bounds)).toBe("inverted")
+expect(getDateRangeIssue({ start_date: "2030-01-01", end_date: "2026-01-01" }, bounds)).toBe("outOfBounds") // primer problema
+```
+
+- [ ] **Paso 2:** `npm --prefix frontend test -- src/lib/financial-utils.test.ts` -> FAIL (funciones no exportadas).
+- [ ] **Paso 3:** implementar las tres funciones con comparacion de cadenas (sin `Date`). `incomplete`: alguna fecha empieza por `0`. Separador de la etiqueta: espacio, raya `—`, espacio.
+- [ ] **Paso 4:** mismo comando -> PASS (6 tests previos + nuevos). Sin `Date`, el huso horario no interviene; no hace falta repetir con otro `TZ` (regla CAL, se anota en el registro).
+- [ ] **Paso 5:** commit `feat(f1): add date range utilities and API types`.
+
+### Tarea 2: capa de datos compartida
+
+**Archivos:**
+- Crear: `frontend/src/lib/api.ts`, `frontend/src/lib/use-api-resource.ts`
+- Test: `frontend/src/lib/api.test.ts`, `frontend/src/lib/use-api-resource.test.tsx` (`// @vitest-environment jsdom`)
+
+**Interfaces:**
+- Produce: `API_BASE_URL: string`, `buildQuery(params: AlertsParams | TopCategoriesParams): string`, `getJson<T>(path: string): Promise<T>`, `useApiResource<T>(path: string | null): { data: T | null; loading: boolean; error: boolean }`.
+
+- [ ] **Paso 1: tests que fallan.** `api.test.ts`:
+
+```ts
+expect(buildQuery({})).toBe("")
+expect(buildQuery({ threshold: 0.3, start_date: "2026-01-01", end_date: "2026-01-31" }))
+  .toBe("?threshold=0.3&start_date=2026-01-01&end_date=2026-01-31")
+expect(buildQuery({ start_date: "", end_date: "2026-01-31" })).toBe("?end_date=2026-01-31")
+expect(buildQuery({ start_date: undefined })).toBe("")
+expect(buildQuery({ operation_type: "income", limit: 5, business_type: "B2B", start_date: "2026-01-01" }))
+  .toBe("?operation_type=income&limit=5&business_type=B2B&start_date=2026-01-01")
+// getJson: fetch stub
+await expect(getJson("/api/metrics")).resolves.toEqual([])         // 200 con []
+expect(fetchMock).toHaveBeenCalledWith("/api/metrics")              // API_BASE_URL vacia en test
+await expect(getJson("/api/metrics")).rejects.toThrow()             // 500
+```
+
+`use-api-resource.test.tsx`: un componente `Probe({ path })` pinta `JSON.stringify(useApiResource(path))`; fetch con promesas controladas a mano. Tests:
+  - `does not fetch with a null path`: sin llamadas; `{ data: null, loading: false, error: false }`.
+  - `loads and exposes the data`: `loading: true` y luego `{ data: [1], loading: false, error: false }`.
+  - `reports an error with null data`: 500 -> `{ data: null, loading: false, error: true }`.
+  - `keeps only the response of the current path`: ruta A (pendiente), cambio a B, B resuelve `"b"`, A resuelve `"a"` despues -> `data` es `"b"`.
+  - `keeps the last data when the path becomes null`: tras cargar A, ruta `null` -> mismo `data`, `loading: false`, sin fetch nuevo.
+  - `discards an in-flight response when the path becomes null` (Q-02).
+  - `refetches when the same path comes back after null` (Q-01: segunda llamada a fetch; segun la respuesta, `loading` false o true durante la recarga).
+
+- [ ] **Paso 2:** `npm --prefix frontend test -- src/lib/api.test.ts src/lib/use-api-resource.test.tsx` -> FAIL.
+- [ ] **Paso 3:** implementar. `buildQuery` con `URLSearchParams` sobre `Object.entries`, saltando `undefined` y `''`. El hook guarda `{ path, data, error }` del ultimo resultado asentado; el efecto (dependencia `[path]`) pide si `path !== null` y marca la peticion como obsoleta en el cleanup; `setState` solo en el `then`. Deriva `loading = path !== null && resultado.path !== path`; con Q-03 (a), `data` es el del ultimo resultado.
+- [ ] **Paso 4:** mismo comando -> PASS. `npm --prefix frontend run lint` -> sin errores (comprueba la regla del efecto).
+- [ ] **Paso 5:** commit `feat(f1): add shared API layer and useApiResource hook`.
+
+### Tarea 3: `DateRangePicker`
+
+**Archivos:**
+- Crear: `frontend/src/components/dashboard/date-range-picker.tsx`, `frontend/src/test-utils.ts` (helper `changeInput(input: HTMLInputElement, value: string): void`: setter nativo de `value` + evento `input` con `bubbles`, para inputs controlados de React)
+- Test: `frontend/src/components/dashboard/date-range-picker.test.tsx` (jsdom)
+
+**Interfaces:**
+- Consume: `getDateRangeIssue`, `DateBounds` (Tarea 1).
+- Produce: `DateRangePicker({ value, onChange, bounds, boundsLoading }: DateRangePickerProps)` con las props de la spec. Raiz: `div role="group" aria-label="Date range"` (DEC-19).
+
+- [ ] **Paso 1: tests que fallan** (`bounds` como en la Tarea 1; inputs buscados por su `label`):
+  - `renders two empty labelled date inputs`: etiquetas `Start date` y `End date`, `type="date"`, `value === ""`.
+  - `shows the available range and sets min and max`: texto `Available data: 2025-11-01 to 2026-10-28`; ambos inputs con `min="2025-11-01"` y `max="2026-10-28"`.
+  - `shows a skeleton while bounds load`: `boundsLoading` -> un `[data-slot="skeleton"]`, sin `min`/`max`, inputs no `disabled`.
+  - `hides the reference line without bounds`: `bounds={null}` sin carga -> no aparece `Available data`, ni `role="alert"`.
+  - `reports a new start date`: `changeInput(start, "2026-01-01")` con `value={{ end_date: "2026-01-31" }}` -> `onChange({ start_date: "2026-01-01", end_date: "2026-01-31" })`.
+  - `omits the key of an emptied input`: `value={{ start_date: "2026-01-01", end_date: "2026-01-31" }}`, `changeInput(start, "")` -> `onChange({ end_date: "2026-01-31" })` (`"start_date" in arg` es false).
+  - `toggles Clear dates`: sin fechas no hay boton `Clear dates`; con una fecha si; al pulsarlo `onChange({})` y `document.activeElement` es el input `Start date` (AC-F1-16).
+  - `warns about an inverted range`: un solo `role="alert"` con `Start date must be on or before end date.`; ambos inputs `aria-invalid="true"`.
+  - `warns about an out-of-bounds date`: `start_date: "2025-10-31"` -> alerta `Dates must be between 2025-11-01 and 2026-10-28.`; `aria-invalid` solo en `Start date`.
+  - `shows only the first problem`: `start_date: "2030-01-01", end_date: "2026-01-01"` -> un unico `role="alert"`, el de fuera de rango; `aria-invalid` segun Q-09.
+  - `stays silent while a year is typed`: `start_date: "0019-02-02"` -> ningun `role="alert"` ni `aria-invalid`.
+- [ ] **Paso 2:** `npm --prefix frontend test -- src/components/dashboard/date-range-picker.test.tsx` -> FAIL.
+- [ ] **Paso 3:** implementar con las clases de la [presentacion de F1](../../frontend/specs/components.md#presentacion-v14-dec-27-dec-28): fila con inputs y boton; debajo `Available data` y el aviso. Inputs `h-11 text-base min-w-44 bg-card scheme-dark`, borde rojo con `aria-invalid:border-red-500`; etiquetas `text-sm text-foreground`; boton `h-11 border-primary/60 bg-primary/15 text-foreground` con icono `X`; aviso `border-red-500/40 bg-red-500/10 text-red-300` con `AlertCircle`; anillo de foco `focus-visible:ring-ring`. El foco tras `Clear dates` se mueve con un `ref` al input de inicio.
+- [ ] **Paso 4:** mismo comando -> PASS; lint sin errores.
+- [ ] **Paso 5:** commit `feat(f1): add DateRangePicker component`.
+
+### Tarea 4: integracion en `App`
+
+**Archivos:**
+- Modificar: `frontend/src/App.tsx`, `frontend/src/App.test.tsx`
+
+**Interfaces:**
+- Consume: Tareas 1-3. `API_BASE_URL` sale de `App.tsx` y pasa a `@/lib/api`.
+- Produce para F2/F3: en `App`, `filter: DateRangeFilter`, `bounds: DateBounds | null` y `dateIssue = getDateRangeIssue(filter, bounds)`.
+
+Comportamiento: `facets = useApiResource<FacetsResponse>("/api/metrics/facets")`; ruta de movimientos `dateIssue === null ? "/api/metrics" + buildQuery({ start_date, end_date }) : null`. KPI: `metrics = data && data.length > 0 ? computeKPIs(data) : null`; graficos con `computeMonthlyData(data ?? [])`. Bajo el picker, `No movements found for the selected range.` con `role="status"` cuando `data` es `[]` y no carga (Q-04). Banner de error actual con `error`. `DashboardHeader period={formatPeriodLabel(filter) ?? "2024 - Full Year"}`. El picker va justo debajo del encabezado; las pestanas y el panel de vista llegan en F3.
+
+- [ ] **Paso 1: tests que fallan.** Helper de test `routeFetch(routes: Record<string, () => Promise<Response>>)` que responde segun la URL y guarda las URLs pedidas en `requested`. Fixture de movimientos (regla FIN): ingreso 100 y gasto 25 -> KPI `$100`, `$25`, `$75`, `75.0%`. Tests en `describe("F1 date range filter")`:
+  - `requests facets and unfiltered movements on mount`: `requested` contiene exactamente `/api/metrics/facets` y `/api/metrics`; aparece `Available data: 2025-11-01 to 2026-10-28`; KPI con los cuatro valores.
+  - `refetches with only the informed dates`: start `2026-01-01` -> `/api/metrics?start_date=2026-01-01` y cabecera `From 2026-01-01`; luego end `2026-01-31` -> `/api/metrics?start_date=2026-01-01&end_date=2026-01-31` y cabecera `2026-01-01 — 2026-01-31`.
+  - `accepts a single-day range` (AC-F1-07): misma fecha en ambos -> se pide.
+  - `keeps the last data on an inverted range`: tras cargar, start `2026-02-01` y end `2026-01-01` -> ninguna URL nueva, aviso de rango invertido, KPI siguen en `$100`, cabecera `2026-02-01 — 2026-01-01` (AC-F1-15).
+  - `does not request while the year is being typed`: start `0001-02-02`, `0019-02-02`, `0190-02-02` -> ninguna URL nueva ni alerta; `1900-02-02` -> aviso de fuera de rango y ninguna URL nueva (AC-F1-17, AC-F1-18).
+  - `blocks a date that becomes out of bounds when facets arrives`: facets pendiente, start `2030-01-01` -> se pide `?start_date=2030-01-01`; resolver facets -> aparece el aviso y no hay URL nueva al cambiar end.
+  - `shows the empty range state`: movimientos `[]` -> cuatro `—`, `No movements found for the selected range.` con `role="status"`, los dos graficos con `No data available to display`.
+  - `works without facets`: facets 500 -> sin `Available data`, sin `role="alert"`, KPI con valores, inputs sin `min`.
+  - `clears both dates`: con fechas, pulsar `Clear dates` -> ultima URL `/api/metrics`, cabecera `2024 - Full Year`.
+  - `omits an emptied date` (AC-F1-08): start y luego vaciar -> ultima URL `/api/metrics`.
+  - Error de movimientos (AC-F1-13): cubierto por el test existente de error, adaptado (Q-10).
+- [ ] **Paso 2:** `npm --prefix frontend test -- src/App.test.tsx` -> FAIL en los nuevos.
+- [ ] **Paso 3:** implementar en `App.tsx` y adaptar los dos tests existentes a las peticiones nuevas (`fetch` responde 500 a todo: siguen dos secciones `aria-busy` en F1).
+- [ ] **Paso 4:** mismo comando -> PASS; despues `npm --prefix frontend test` completo -> PASS.
+- [ ] **Paso 5:** commit `feat(f1): wire the date range filter into the dashboard`.
+
+### Tarea 5: verificacion de F1 y parada para la prueba visual
+
+Sigue [verify-frontend-change](../../.skills/verify-frontend-change/SKILL.md).
+
+- [ ] `git diff --stat main -- frontend/` muestra los archivos de F1.
+- [ ] `npm --prefix frontend run lint` -> sin errores; `npm --prefix frontend test` -> todo PASS; `npm --prefix frontend run build` -> sin avisos nuevos frente a la base (chunk principal ~188 kB, sin aviso de 500 kB).
+- [ ] Mutaciones (Q-11), cada una con su test que debe fallar y restauracion con `git checkout -- <archivo>`: (1) quitar el filtro de `''` en `buildQuery`; (2) no descartar respuestas obsoletas en el hook; (3) ignorar `outOfBounds` en `getDateRangeIssue`; (4) quitar `role="alert"` del aviso; (5) devolver `computeKPIs([])` en vez de `null` con `[]`.
+- [ ] App en Docker sirviendo el codigo nuevo: `curl -s http://localhost:5173/src/App.tsx | grep -c DateRangePicker` > 0; si no, `docker compose restart frontend` y repetir.
+- [ ] Registrar comandos y resultados (Q-12) y **parar** para la prueba visual en http://localhost:5173. Lista para el mantenedor: tamanos y colores de la [presentacion de F1](../../frontend/specs/components.md#presentacion-v14-dec-27-dec-28) (AC-F1-20); foco con teclado; teclear un ano a mano y comprobar en `docker compose logs backend` que no hay peticiones `0001`/`0019`/`0190` (las del montaje salen dobles por `StrictMode`).
