@@ -6,9 +6,16 @@
 
 **Stack:** el de F1; Recharts 3.8.1 `BarChart`. Depende de F1 y F2 terminadas.
 
-**Spec:** [README, F3](../../frontend/specs/README.md#f3---vista-comparativa-b2b-vs-b2c) y [components.md, F3](../../frontend/specs/components.md#f3---vista-comparativa-b2b-vs-b2c); disposicion en [DEC-19](../../frontend/specs/components.md#disposicion-de-la-pagina-v12-dec-19) y presentacion en [DEC-40](../../frontend/specs/components.md#presentacion-de-f3-v19-dec-40). La v1.9 cierra las dudas de la etapa 1 que afectan a F3 (Q-01, Q-06 a Q-08 y Q-17 a Q-20). Abiertas: Q-22, Q-23 y Q-24 ([decisions.md](decisions.md)).
+**Spec:** [README, F3](../../frontend/specs/README.md#f3---vista-comparativa-b2b-vs-b2c) y [components.md, F3](../../frontend/specs/components.md#f3---vista-comparativa-b2b-vs-b2c); disposicion en [DEC-19](../../frontend/specs/components.md#disposicion-de-la-pagina-v12-dec-19) y presentacion en [DEC-40](../../frontend/specs/components.md#presentacion-de-f3-v19-dec-40). Spec v1.10. La v1.9 cierra las dudas de la etapa 1 que afectan a F3 (Q-01, Q-06 a Q-08 y Q-17 a Q-20) y la v1.10 las de la v1.9 (Q-22 a Q-24). Las de proceso (Q-10 a Q-12) las respondio el mantenedor. No queda ninguna abierta ([decisions.md](decisions.md)).
 
-## Cambios respecto a la version anterior (spec v1.8 a v1.9)
+## Cambios respecto a la version anterior
+
+### Spec v1.9 a v1.10
+
+- Tarea 4: el vacio del grafico queda fijado por DEC-43. Es la propuesta que el plan ya seguia, asi que la clase y el test no cambian; solo se cambia la referencia de Q-24 a DEC-43. En el error, el titulo visible se deduce de la fila `Errores` de DEC-40 (ver Q-24 en decisions.md).
+- Tarea 5: "sin resultado previo" cuenta desde que se abre la vista (DEC-42). El test `shows empty states when it reopens with an invalid filter` tiene un unico resultado esperado y se quita la alternativa (b).
+
+### Spec v1.8 a v1.9
 
 - Tarea 2: aspecto de `ViewTabs` de DEC-40, en lugar de la propuesta Q-17 (sin alto de 44 px).
 - Tarea 3: en la carga de `GroupTopTable` no se pinta tabla: hay 3 barras `Skeleton` `h-5` (DEC-40). El test de carga cambia: comprueba que no hay `table` y que hay 3 skeletons. La tabla usa el estilo de la de alertas.
@@ -132,9 +139,9 @@ expect(formatCategoryLabel("others")).toBe("Others")
 
 - [ ] **Paso 1: tests que fallan** (en jsdom `ResponsiveContainer` mide 0 px y no pinta barras ni etiquetas; DEC-38 se comprueba en la prueba visual):
   - `uses the existing chart loading markup`: `loading` -> sin texto `Income: B2B vs B2C`, skeleton `h-[280px]`.
-  - `shows the comparison error`: `error` -> `role="alert"` con `Could not load the comparison.`; titulo visible (Q-24).
+  - `shows the comparison error`: `error` -> `role="alert"` con `Could not load the comparison.`; titulo visible (DEC-40, fila `Errores`).
   - `prefers loading over error` (AC-F3-18): ambos -> sin `role="alert"`.
-  - `shows the empty state when both totals are zero`: `[{B2B,0},{B2C,0}]` -> `role="status"` con `No income to compare in the selected range.`; titulo visible (Q-24).
+  - `shows the empty state when both totals are zero`: `[{B2B,0},{B2C,0}]` -> `role="status"` con `No income to compare in the selected range.`; titulo y descripcion visibles (DEC-43).
   - `renders the chart card when one group has income`: `[{B2B,0},{B2C,642606.15}]` -> `h2` `Income: B2B vs B2C`, descripcion visible `Total income of B2B and B2C in the selected range.` (DEC-39), sin `role="status"`.
 - [ ] **Paso 2:** `npm --prefix frontend test -- src/components/dashboard/group-comparison-chart.test.tsx` -> FAIL.
 - [ ] **Paso 3:** implementar: `BarChart` con `title="Income: B2B vs B2C"` y `desc="Total income of B2B and B2C in the selected range."`; `XAxis dataKey="business_type"`; `YAxis` con `formatCurrency`; `<Bar dataKey="total_income" name="Income">` con color por grupo via `shape`.
@@ -142,7 +149,7 @@ expect(formatCategoryLabel("others")).toBe("Others")
   - Cabecera: `CardDescription` con el texto de `desc` bajo el titulo (DEC-39).
   - Area: `ResponsiveContainer` de 280 px, sin `Legend`, tooltip con el estilo de los graficos existentes (DEC-39).
   - Error: aviso rojo de DEC-29 centrado en un area `h-[280px]` (DEC-40).
-  - Vacio, con la propuesta (a) de Q-24: el patron de los graficos existentes (`flex h-[280px] items-center justify-center text-sm text-muted-foreground`), con titulo y descripcion visibles.
+  - Vacio (DEC-43): el patron de los graficos existentes (`flex h-[280px] items-center justify-center text-sm text-muted-foreground`), con titulo y descripcion visibles.
 - [ ] **Paso 4:** mismo comando -> PASS.
 - [ ] **Paso 5:** commit `feat(f3): add GroupComparisonChart`.
 
@@ -156,7 +163,7 @@ expect(formatCategoryLabel("others")).toBe("Others")
 - Consume: `useApiResource`, `buildQuery`, `getDateRangeIssue`, `DateBounds` (F1); Tareas 1-4.
 - Produce: `ComparisonPage({ filter, bounds }: ComparisonPageProps)`, exportada tambien como `default` para `lazy`.
 
-Comportamiento: `ComparisonPage` calcula la ruta de cada grupo (`/api/metrics/categories/top` + `buildQuery({ operation_type: "income", limit: 5, business_type, start_date, end_date })`) o `null` si `getDateRangeIssue(filter, bounds) !== null`. Sin resultado previo y con ruta `null`, `rows=[]` y totales 0: estados vacios (DEC-14, DEC-35). "Sin resultado previo" se refiere a la vista montada, porque se desmonta al cambiar de pestana (Q-23, propuesta (a)). El grafico: `loading` si algun grupo carga; `error` si alguno fallo. Paneles en `grid grid-cols-1 xl:grid-cols-2` (DEC-40). `App`: estado `view`; disposicion de DEC-19 (`ViewTabs`, picker, `div id="view-panel" role="tabpanel" aria-labelledby`); en la comparativa las rutas de movimientos y alertas son `null` y no se muestran banner ni `No movements found...` (DEC-12, DEC-15). `Suspense` con el fallback de DEC-36 dentro de las dos `section` (`Income by business type`, `Income comparison`): dos `GroupTopTable` con `loading` y `ChartFallback`, sin importar `GroupComparisonChart`.
+Comportamiento: `ComparisonPage` calcula la ruta de cada grupo (`/api/metrics/categories/top` + `buildQuery({ operation_type: "income", limit: 5, business_type, start_date, end_date })`) o `null` si `getDateRangeIssue(filter, bounds) !== null`. Sin resultado previo y con ruta `null`, `rows=[]` y totales 0: estados vacios (DEC-14, DEC-35). "Sin resultado previo" cuenta desde que se abre la vista, que se desmonta al cambiar de pestana (DEC-42). El grafico: `loading` si algun grupo carga; `error` si alguno fallo. Paneles en `grid grid-cols-1 xl:grid-cols-2` (DEC-40). `App`: estado `view`; disposicion de DEC-19 (`ViewTabs`, picker, `div id="view-panel" role="tabpanel" aria-labelledby`); en la comparativa las rutas de movimientos y alertas son `null` y no se muestran banner ni `No movements found...` (DEC-12, DEC-15). `Suspense` con el fallback de DEC-36 dentro de las dos `section` (`Income by business type`, `Income comparison`): dos `GroupTopTable` con `loading` y `ChartFallback`, sin importar `GroupComparisonChart`.
 
 - [ ] **Paso 1: tests que fallan** (`describe("F3 B2B vs B2C view")`; `routeFetch` responde `top` segun `business_type`):
   - `starts on the dashboard tab` (AC-F3-01): `Dashboard` con `aria-selected="true"`; `tabpanel` con `aria-labelledby="tab-dashboard"`.
@@ -168,7 +175,7 @@ Comportamiento: `ComparisonPage` calcula la ruta de cada grupo (`/api/metrics/ca
   - `keeps the last result on an invalid range` (AC-F3-05): tras cargar, rango invertido -> ninguna URL nueva de `top`; filas visibles.
   - `opens with an invalid range` (AC-F3-16, DEC-35): rango invertido antes de abrir -> ninguna URL de `top`; `No income in the selected range for B2B.`, la de `B2C` y `No income to compare in the selected range.`
   - `opens with an out-of-bounds date` (AC-F3-16, DEC-35): con `facets` cargado, start `2030-01-01` antes de abrir -> ninguna URL de `top`; los mismos tres estados vacios.
-  - `shows empty states when it reopens with an invalid filter` (Q-23, propuesta (a)): abrir con filtro valido (filas visibles), volver a `Dashboard`, invertir el rango y abrir otra vez -> ninguna URL nueva de `top`; los tres estados vacios. Con la opcion (b) el test esperaria las filas anteriores.
+  - `shows empty states when it reopens with an invalid filter` (DEC-42): abrir con filtro valido (filas visibles), volver a `Dashboard`, invertir el rango y abrir otra vez -> ninguna URL nueva de `top`; los tres estados vacios.
   - `isolates an empty group` (AC-F3-08): B2B `[]` -> su mensaje; B2C con filas.
   - `isolates a failed group` (AC-F3-13): B2C 500 -> `Could not load B2C income data.` y `Could not load the comparison.`; B2B con filas.
   - `hides dashboard notices while comparing` (AC-F3-17): movimientos 500 -> en la comparativa no aparece `No se pudo cargar`.

@@ -2,14 +2,14 @@
 
 Fase 9 (prueba de traspaso, [ROADMAP-Project-3](../entregables/ROADMAP-Project-3.md#92-fase-9-prueba-de-traspaso)).
 Fuente: [frontend/specs](../../frontend/specs/README.md). Q-01 a Q-21 salen de la spec v1.8
-(etapa 1); su `Estado` se reviso contra la v1.9 (2026-11-19). Q-22 en adelante salen
-de la v1.9. Cada entrada anota una pregunta, hueco o decision que la spec no resuelve:
+(etapa 1); su `Estado` se reviso contra la v1.9 (2026-11-19). Q-22 a Q-24 salen de la
+v1.9 y su `Estado` se reviso contra la v1.10 (2026-11-19). La v1.10 no genera dudas nuevas. Cada entrada anota una pregunta, hueco o decision que la spec no resuelve:
 seccion, duda, opciones y propuesta. **Ninguna entrada pendiente se aplica hasta que el
 mantenedor responda.**
 
 Valores de `Estado`:
 
-- **resuelta por la spec v1.9**: indica la seccion o el `DEC` que la cierra y si coincide con la propuesta.
+- **resuelta por la spec v1.9** o **v1.10**: indica la seccion o el `DEC` que la cierra y si coincide con la propuesta.
 - **sigue abierta**: la spec no la cierra; se explica por que y, si el mantenedor ya respondio, que respondio.
 - **pendiente**: entrada nueva sin respuesta.
 
@@ -139,7 +139,9 @@ En la etapa 1 eran propuestas por defecto para la prueba visual. La v1.9 los cie
 | Q-20 | F3, Grafico | Descripcion visible, alto, leyenda y tooltip | `CardDescription` con el mismo texto que `desc`; 280 px de alto como los graficos actuales; sin leyenda (una sola serie); tooltip propio con el estilo de los existentes y `formatCurrency` | Resuelta: DEC-39, F3, Grafico, "Etiquetas y descripcion". Igual a la propuesta, decidido por el mantenedor |
 | Q-21 | F2, `ThresholdInput` | Valores validos para `parseThreshold` pero fuera de `step=0.01` (`0.015`) | Se aceptan: la spec define la validez con `parseThreshold`, no con el `step` del navegador | Resuelta: DEC-40, F2, [`ThresholdInput`](../../frontend/specs/components.md#thresholdinput) ("`0.015` es valido y se pide con ese valor"). Igual a la propuesta |
 
-## Dudas nuevas de la spec v1.9
+## Dudas de la spec v1.9
+
+Las tres las cierra la v1.10 (DEC-41 a DEC-43). Al releer la v1.10 no aparecio ninguna duda nueva, asi que no hay Q-25.
 
 ### Q-22. Volver a la misma ruta cuando el ultimo resultado fue un error
 
@@ -149,7 +151,7 @@ En la etapa 1 eran propuestas por defecto para la prueba visual. La v1.9 los cie
   - (a) Se sigue viendo el error hasta que llega la respuesta: el ultimo resultado se muestra tal cual, sea dato o error.
   - (b) Se oculta el error y se muestra la carga (`loading=true` solo en este caso).
 - **Propuesta:** (a). Es la lectura literal (el hook expone el ultimo resultado y `loading` es false con la misma ruta) y no anade casos al hook. Se prueba en el test del hook `refetches when the same path comes back after null`, con una variante con error.
-- **Estado:** pendiente.
+- **Estado:** resuelta por la spec v1.10: DEC-41, en la [Capa de datos compartida](../../frontend/specs/components.md#capa-de-datos-compartida-v11-dec-05) ("se ve el ultimo resultado: los datos anteriores o, si la ultima peticion fallo, el error"). Coincide con (a).
 
 ### Q-23. "Sin resultado previo" en la vista comparativa tras cambiar de pestana
 
@@ -159,7 +161,7 @@ En la etapa 1 eran propuestas por defecto para la prueba visual. La v1.9 los cie
   - (a) El resultado previo es el de la vista montada: al volver con un filtro no pedible se ven los estados vacios de DEC-35.
   - (b) Conservar los resultados de F3 entre visitas, subiendo sus dos `useApiResource` a `App` o guardando el ultimo resultado en `App`.
 - **Propuesta:** (a). La spec dice que la vista se desmonta al cambiar de pestana y que `ComparisonPage` pide sus propios datos; (b) anade estado en `App` que la spec no pide. Contrapartida: el dashboard si conserva sus datos en ese caso, porque sus hooks viven en `App`. Test en la Tarea 5 de F3: `shows empty states when it reopens with an invalid filter`.
-- **Estado:** pendiente.
+- **Estado:** resuelta por la spec v1.10: DEC-42, en F3, [Datos y peticiones](../../frontend/specs/components.md#datos-y-peticiones) ("'Sin resultado previo' cuenta desde que se abre la vista"). Coincide con (a), incluida la diferencia con el dashboard, que la spec tambien recoge.
 
 ### Q-24. Aspecto del estado vacio del grafico de F3
 
@@ -169,13 +171,13 @@ En la etapa 1 eran propuestas por defecto para la prueba visual. La v1.9 los cie
   - (a) Como el vacio de los graficos existentes: titulo y descripcion visibles y el texto `text-sm` en `muted-foreground`, centrado en un area de 280 px (`flex h-[280px] items-center justify-center`). El error usa la misma area con el aviso rojo dentro.
   - (b) Solo el mensaje, sin titulo ni descripcion.
 - **Propuesta:** (a). AC-F3-11 dice "en lugar de las barras", es decir, dentro de la tarjeta, y asi no hay salto de altura.
-- **Estado:** pendiente.
+- **Estado:** resuelta por la spec v1.10: DEC-43, en la [Presentacion de F3](../../frontend/specs/components.md#presentacion-de-f3-v19-dec-40) (fila `Vacio del grafico`). Coincide con (a). Para el error, DEC-43 no nombra el titulo, pero la fila `Errores` ya lo centra "en el area de 280 px", que es el area del grafico bajo la cabecera (DEC-39). Leo que en el error el titulo y la descripcion tambien se ven. No abro una entrada nueva porque la spec lo implica; si no es asi, el test `shows the comparison error` de la Tarea 4 de F3 es el que cambia.
 
 ## Observaciones (no requieren respuesta)
 
 - Los enlaces de la spec a `docs/plans` siguen rotos a proposito en la v1.9 (el README y la ultima restriccion negativa de components.md). Los planes de esta fase estan en `docs/handover`.
 - `memory-bank/status.md` y `overview.md` describen la spec 1.0 sin implementar. El mantenedor confirmo que en esta rama se espera que esten desactualizados: no se modifican.
-- Cerrada en la v1.9: el [mapa de archivos del README](../../frontend/specs/README.md#mapa-de-archivos) ya dice "v1.1 a v1.9".
+- Cerrada en la v1.9: el [mapa de archivos del README](../../frontend/specs/README.md#mapa-de-archivos) ya incluia la ultima version; en la v1.10 dice "v1.1 a v1.10".
 - Recharts 3.8.1 (instalado) marca `Cell` como obsoleto; el color por barra de F3 se hace con la prop `shape` de `Bar`. Es un detalle de implementacion, no una decision de la spec.
 - `React.StrictMode` (en `main.tsx`) duplica en desarrollo las peticiones del montaje; al revisar los logs del backend en la prueba visual hay que tenerlo en cuenta.
-- La diferencia entre la v1.8 y la v1.9 se saco leyendo la spec actual (historial de versiones, DEC-33 a DEC-40 y marcas `v1.9` en el texto), no del diff del commit, porque las reglas de la etapa prohiben consultar el historial de git.
+- La diferencia entre la v1.8 y la v1.9, y entre la v1.9 y la v1.10, se saco leyendo la spec actual (historial de versiones, DEC-33 a DEC-40 y marcas `v1.9` en el texto), no del diff del commit, porque las reglas de la etapa prohiben consultar el historial de git.

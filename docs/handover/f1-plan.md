@@ -6,9 +6,15 @@
 
 **Stack:** React 19, TypeScript 6, Tailwind 4, Vitest 4 + jsdom (sin Testing Library: no se anaden dependencias).
 
-**Spec:** v1.9. [README](../../frontend/specs/README.md#f1---filtro-de-rango-de-fechas) y [components.md, F1](../../frontend/specs/components.md#f1---filtro-de-rango-de-fechas). Las dudas de la etapa 1 que afectan a F1 (Q-01 a Q-04, Q-09, Q-13, Q-14) las cierra la v1.9 y las de proceso (Q-10 a Q-12) las respondio el mantenedor; abierta: Q-22 ([decisions.md](decisions.md)).
+**Spec:** v1.10. [README](../../frontend/specs/README.md#f1---filtro-de-rango-de-fechas) y [components.md, F1](../../frontend/specs/components.md#f1---filtro-de-rango-de-fechas). La v1.9 y la v1.10 cierran las dudas que afectan a F1 (Q-01 a Q-04, Q-09, Q-13, Q-14 y Q-22). Las de proceso (Q-10 a Q-12) las respondio el mantenedor. No queda ninguna abierta ([decisions.md](decisions.md)).
 
-## Cambios respecto a la version anterior (spec v1.8 a v1.9)
+## Cambios respecto a la version anterior
+
+### Spec v1.9 a v1.10
+
+- Tarea 2: la variante con error del test `refetches when the same path comes back after null` queda fijada por DEC-41: mientras llega la nueva peticion se ve el error. Antes dependia de Q-22. No cambia el codigo previsto.
+
+### Spec v1.8 a v1.9
 
 - Tarea 2: los casos limite del hook dejan de depender de respuestas (DEC-33). Hay un test nuevo, `keeps the previous data while a new path loads`, y el de volver a la misma ruta fija `loading: false` con los datos anteriores visibles. Se anade una variante con error, que depende de Q-22.
 - Tarea 3: `aria-invalid` solo en el input fuera de rango cuando ademas el rango esta invertido (DEC-37). El `Skeleton` de `Available data` mide `h-4 w-64` (DEC-40; la propuesta era `h-5`).
@@ -113,7 +119,7 @@ await expect(getJson("/api/metrics")).rejects.toThrow()             // 500
   - `keeps the previous data while a new path loads` (DEC-33): tras cargar A con `[1]`, ruta B pendiente -> `{ data: [1], loading: true, error: false }`.
   - `keeps the last data when the path becomes null`: tras cargar A, ruta `null` -> mismo `data`, `loading: false`, sin fetch nuevo.
   - `discards an in-flight response when the path becomes null` (DEC-33): tras cargar A con `[1]`, ruta B pendiente y despues `null`; B resuelve `[2]` -> `{ data: [1], loading: false, error: false }`.
-  - `refetches when the same path comes back after null` (DEC-33): tras cargar A con `[1]`, ruta `null` y otra vez A -> segunda llamada a fetch con A y, mientras esta pendiente, `{ data: [1], loading: false, error: false }`; al resolver `[3]`, `data` es `[3]`. Variante con error (Q-22, opcion (a)): A falla, `null`, A otra vez -> mientras esta pendiente, `{ data: null, loading: false, error: true }`.
+  - `refetches when the same path comes back after null` (DEC-33): tras cargar A con `[1]`, ruta `null` y otra vez A -> segunda llamada a fetch con A y, mientras esta pendiente, `{ data: [1], loading: false, error: false }`; al resolver `[3]`, `data` es `[3]`. Variante con error (DEC-41): A falla, `null`, A otra vez -> mientras esta pendiente, `{ data: null, loading: false, error: true }`.
 
 - [ ] **Paso 2:** `npm --prefix frontend test -- src/lib/api.test.ts src/lib/use-api-resource.test.tsx` -> FAIL.
 - [ ] **Paso 3:** implementar. `buildQuery` con `URLSearchParams` sobre `Object.entries`, saltando `undefined` y `''`. El hook guarda `{ path, data, error }` del ultimo resultado asentado; el efecto (dependencia `[path]`) pide si `path !== null` y marca la peticion como obsoleta en el cleanup; `setState` solo en el `then`. Deriva `loading = path !== null && resultado.path !== path`; `data` y `error` son siempre los del ultimo resultado (DEC-33). Con esa derivacion, volver a la ruta del ultimo resultado da `loading` false sin codigo extra.

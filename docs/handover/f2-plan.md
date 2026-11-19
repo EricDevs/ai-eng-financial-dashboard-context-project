@@ -6,9 +6,15 @@
 
 **Stack:** el de F1. Depende de F1 terminada (`buildQuery`, `useApiResource`, `filter`, `dateIssue`).
 
-**Spec:** v1.9. [README, F2](../../frontend/specs/README.md#f2---tabla-de-alertas-de-anomalias) y [components.md, F2](../../frontend/specs/components.md#f2---tabla-de-alertas-de-anomalias). Las dudas de la etapa 1 que afectan a F2 (Q-05, Q-15, Q-16, Q-21) las cierra la v1.9 y las de proceso (Q-10, Q-11) las respondio el mantenedor; abierta: Q-22, que afecta a las alertas al volver de `B2B vs B2C` ([decisions.md](decisions.md)).
+**Spec:** v1.10. [README, F2](../../frontend/specs/README.md#f2---tabla-de-alertas-de-anomalias) y [components.md, F2](../../frontend/specs/components.md#f2---tabla-de-alertas-de-anomalias). La v1.9 y la v1.10 cierran las dudas que afectan a F2 (Q-05, Q-15, Q-16, Q-21 y Q-22). Las de proceso (Q-10 a Q-12) las respondio el mantenedor. No queda ninguna abierta ([decisions.md](decisions.md)).
 
-## Cambios respecto a la version anterior (spec v1.8 a v1.9)
+## Cambios respecto a la version anterior
+
+### Spec v1.9 a v1.10
+
+- Ninguno en tareas ni tests. DEC-41 fija que, al volver de `B2B vs B2C` sin cambiar el filtro, un error de alertas sigue visible en la tarjeta mientras se piden de nuevo. Lo cubre el test del hook de F1, porque `AlertsTable` recibe `error` y `loading` tal como los da el hook.
+
+### Spec v1.8 a v1.9
 
 - Tarea 2: tabla, carga y vacio con los valores de DEC-40 (antes eran las propuestas Q-15 y Q-16).
   - Carga: cada fila tiene una sola celda que ocupa las 4 columnas, con una barra `h-5`. Antes eran 4 celdas `h-4`.
