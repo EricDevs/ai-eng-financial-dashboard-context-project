@@ -1,16 +1,20 @@
-import { lazy, Suspense, useEffect, useState } from "react";
+import { lazy, Suspense, useState } from "react";
 import { DashboardHeader } from "@/components/dashboard/dashboard-header";
+import { DateRangePicker } from "@/components/dashboard/date-range-picker";
 import { KPIRow } from "@/components/dashboard/kpi-row";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { buildQuery } from "@/lib/api";
+import { type FacetsResponse } from "@/lib/api-types";
+import { type FinancialMovement } from "@/lib/financial-types";
 import {
-  type FinancialMovement,
-  type KPIMetrics,
-  type MonthlyDataPoint,
-} from "@/lib/financial-types";
-import { computeKPIs, computeMonthlyData } from "@/lib/financial-utils";
-
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "";
+  computeKPIs,
+  computeMonthlyData,
+  formatPeriodLabel,
+  getDateRangeIssue,
+} from "@/lib/financial-utils";
+import { type DateRangeFilter } from "@/lib/param-types";
+import { useApiResource } from "@/lib/use-api-resource";
 
 // Charts pull in Recharts (~60% of the JS); load them in a separate chunk.
 const IncomeOutcomeChart = lazy(() =>
@@ -39,66 +43,63 @@ function ChartFallback() {
   );
 }
 
-async function fetchFinancialData(): Promise<FinancialMovement[]> {
-  const response = await fetch(`${API_BASE_URL}/api/metrics`);
-  if (!response.ok) {
-    throw new Error(`Failed to fetch financial data: ${response.status}`);
-  }
-  return response.json();
-}
-
 function App() {
-  const [metrics, setMetrics] = useState<KPIMetrics | null>(null);
-  const [monthlyData, setMonthlyData] = useState<MonthlyDataPoint[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [filter, setFilter] = useState<DateRangeFilter>({});
+  const facets = useApiResource<FacetsResponse>("/api/metrics/facets");
+  const bounds = facets.data
+    ? { min_date: facets.data.min_date, max_date: facets.data.max_date }
+    : null;
+  const movements = useApiResource<FinancialMovement[]>(
+    getDateRangeIssue(filter, bounds) === null ? `/api/metrics${buildQuery(filter)}` : null,
+  );
 
-  useEffect(() => {
-    fetchFinancialData()
-      .then((movements) => {
-        setMetrics(computeKPIs(movements));
-        setMonthlyData(computeMonthlyData(movements));
-      })
-      .catch(() => {
-        setError(
-          "No se pudo cargar la informacion financiera. Revisa la API de backend.",
-        );
-      })
-      .finally(() => {
-        setLoading(false);
-      });
-  }, []);
+  const metrics = movements.data?.length ? computeKPIs(movements.data) : null;
+  const monthlyData = movements.data ? computeMonthlyData(movements.data) : [];
+  const noMovements = !movements.loading && movements.data?.length === 0;
 
   return (
     <main className="dark min-h-screen bg-background text-foreground">
       <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         <div className="flex flex-col gap-8">
-          <DashboardHeader period="2024 - Full Year" />
+          <DashboardHeader period={formatPeriodLabel(filter) ?? "2024 - Full Year"} />
 
-          {error ? (
+          <DateRangePicker
+            value={filter}
+            onChange={setFilter}
+            bounds={bounds}
+            boundsLoading={facets.loading}
+          />
+
+          {noMovements ? (
+            <p role="status" className="text-sm text-muted-foreground">
+              No movements found for the selected range.
+            </p>
+          ) : null}
+
+          {movements.error ? (
             <div
               role="alert"
               lang="es"
               className="rounded-lg border border-destructive/30 bg-destructive/10 p-4 text-sm text-destructive-foreground"
             >
-              {error}
+              No se pudo cargar la informacion financiera. Revisa la API de backend.
             </div>
           ) : null}
 
-          <section aria-label="Key performance indicators" aria-busy={loading}>
-            <KPIRow metrics={metrics} loading={loading} />
+          <section aria-label="Key performance indicators" aria-busy={movements.loading}>
+            <KPIRow metrics={metrics} loading={movements.loading} />
           </section>
 
           <section
             aria-label="Financial charts"
-            aria-busy={loading}
+            aria-busy={movements.loading}
             className="grid grid-cols-1 gap-4 xl:grid-cols-2"
           >
             <Suspense fallback={<ChartFallback />}>
-              <IncomeOutcomeChart data={monthlyData} loading={loading} />
+              <IncomeOutcomeChart data={monthlyData} loading={movements.loading} />
             </Suspense>
             <Suspense fallback={<ChartFallback />}>
-              <ProfitPercentChart data={monthlyData} loading={loading} />
+              <ProfitPercentChart data={monthlyData} loading={movements.loading} />
             </Suspense>
           </section>
         </div>
