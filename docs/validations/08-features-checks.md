@@ -128,3 +128,67 @@ Vite en Docker volvio a servir modulos antiguos tras dos cambios; en cada ronda 
 - Error de alertas con los movimientos funcionando, en el navegador: con el backend parado fallan todas las peticiones (se ven el banner global y el aviso de la tarjeta). El aislamiento (AC-F2-11, INV-6) solo lo prueba el test `keeps alert errors inside the card`.
 - Lector de pantalla real, otros navegadores y otros idiomas del navegador para el caso `0,3`.
 - Mismo limite que F1: implementacion con todo el contexto de la conversacion.
+
+## F3 - Vista comparativa B2B vs B2C
+
+Fecha: 2026-11-19. Rama `feature/frontend-specs-v2-fase8-f3`, creada desde la integracion tras los merges de F1 (`074dcf4`) y F2 (`b3228b8`). Spec v1.8 sin cambios; plan v5.2 al empezar y v5.3 al cerrar (notas de los tests).
+
+### Commits
+
+| Commit | Contenido |
+| --- | --- |
+| `155c5b6` | Plan v5.2: revisado contra la spec 1.8 antes de ejecutarlo |
+| `177e987` | Tarea 1: `sumTotals`, `toGroupRows`, `formatCategoryLabel` y tipos de grupo |
+| `e3f78fd` | Tarea 2: `ViewTabs` |
+| `267597c` | Tarea 3: `GroupTopTable` |
+| `ee31a2b` | Tarea 4: `GroupComparisonChart` |
+| `54365e3` | Tarea 5: `ComparisonPage` |
+| `0062490` | Tarea 6: pestanas y vista comparativa en `App` |
+
+### Checks automaticos
+
+| Comando (desde la raiz) | Resultado |
+| --- | --- |
+| `npm --prefix frontend run lint` | Sin errores ni avisos |
+| `npm --prefix frontend test` | 11 archivos, 110 passed (antes 76): `financial-utils` 22, `api` 4, `use-api-resource` 5, `date-range-picker` 14, `threshold-input` 4, `alerts-table` 10, `view-tabs` 3, `group-top-table` 7, `group-comparison-chart` 5, `comparison-page` 9, `App` 27 |
+| `npm --prefix frontend run build` | Sin avisos; chunk principal 193.74 kB (194.52 kB tras F2); `comparison-page` 19.91 kB en diferido; Recharts en `CartesianChart` 330.73 kB, compartido por las dos vistas |
+
+### Los tests detectan la rotura
+
+| Rotura provocada | Test que falla |
+| --- | --- |
+| Pedir las categorias sin `operation_type: 'income'` | `requests income top categories for each group` |
+| Pedir los datos del dashboard tambien en la vista comparativa | `does not request dashboard data while comparing` |
+| Pedir las categorias sin la regla unica de peticion | `shows empty states without requests when the filter cannot be requested` |
+
+### Errores de los tests durante la implementacion
+
+Dos tests nuevos fallaron por el propio test, no por el codigo; pasan al plan v5.3 como notas:
+
+- Dos `fetch` simulados compartian un `Response`: el cuerpo solo se lee una vez y la segunda lectura fallaba. Se usan compuertas `deferred<void>` que crean una respuesta por llamada.
+- Un test de `App` cambiaba la fecha antes del primer render, cuando el selector aun no existia. Se usa `renderLoaded()`.
+
+### Prueba visual del usuario
+
+Valores de referencia obtenidos con `curl` a `/api/metrics/categories/top?operation_type=income&limit=5&business_type=...` el mismo dia (el dataset depende de la fecha):
+
+| Rango | B2B | B2C |
+| --- | --- | --- |
+| Sin filtro | Sales $557,904 90.6 % · Others $57,637 9.4 % | Sales $574,193 89.4 % · Others $68,413 10.6 % |
+| `2026-01-01` a `2026-01-31` | Sales $30,201 79.1 % · Others $7,968 20.9 % | Sales $54,070 87.8 % · Others $7,508 12.2 % |
+| Dia `2026-01-01` | Vacio | Con ingresos |
+| Dia `2026-01-03` | Vacio | Vacio |
+
+Lista entregada al usuario: pestanas bajo la cabecera, la vista comparativa oculta KPI, graficos y alertas y conserva el filtro, valores de las dos tablas, barras con colores y tooltip, grupo vacio con barra de $0 (AC-F3-10), ambos vacios, volver a `Dashboard` con el filtro conservado, aviso rojo de error y cambio de pestana sin salto de altura (DEC-23).
+
+| Ronda | Resultado |
+| --- | --- |
+| 1 | El usuario informa que hizo las pruebas y que todo es correcto. Sin hallazgos: la spec sigue en v1.8 |
+
+Antes de la prueba se reinicio el contenedor del frontend y se comprobo con `curl` que Vite servia los modulos nuevos. El backend estaba parado desde la prueba de error de F2 (`Exited 137`); se arranco con `docker compose start backend`.
+
+### No verificado
+
+- Error de un solo grupo en el navegador: bloquear la ruta falla los dos grupos. El aislamiento (un grupo con error y el otro vacio) solo lo prueba el test `isolates a failed group`.
+- Lector de pantalla real y otros navegadores.
+- Mismo limite que F1 y F2: implementacion con todo el contexto de la conversacion. La prueba sin contexto es la fase 9.

@@ -3,13 +3,17 @@ import { describe, expect, it } from "vitest";
 import {
   computeKPIs,
   computeMonthlyData,
+  formatCategoryLabel,
   formatCurrency,
   formatPercent,
   formatPeriodLabel,
   getDateRangeIssue,
   isValidDateRange,
   parseThreshold,
+  sumTotals,
+  toGroupRows,
 } from "./financial-utils";
+import type { TopCategoriesResponse } from "./api-types";
 import type { FinancialMovement } from "./financial-types";
 
 const sampleMovements: FinancialMovement[] = [
@@ -235,5 +239,35 @@ describe("parseThreshold", () => {
     for (const text of ["", " ", "abc", "0", "0.009", "1.01", "5", "-0.1", "Infinity"]) {
       expect(parseThreshold(text)).toBeNull();
     }
+  });
+});
+
+describe("group rows and totals", () => {
+  const b2b: TopCategoriesResponse = [
+    { category: "sales", operation_type: "income", total_amount: 557903.97 },
+    { category: "others", operation_type: "income", total_amount: 57636.75 },
+  ];
+
+  it("sums group totals", () => {
+    expect(sumTotals(b2b)).toBeCloseTo(615540.72, 2);
+    expect(sumTotals([])).toBe(0);
+  });
+
+  it("builds rows with shares in API order", () => {
+    const rows = toGroupRows(b2b);
+    expect(rows.map((row) => row.category)).toEqual(["sales", "others"]);
+    expect(rows[0].share).toBeCloseTo(557903.97 / 615540.72, 6);
+    expect(rows.reduce((sum, row) => sum + row.share, 0)).toBeCloseTo(1, 10);
+    expect(toGroupRows([])).toEqual([]);
+  });
+
+  it("uses a zero share when the group total is zero", () => {
+    const rows = toGroupRows([{ category: "sales", operation_type: "income", total_amount: 0 }]);
+    expect(rows[0].share).toBe(0);
+  });
+
+  it("capitalizes category labels", () => {
+    expect(formatCategoryLabel("sales")).toBe("Sales");
+    expect(formatCategoryLabel("others")).toBe("Others");
   });
 });
