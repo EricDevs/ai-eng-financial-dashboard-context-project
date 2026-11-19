@@ -223,3 +223,15 @@ Reglas leidas antes de editar: WF, FIN, API, CAL y FE. DX no aplica (sin cambios
   - Prueba temporal con aserciones en lugar de la llamada original: `expect(clearButton()).toBeUndefined()` justo despues de `renderPicker` y `expect(clearButton()).toBeDefined()` tras 20 ms. Las dos pasaron (`1 passed`). El archivo se restauro desde una copia en el scratchpad.
   - Correccion en el test: `renderPicker` espera con `settle()` en lugar de buscar el grupo. `settle` pasa a `src/test-utils.ts`, compartido con el test del hook. Las aserciones no cambian.
 - Verde: `npm --prefix frontend test` -> 5 archivos, 35 pasados. Lint y `npx tsc -b` sin errores.
+
+### Tarea 4 (2026-11-19)
+
+- Rojo: `npm --prefix frontend test -- src/App.test.tsx` -> 11 fallidos (los nuevos) y 2 pasados (los existentes). Motivos agrupados, todos por funcionalidad ausente:
+  - 7 veces `Start date input not found`: no hay picker.
+  - 1 vez `expected [ '/api/metrics' ] to deeply equal [ '/api/metrics', …(1) ]`: no se pide `facets`.
+  - 1 vez falta `Available data`.
+  - 2 veces `expected undefined to be defined`: no hay aviso `No movements found...`.
+- Verde: mismo comando -> 13 pasados. Suite completa `npm --prefix frontend test` -> 5 archivos, 46 pasados. Lint y `npx tsc -b` sin errores.
+- Q-10: los dos tests existentes pasan sin cambiar ninguna expectativa. El picker es un `div` (no `section`) y no tiene `h2`; con `fetch` a 500, `facets` falla sin mostrar ningun `role="alert"`, asi que el primer `role="alert"` sigue siendo el banner.
+- `API_BASE_URL` sale de `App.tsx` y queda solo en `@/lib/api`. El texto del banner de error no cambia.
+- Comportamiento que cambia, y lo pide la spec (AC-F1-10): con una respuesta `[]` los KPI muestran `—`. Antes mostraban `$0`, porque se calculaba `computeKPIs([])`.

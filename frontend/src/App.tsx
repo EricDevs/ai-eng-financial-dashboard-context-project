@@ -1,16 +1,20 @@
-import { lazy, Suspense, useEffect, useState } from "react";
+import { lazy, Suspense, useState } from "react";
 import { DashboardHeader } from "@/components/dashboard/dashboard-header";
+import { DateRangePicker } from "@/components/dashboard/date-range-picker";
 import { KPIRow } from "@/components/dashboard/kpi-row";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { buildQuery } from "@/lib/api";
+import type { FacetsResponse } from "@/lib/api-types";
+import { type FinancialMovement } from "@/lib/financial-types";
 import {
-  type FinancialMovement,
-  type KPIMetrics,
-  type MonthlyDataPoint,
-} from "@/lib/financial-types";
-import { computeKPIs, computeMonthlyData } from "@/lib/financial-utils";
-
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "";
+  computeKPIs,
+  computeMonthlyData,
+  formatPeriodLabel,
+  getDateRangeIssue,
+} from "@/lib/financial-utils";
+import type { DateRangeFilter } from "@/lib/param-types";
+import { useApiResource } from "@/lib/use-api-resource";
 
 // Charts pull in Recharts (~60% of the JS); load them in a separate chunk.
 const IncomeOutcomeChart = lazy(() =>
@@ -39,41 +43,44 @@ function ChartFallback() {
   );
 }
 
-async function fetchFinancialData(): Promise<FinancialMovement[]> {
-  const response = await fetch(`${API_BASE_URL}/api/metrics`);
-  if (!response.ok) {
-    throw new Error(`Failed to fetch financial data: ${response.status}`);
-  }
-  return response.json();
-}
-
 function App() {
-  const [metrics, setMetrics] = useState<KPIMetrics | null>(null);
-  const [monthlyData, setMonthlyData] = useState<MonthlyDataPoint[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [filter, setFilter] = useState<DateRangeFilter>({});
+  const facets = useApiResource<FacetsResponse>("/api/metrics/facets");
+  const bounds = facets.data
+    ? { min_date: facets.data.min_date, max_date: facets.data.max_date }
+    : null;
+  const dateIssue = getDateRangeIssue(filter, bounds);
 
-  useEffect(() => {
-    fetchFinancialData()
-      .then((movements) => {
-        setMetrics(computeKPIs(movements));
-        setMonthlyData(computeMonthlyData(movements));
-      })
-      .catch(() => {
-        setError(
-          "No se pudo cargar la informacion financiera. Revisa la API de backend.",
-        );
-      })
-      .finally(() => {
-        setLoading(false);
-      });
-  }, []);
+  const movementsPath =
+    dateIssue === null
+      ? "/api/metrics" +
+        buildQuery({ start_date: filter.start_date, end_date: filter.end_date })
+      : null;
+  const { data: movements, loading, error } =
+    useApiResource<FinancialMovement[]>(movementsPath);
+
+  const metrics = movements && movements.length > 0 ? computeKPIs(movements) : null;
+  const monthlyData = computeMonthlyData(movements ?? []);
+  const noMovements = !loading && movements !== null && movements.length === 0;
 
   return (
     <main className="dark min-h-screen bg-background text-foreground">
       <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         <div className="flex flex-col gap-8">
-          <DashboardHeader period="2024 - Full Year" />
+          <DashboardHeader period={formatPeriodLabel(filter) ?? "2024 - Full Year"} />
+
+          <DateRangePicker
+            value={filter}
+            onChange={setFilter}
+            bounds={bounds}
+            boundsLoading={facets.loading}
+          />
+
+          {noMovements ? (
+            <p role="status" className="text-sm text-muted-foreground">
+              No movements found for the selected range.
+            </p>
+          ) : null}
 
           {error ? (
             <div
@@ -81,7 +88,7 @@ function App() {
               lang="es"
               className="rounded-lg border border-destructive/30 bg-destructive/10 p-4 text-sm text-destructive-foreground"
             >
-              {error}
+              No se pudo cargar la informacion financiera. Revisa la API de backend.
             </div>
           ) : null}
 
