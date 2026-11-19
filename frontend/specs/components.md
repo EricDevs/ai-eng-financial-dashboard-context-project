@@ -1,10 +1,10 @@
 # Especificacion de componentes
 
-**Version:** 1.5 | **Fecha:** 2026-11-18 | Cambios en el [Historial de versiones](#historial-de-versiones).
+**Version:** 1.8 | **Fecha:** 2026-11-19 | Cambios en el [Historial de versiones](#historial-de-versiones).
 
 Capa frontend de tres funcionalidades del dashboard financiero. Es una especificacion: no hay codigo React ni llamadas a la API. Tipos en [api-types.ts](api-types.ts) y [param-types.ts](param-types.ts); evidencia de la API en [verification.md](verification.md).
 
-Las versiones 1.1 a 1.3 no cambian el comportamiento de la 1.0: cierran decisiones que la 1.0 dejaba abiertas para poder implementar sin preguntas. La 1.4 **si cambia** un comportamiento de la 1.0, tras la prueba visual de F1: una fecha fuera del rango disponible pasa a ser un error de validacion (DEC-26). La 1.5 fija el aspecto de los errores de F2 y F3 (DEC-29). Cada una tiene un ID `DEC-xx` y se explica en [Decisiones de implementacion](#decisiones-de-implementacion); en el texto se marcan con la version que la introdujo, por ejemplo `(v1.1, DEC-xx)`.
+Las versiones 1.1 a 1.3 no cambian el comportamiento de la 1.0: cierran decisiones que la 1.0 dejaba abiertas para poder implementar sin preguntas. La 1.4 **si cambia** un comportamiento de la 1.0, tras la prueba visual de F1: una fecha fuera del rango disponible pasa a ser un error de validacion (DEC-26). La 1.5 fija el aspecto de los errores de F2 y F3 (DEC-29) y la 1.6 la disposicion de la tarjeta de alertas (DEC-30), revisada en la 1.7 (DEC-31); la 1.8 fija el color de la etiqueta del umbral (DEC-32) y corrige el caso `0,3`. Cada una tiene un ID `DEC-xx` y se explica en [Decisiones de implementacion](#decisiones-de-implementacion); en el texto se marcan con la version que la introdujo, por ejemplo `(v1.1, DEC-xx)`.
 
 ## Convenciones comunes
 
@@ -222,7 +222,7 @@ Se muestra en la pestana del dashboard principal, **debajo de los graficos exist
 | Componente | Archivo | Responsabilidad |
 | --- | --- | --- |
 | `AlertsTable` | `alerts-table.tsx` | `Card` con titulo `Anomaly Alerts` (v1.1, DEC-06), input de umbral y la tabla de cuatro columnas, o su estado de carga, vacio o error |
-| `ThresholdInput` | `threshold-input.tsx` | Input numerico del umbral con su ayuda y su mensaje de error; lo renderiza `AlertsTable` |
+| `ThresholdInput` | `threshold-input.tsx` | Input numerico del umbral con su etiqueta y su ayuda; lo renderiza `AlertsTable`, que coloca tambien su aviso de error (v1.7, DEC-31; antes lo renderizaba `ThresholdInput`) |
 | `App` (pagina) | `App.tsx` | Estado del umbral, peticion a la API, validacion y resultado vigente |
 
 ### Utilidades (en `@/lib/financial-utils.ts`)
@@ -276,7 +276,19 @@ Es una tabla HTML (`table`, `thead`, `tbody`); los mensajes de vacio y las filas
 
 ### `ThresholdInput`
 
-`<input type="number">` con `min=0.01`, `max=1`, `step=0.01`, etiqueta `Alert threshold` y ayuda `Ratio between 0.01 and 1.0 (default 0.3).` Valor inicial `'0.3'`. Los extremos 0.01 y 1.0 son validos. Un texto vacio o no numerico (el navegador entrega `''` para una entrada que no es un numero, por ejemplo `0,3`) es invalido.
+`<input type="number">` con `min=0.01`, `max=1`, `step=0.01`, etiqueta `Alert threshold` y ayuda `Ratio between 0.01 and 1.0 (default 0.3).` Valor inicial `'0.3'`. Los extremos 0.01 y 1.0 son validos. Un texto vacio o que el navegador no reconoce como numero (entonces entrega `''`) es invalido. Si `0,3` es un numero depende del idioma del navegador: con un idioma que usa coma decimal (por ejemplo, espanol) el navegador lo acepta y entrega `0.3`, que es valido; con otros entrega `''` (corregido en v1.8: la 1.0 decia que `0,3` siempre era invalido; la prueba visual de F2 mostro `0,28` aceptado como `0.28`).
+
+El umbral es el incremento minimo (ratio) que debe superar un periodo: se muestran los periodos con `increase_ratio > threshold`. Solo afecta a la tabla de alertas, no a los KPI ni a los graficos.
+
+### Presentacion de F2 (v1.6, DEC-30)
+
+| Elemento | Requisito |
+| --- | --- |
+| Disposicion de la tarjeta | (v1.7, DEC-31) Cabecera con el titulo y su linea de ayuda a la izquierda y la fila del umbral a la derecha, a la misma altura; debajo, a todo el ancho, el aviso de error del umbral si lo hay; despues la tabla (o su estado). En pantallas estrechas la fila del umbral pasa bajo el titulo. El aviso no va dentro del control: si lo hiciera, alargaria la cabecera y volveria el hueco entre el titulo y la tabla |
+| Fila del umbral | Etiqueta, input y ayuda en una sola linea (se apilan si no caben) |
+| Etiqueta `Alert threshold` | Color `muted-foreground`, distinto del titulo de la tarjeta (`foreground`), para que no compita con el (v1.8, DEC-32) |
+| Input | Alto 44 px y texto de 16 px, como los inputs de fecha de F1; fondo `secondary` (mas claro que la tarjeta) para distinguir el campo dentro de la tarjeta (v1.7, DEC-31); anillo de foco y borde rojo con `aria-invalid` |
+| Errores | Aviso rojo de DEC-29 |
 
 ### Renderizado condicional
 
@@ -286,7 +298,7 @@ Es una tabla HTML (`table`, `thead`, `tbody`); los mensajes de vacio y las filas
 | `error` | Cuerpo: `Could not load anomaly alerts.` con `role="alert"` (v1.2, DEC-18), como aviso rojo (v1.5, DEC-29); la tabla se oculta; el input sigue activo |
 | `alerts` con filas | Tabla de cuatro columnas |
 | **`alerts` vacio (`[]`)** | Titulo, input y cabecera de la tabla siguen visibles; el cuerpo muestra `No anomalies detected for the current threshold ({formatPercent(appliedThreshold * 100)}).` y debajo `Try a lower threshold or a wider date range.`, con `role="status"` (v1.2, DEC-18). La tabla **no desaparece** |
-| `parseThreshold(thresholdText)` es null | Bajo el input: `Enter a value between 0.01 and 1.0.` con `role="alert"`, como aviso rojo (v1.5, DEC-29), e `aria-invalid`; la tabla sigue mostrando el ultimo resultado valido |
+| `parseThreshold(thresholdText)` es null | Bajo la cabecera de la tarjeta, sobre la tabla (v1.7, DEC-31): `Enter a value between 0.01 and 1.0.` con `role="alert"`, como aviso rojo (v1.5, DEC-29); el input con `aria-invalid`; la tabla sigue mostrando el ultimo resultado valido |
 
 ### Comportamiento de la pagina
 
@@ -303,7 +315,7 @@ Es una tabla HTML (`table`, `thead`, `tbody`); los mensajes de vacio y las filas
 | Ningun periodo supera el umbral (con el dataset completo y `1.0` la API aun da una alerta, 2025-12 con ratio 1.4968; un `[]` aparece al acotar las fechas) | Estado vacio con el umbral aplicado y la sugerencia; titulo, input y cabecera permanecen |
 | Rango con un solo periodo o sin movimientos (la API da `[]`: el primer periodo nunca genera alerta) | El mismo estado vacio y la sugerencia de ampliar el rango |
 | Umbral fuera de rango (`0`, `5`, `-0.1`) | Error bajo el input, sin peticion, tabla con el ultimo resultado valido |
-| Input vacio o `0,3` | Se trata como invalido igual que el caso anterior |
+| Input vacio o texto que el navegador no reconoce como numero | Se trata como invalido igual que el caso anterior. `0,3` es invalido o vale `0.3` segun el idioma del navegador (v1.8) |
 | Umbral en un extremo (`0.01` o `1.0`) | Valido; se pide a la API |
 | Fallo de red o respuesta no 2xx | `Could not load anomaly alerts.` solo en la tarjeta de alertas |
 | Rango de fechas invertido | Sin peticion; la tabla conserva el ultimo resultado y el filtro muestra su error |
@@ -325,6 +337,7 @@ Es una tabla HTML (`table`, `thead`, `tbody`); los mensajes de vacio y las filas
 | AC-F2-11 | Si falla la peticion de alertas, entonces el sistema deberá mostrar `Could not load anomaly alerts.` solo en la tarjeta, sin activar el banner global ni vaciar los KPI |
 | AC-F2-12 | Si llegan respuestas fuera de orden, el sistema deberá mostrar solo la correspondiente al ultimo umbral y filtro |
 | AC-F2-13 | (v1.1, DEC-08) Cuando el usuario escribe un umbral valido mientras el rango de fechas es invalido, el sistema no deberá pedir datos; cuando el rango vuelva a ser valido, deberá pedir las alertas con ese umbral |
+| AC-F2-14 | (v1.6, DEC-30) El sistema deberá mostrar la tarjeta de alertas con la disposicion y el input de [Presentacion de F2](#presentacion-de-f2-v16-dec-30), sin espacio vacio entre el titulo y la tabla; se comprueba en la prueba visual, no en tests |
 
 ### Restricciones negativas de F2
 
@@ -518,7 +531,7 @@ Valen para las tres funcionalidades. Los invariantes son condiciones que nunca d
 
 ## Decisiones de implementacion
 
-Puntos que la version 1.0 no fijaba y que habia que decidir para implementar y escribir tests con valores exactos. Salieron de la revision de los planes de implementacion del 2026-11-18 y el usuario las acepto: DEC-01 a DEC-14 en la v1.1, DEC-15 a DEC-23 en la v1.2 (tras regenerar los planes sobre la v1.1) y DEC-24 en la v1.3 (tras regenerarlos sobre la v1.2). DEC-25 a DEC-28 salen de la prueba visual y de funcionamiento de F1 hecha por el usuario (v1.4). DEC-29 sale de adaptar los planes de F2 y F3 a la v1.4 (hueco H-11) y la decidio el usuario (v1.5). Los IDs no se renumeran ni se reutilizan; una decision retirada se marca como obsoleta.
+Puntos que la version 1.0 no fijaba y que habia que decidir para implementar y escribir tests con valores exactos. Salieron de la revision de los planes de implementacion del 2026-11-18 y el usuario las acepto: DEC-01 a DEC-14 en la v1.1, DEC-15 a DEC-23 en la v1.2 (tras regenerar los planes sobre la v1.1) y DEC-24 en la v1.3 (tras regenerarlos sobre la v1.2). DEC-25 a DEC-28 salen de la prueba visual y de funcionamiento de F1 hecha por el usuario (v1.4). DEC-29 sale de adaptar los planes de F2 y F3 a la v1.4 (hueco H-11) y la decidio el usuario (v1.5). DEC-30 a DEC-32 salen de las pruebas visuales de F2 (v1.6 a v1.8). Los IDs no se renumeran ni se reutilizan; una decision retirada se marca como obsoleta.
 
 | ID | Decision | Motivo | Alternativa descartada |
 | --- | --- | --- | --- |
@@ -551,6 +564,9 @@ Puntos que la version 1.0 no fijaba y que habia que decidir para implementar y e
 | DEC-27 | `Available data` en una linea bajo los inputs; inputs y etiquetas mas grandes (alto 44 px, texto 16 px) | Prueba del usuario: el filtro se veia pequeno y la referencia a la derecha se perdia | — |
 | DEC-28 | Errores de validacion como aviso rojo (borde y fondo rojos translucidos, texto rojo claro, icono). `Clear dates` con borde y fondo del color primario y texto claro | Prueba del usuario: el error se veia en blanco (`--destructive-foreground` es casi blanco en el tema oscuro) y el boton, negro con texto gris, se distinguia poco. `--destructive` es demasiado oscuro para texto sobre el fondo oscuro, por eso el texto usa un rojo claro | Usar `--destructive` como color de texto (contraste insuficiente) |
 | DEC-29 | Los errores de F2 y F3 (umbral invalido, error de carga de alertas, de un grupo y del grafico comparativo) usan el mismo aviso rojo que F1 | DEC-28 solo cubria los errores de fechas; con `text-destructive-foreground` los de F2 y F3 se verian casi blancos, como paso en F1. Un unico estilo de error en toda la vista | Un estilo propio por tarjeta |
+| DEC-30 | ~~Tarjeta de alertas en una columna: titulo, fila del umbral (etiqueta, input y ayuda en linea), aviso y tabla~~ (disposicion obsoleta desde v1.7, la sustituye DEC-31). Sigue vigente: input del umbral con el tamano de los inputs de fecha de F1 | Prueba visual de F2: con el control en una columna lateral de la cabecera, su altura (etiqueta, input, ayuda y aviso) dejaba un hueco vacio entre el titulo y la tabla. El tamano del input no estaba fijado; se igualo al de F1 y el usuario lo vio en la prueba | Mantener la columna lateral y reducir la ayuda a un tooltip |
+| DEC-31 | Fila del umbral (etiqueta, input y ayuda) a la derecha del titulo, a la misma altura; el aviso de error del umbral sale del control y lo coloca `AlertsTable` a todo el ancho bajo la cabecera; campo del input con fondo `secondary` | Segunda prueba visual de F2: el usuario prefiere el control a la derecha del titulo, y el campo con fondo `card` no se distinguia de la tarjeta. Lo que provocaba el hueco era el aviso dentro de la columna del control, no la columna en si | La disposicion en una columna de DEC-30 |
+| DEC-32 | Etiqueta `Alert threshold` en `muted-foreground` | Tercera prueba visual de F2: en blanco competia con el titulo de la tarjeta. `muted-foreground` es el color de los textos secundarios del proyecto, ya revisado en contraste en el proyecto 4 | El color primario (azul), con menos margen de contraste sobre la tarjeta |
 
 ## Historial de versiones
 
@@ -562,3 +578,6 @@ Puntos que la version 1.0 no fijaba y que habia que decidir para implementar y e
 | 1.3 | 2026-11-18 | Decision DEC-24 (foco tras `Clear dates`), encontrada al regenerar los planes sobre la 1.2; criterio AC-F1-16. Sin cambios en el comportamiento de la 1.0 ni en los tipos |
 | 1.4 | 2026-11-18 | Tras la prueba visual de F1: DEC-25 a DEC-28; `getDateRangeIssue` y regla unica de peticion; criterios AC-F1-17 a AC-F1-20 (AC-F1-02 y AC-F1-05 ajustados); seccion de presentacion de F1; INV-7; prop `bounds` en `ComparisonPage`. **Cambia un comportamiento de la 1.0**: una fecha fuera del rango de `facets` pasa a ser error de validacion (DEC-26). Tipos de la API sin cambios |
 | 1.5 | 2026-11-18 | DEC-29: aspecto unico de los errores de F2 y F3 (el aviso rojo de F1), decidido por el usuario al adaptar los planes de F2 y F3 (hueco H-11). Sin cambios de comportamiento ni de tipos |
+| 1.6 | 2026-11-18 | Tras la prueba visual de F2: DEC-30 (disposicion de la tarjeta de alertas y tamano del input del umbral), criterio AC-F2-14 y aclaracion de que el umbral solo afecta a la tabla de alertas. Sin cambios de comportamiento ni de tipos |
+| 1.7 | 2026-11-19 | Tras la segunda prueba visual de F2: DEC-31 (control del umbral a la derecha del titulo, aviso a todo el ancho colocado por `AlertsTable`, campo con fondo `secondary`); la disposicion de DEC-30 queda obsoleta. Sin cambios de comportamiento ni de tipos |
+| 1.8 | 2026-11-19 | Tras la tercera prueba visual de F2: DEC-32 (color de la etiqueta del umbral) y correccion del caso `0,3`, que depende del idioma del navegador. Sin cambios de comportamiento ni de tipos |
