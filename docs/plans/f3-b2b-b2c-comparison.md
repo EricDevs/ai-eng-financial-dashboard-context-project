@@ -1,6 +1,6 @@
 # F3 - Vista comparativa B2B vs B2C: plan de implementacion
 
-**Version:** 5.3 | **Fecha:** 2026-11-19 | **Estado:** version de entrega, sin codigo; iteracion 1 en curso (fase 8) | **Spec:** v1.8
+**Version:** 5.4 | **Fecha:** 2026-11-19 | **Estado:** version de entrega, sin codigo | **Spec:** v1.9
 
 **Como ejecutar:** tarea por tarea y en orden; marcar cada paso (`- [ ]`) al completarlo. No empezar una tarea sin que la anterior tenga sus tests en verde. Cada test se ve fallar antes de implementar.
 
@@ -46,7 +46,8 @@
 
 ## Decisiones propias del plan (implementacion, no producto)
 
-- jsdom no da tamano a `ResponsiveContainer`, asi que las barras no se dibujan en los tests: se prueban estados y textos; las barras, los colores y la barra de `$0` se observan en el navegador (Tarea 7).
+- jsdom no da tamano a `ResponsiveContainer`, asi que las barras no se dibujan en los tests: se prueban estados y textos; las barras, los colores y las etiquetas de importe (con el `$0` del grupo vacio, DEC-38) se observan en el navegador (Tarea 7).
+- Color de cada barra con la prop `shape` de `Bar`, que recibe `index` y devuelve un `Rectangle` con el color de `totals[index].business_type`. `Cell` esta obsoleto en Recharts 3.8 y se retirara en la 4.0 (la iteracion 1 lo uso hasta el cambio de la spec 1.9).
 - Fixture B2B verificada (verification.md): `sales` 557903.97 y `others` 57636.75; suma 615540.72 -> `Sales`, `$557,904`, `90.6%`; `Others`, `$57,637`, `9.4%`.
 - El fallback de `Suspense` (DEC-23) reutiliza `GroupTopTable` con `loading` y el `ChartFallback` existente de `App`.
 - La ruta de cada grupo se calcula con una funcion local de `comparison-page.tsx` (`topPath(filter, bounds, businessType)`).
@@ -130,13 +131,14 @@
 
 **Archivos:** crear `src/components/dashboard/group-comparison-chart.tsx`; test `group-comparison-chart.test.tsx` (jsdom).
 
-**Interfaces (produce):** `GroupComparisonChart(props: GroupComparisonChartProps)`. Carga: el mismo marcado de carga que los graficos existentes (DEC-17). Si no: `Card` con titulo `Income: B2B vs B2C` y, segun la precedencia, error `Could not load the comparison.` con `ErrorNotice` (DEC-29), vacio `No income to compare in the selected range.` (`role="status"`) si ambos totales son 0, o un `BarChart` de Recharts (DEC-20): `XAxis dataKey="business_type"`, `Bar dataKey="total_income" name="Income"`, color por barra con `Cell` (B2B `var(--chart-1)`, B2C `var(--chart-5)`), eje Y y tooltip con `formatCurrency`, `title="Income: B2B vs B2C"` y `desc="Total income of B2B and B2C in the selected range."`.
+**Interfaces (produce):** `GroupComparisonChart(props: GroupComparisonChartProps)`. Carga: el mismo marcado de carga que los graficos existentes (DEC-17). Si no: `Card` con titulo `Income: B2B vs B2C` y la descripcion visible `Total income of B2B and B2C in the selected range.` (`CardDescription`, DEC-39) y, segun la precedencia, error `Could not load the comparison.` con `ErrorNotice` (DEC-29) centrado en el area de 280 px, vacio `No income to compare in the selected range.` (`role="status"`) si ambos totales son 0, o un `BarChart` de Recharts de 280 px (DEC-20): `XAxis dataKey="business_type"`, `Bar dataKey="total_income" name="Income"`, color por barra con `shape` (B2B `var(--chart-1)`, B2C `var(--chart-5)`; ver decisiones propias), `LabelList` encima de cada barra con `formatCurrency` (DEC-38), eje Y y tooltip con `formatCurrency`, sin leyenda, `title="Income: B2B vs B2C"` y `desc="Total income of B2B and B2C in the selected range."`.
 
 - [ ] **Paso 1: tests que fallan**
 
 | Test | Escenario | Esperado |
 | --- | --- | --- |
 | `shows the title and no empty message when a group has income` (AC-F3-09/10) | B2B 615540.72, B2C 0 | titulo visible; sin vacio ni error |
+| `shows the description under the title` (DEC-39) | B2B 615540.72, B2C 0; despues ambos 0 y `error` | `Total income of B2B and B2C in the selected range.` visible en los tres estados |
 | `shows the empty message when both totals are zero` (AC-F3-11) | ambos 0 | `role="status"` con el texto |
 | `shows a skeleton while loading` (AC-F3-12) | `loading` | `[data-slot="skeleton"]` |
 | `shows the comparison error` (AC-F3-13) | `error` | `role="alert"` con el texto |
@@ -204,7 +206,7 @@ Procedimiento del repositorio para verificar cambios del frontend: [.skills/veri
 
 - [ ] **Paso 1:** lint, tests y build -> sin errores; tamanos de chunk frente a la linea base.
 - [ ] **Paso 2: los tests detectan la rotura:** quitar `operation_type: "income"` de la ruta -> falla `requests income top categories for each group`; quitar la condicion de vista en `App` -> falla `does not request dashboard data while comparing`; pedir sin la regla unica -> falla `shows empty states without requests…`. Restaurar tras cada una.
-- [ ] **Paso 3: app en ejecucion** (usuario; confirmar con `curl` que Vite sirve `comparison-page.tsx`): comparar con `curl "http://localhost:8000/api/metrics/categories/top?operation_type=income&limit=5&business_type=B2B"` y B2C; porcentajes que suman ~100 %; dos barras con sus colores y tooltip; un rango sin datos -> ambos vacios; un grupo vacio y el otro no (barra `$0`, AC-F3-10), o dejarlo como no verificado; cambio de pestana sin salto de altura (DEC-23); errores con el mismo aviso rojo que el filtro de fechas (DEC-29).
+- [ ] **Paso 3: app en ejecucion** (usuario; confirmar con `curl` que Vite sirve `comparison-page.tsx`): comparar con `curl "http://localhost:8000/api/metrics/categories/top?operation_type=income&limit=5&business_type=B2B"` y B2C; porcentajes que suman ~100 %; dos barras con sus colores, su importe encima (DEC-38) y tooltip; descripcion visible y sin salto de altura al terminar de cargar (DEC-39); un rango sin datos -> ambos vacios; un grupo vacio y el otro no (barra `$0`, AC-F3-10), o dejarlo como no verificado; cambio de pestana sin salto de altura (DEC-23); errores con el mismo aviso rojo que el filtro de fechas (DEC-29).
 - [ ] **Paso 4:** pasar a la spec las decisiones de la prueba visual; registrar evidencia; actualizar memory-bank; `git diff --check`.
 - [ ] **Paso 5: commit** `docs(f3): record verification evidence`.
 
@@ -221,3 +223,4 @@ Procedimiento del repositorio para verificar cambios del frontend: [.skills/veri
 | 5.1 | 2026-11-18 | Spec 1.5: H-11 pasa a DEC-29 (decision del usuario); los errores usan `ErrorNotice`, extraido en el plan F2 |
 | 5.2 | 2026-11-19 | Revisado contra la spec 1.8 antes de ejecutarlo: sin cambios de comportamiento (DEC-30 a DEC-32 son de F2); `LAZY_CHARTS` para las esperas de la vista comparativa en `App.test.tsx` |
 | 5.3 | 2026-11-19 | Tras ejecutar la iteracion 1: dos notas de los tests (un `Response` por `fetch` simulado; cambiar el filtro tras el primer render). Prueba visual aprobada sin hallazgos: la spec sigue en 1.8 |
+| 5.4 | 2026-11-19 | Spec 1.9, tras la planificacion de la prueba de traspaso: etiqueta de importe en cada barra (DEC-38), descripcion visible (DEC-39) y su test; color por barra con `shape` en lugar de `Cell`, obsoleto en Recharts 3.8. Iteracion 1 cerrada (fase 8, PR #21) |
