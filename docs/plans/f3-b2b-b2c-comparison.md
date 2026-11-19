@@ -1,6 +1,6 @@
 # F3 - Vista comparativa B2B vs B2C: plan de implementacion
 
-**Version:** 5.4 | **Fecha:** 2026-11-19 | **Estado:** version de entrega, sin codigo | **Spec:** v1.9
+**Version:** 5.5 | **Fecha:** 2026-11-19 | **Estado:** version de entrega, sin codigo | **Spec:** v1.10
 
 **Como ejecutar:** tarea por tarea y en orden; marcar cada paso (`- [ ]`) al completarlo. No empezar una tarea sin que la anterior tenga sus tests en verde. Cada test se ve fallar antes de implementar.
 
@@ -131,7 +131,7 @@
 
 **Archivos:** crear `src/components/dashboard/group-comparison-chart.tsx`; test `group-comparison-chart.test.tsx` (jsdom).
 
-**Interfaces (produce):** `GroupComparisonChart(props: GroupComparisonChartProps)`. Carga: el mismo marcado de carga que los graficos existentes (DEC-17). Si no: `Card` con titulo `Income: B2B vs B2C` y la descripcion visible `Total income of B2B and B2C in the selected range.` (`CardDescription`, DEC-39) y, segun la precedencia, error `Could not load the comparison.` con `ErrorNotice` (DEC-29) centrado en el area de 280 px, vacio `No income to compare in the selected range.` (`role="status"`) si ambos totales son 0, o un `BarChart` de Recharts de 280 px (DEC-20): `XAxis dataKey="business_type"`, `Bar dataKey="total_income" name="Income"`, color por barra con `shape` (B2B `var(--chart-1)`, B2C `var(--chart-5)`; ver decisiones propias), `LabelList` encima de cada barra con `formatCurrency` (DEC-38), eje Y y tooltip con `formatCurrency`, sin leyenda, `title="Income: B2B vs B2C"` y `desc="Total income of B2B and B2C in the selected range."`.
+**Interfaces (produce):** `GroupComparisonChart(props: GroupComparisonChartProps)`. Carga: el mismo marcado de carga que los graficos existentes (DEC-17). Si no: `Card` con titulo `Income: B2B vs B2C` y la descripcion visible `Total income of B2B and B2C in the selected range.` (`CardDescription`, DEC-39) y, segun la precedencia, error `Could not load the comparison.` con `ErrorNotice` (DEC-29) centrado en el area de 280 px, vacio `No income to compare in the selected range.` (`role="status"`) si ambos totales son 0, centrado en el area de 280 px en `text-sm` `muted-foreground`, como los graficos existentes (DEC-43), o un `BarChart` de Recharts de 280 px (DEC-20): `XAxis dataKey="business_type"`, `Bar dataKey="total_income" name="Income"`, color por barra con `shape` (B2B `var(--chart-1)`, B2C `var(--chart-5)`; ver decisiones propias), `LabelList` encima de cada barra con `formatCurrency` (DEC-38), eje Y y tooltip con `formatCurrency`, sin leyenda, `title="Income: B2B vs B2C"` y `desc="Total income of B2B and B2C in the selected range."`.
 
 - [ ] **Paso 1: tests que fallan**
 
@@ -192,6 +192,7 @@ Los tests existentes no cambian (las pestanas y el panel no anaden `section` ni 
 | `returns to the dashboard with the same filter` (AC-F3-03, AC-F3-15) | volver a `Dashboard` | el input conserva el valor; nuevas llamadas `/api/metrics?start_date=2026-01-01` y `/api/metrics/alerts?threshold=0.3&start_date=2026-01-01` |
 | `hides the movements banner and empty notice in the comparison view` (AC-F3-17) | movimientos 500; despues `[]` | banner y aviso en `Dashboard`, no en `B2B vs B2C` |
 | `ignores comparison responses after leaving the tab` | `top` pendiente, volver a `Dashboard`, resolver | sin titulos de grupo; `console.error` sin llamadas |
+| `shows empty states when reopening the comparison with a filter that cannot be requested` (DEC-42) | abrir la comparativa con datos; volver a `Dashboard`; inicio `2026-02-01` y fin `2026-01-01`; reabrir la comparativa | los dos vacios de grupo y el del grafico; sin llamadas nuevas a `top` |
 
 - [ ] **Paso 2:** `npm --prefix frontend test -- src/App.test.tsx` -> FAIL en los nuevos.
 - [ ] **Paso 3: implementar.**
@@ -224,3 +225,4 @@ Procedimiento del repositorio para verificar cambios del frontend: [.skills/veri
 | 5.2 | 2026-11-19 | Revisado contra la spec 1.8 antes de ejecutarlo: sin cambios de comportamiento (DEC-30 a DEC-32 son de F2); `LAZY_CHARTS` para las esperas de la vista comparativa en `App.test.tsx` |
 | 5.3 | 2026-11-19 | Tras ejecutar la iteracion 1: dos notas de los tests (un `Response` por `fetch` simulado; cambiar el filtro tras el primer render). Prueba visual aprobada sin hallazgos: la spec sigue en 1.8 |
 | 5.4 | 2026-11-19 | Spec 1.9, tras la planificacion de la prueba de traspaso: etiqueta de importe en cada barra (DEC-38), descripcion visible (DEC-39) y su test; color por barra con `shape` en lugar de `Cell`, obsoleto en Recharts 3.8. Iteracion 1 cerrada (fase 8, PR #21) |
+| 5.5 | 2026-11-19 | Spec 1.10: test de reabrir la vista comparativa con un filtro que no se puede pedir (DEC-42) y aspecto del vacio del grafico (DEC-43) |
