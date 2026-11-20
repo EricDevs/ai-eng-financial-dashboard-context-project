@@ -311,3 +311,12 @@ Mutacion 5, salida del build con la rotura (`npx vite build --outDir ../.f3-muta
 - En jsdom el grafico no pinta barras, etiquetas ni tooltip (`ResponsiveContainer` mide 0 px): colores, etiquetas `$0` (DEC-38) y tooltip quedan para la prueba visual.
 - El aspecto de las pestanas, el foco con teclado, las dos columnas desde 1280 px y la ausencia de salto de altura (DEC-23, DEC-39, DEC-40) no los cubren los tests.
 - No se probo con un lector de pantalla real, ni con zoom, ni en navegadores distintos del de la prueba visual.
+
+### Q-27 y cierre de F3 (2026-11-20)
+
+- Respuesta del mantenedor a Q-27: opcion (a). Criterio de la mutacion 5: el chunk principal importa estaticamente el chunk de Recharts y `index.html` lo precarga.
+- Resultado con ese criterio, sobre el build de la mutacion 5 ya registrado arriba: **la rotura se detecta**.
+  - Con la rotura, el chunk principal `index-FPnML3Na.js` importa `./CartesianChart-DFHFg6at.js` (372.33 kB, Recharts) y `index.html` tiene `modulepreload` de `/assets/CartesianChart-DFHFg6at.js`.
+  - Sin la rotura (build limpio de esta tarea), el chunk principal solo importa `./skeleton-BFenJ-y5.js` y `./use-api-resource-BQ_VJ9fS.js`, y `index.html` solo precarga esos dos.
+  - Comprobacion usada en los dos builds: `grep -oE '(src|href)="[^"]+"' dist/index.html` y los `from"./..."` de los primeros 600 bytes del chunk principal.
+- Prueba visual de F3: aprobada por el mantenedor.

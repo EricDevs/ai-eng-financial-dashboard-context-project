@@ -141,7 +141,7 @@ En la etapa 1 eran propuestas por defecto para la prueba visual. La v1.9 los cie
 
 ## Dudas de la spec v1.9
 
-Las tres las cierra la v1.10 (DEC-41 a DEC-43). Al releer la v1.10 no aparecio ninguna duda nueva, asi que no hay Q-25.
+Las tres las cierra la v1.10 (DEC-41 a DEC-43). Al releer la v1.10 no aparecio ninguna duda nueva de la spec; Q-25 a Q-27 salen de la implementacion (etapa 2).
 
 ### Q-22. Volver a la misma ruta cuando el ultimo resultado fue un error
 
@@ -208,7 +208,7 @@ Las tres las cierra la v1.10 (DEC-41 a DEC-43). Al releer la v1.10 no aparecio n
   - (b) Anadir un test que lo compruebe automaticamente (por ejemplo, que `App.tsx` no importe `group-comparison-chart` ni `recharts`). Anade un test que la spec no pide.
   - (c) Dar la mutacion 5 por no verificable con el criterio del plan y dejarlo anotado.
 - **Propuesta:** (a). Mide la consecuencia que DEC-13 quiere evitar (Recharts en la carga inicial) con el mismo build, y el resultado de la mutacion ya esta en el Registro de ejecucion de F3.
-- **Estado:** pendiente.
+- **Estado:** sigue abierta en la spec, que no trata el criterio de esa mutacion. **Respuesta del mantenedor (2026-11-20):** opcion (a).
 
 ## Observaciones (no requieren respuesta)
 
