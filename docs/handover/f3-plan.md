@@ -211,3 +211,103 @@ Sigue [verify-frontend-change](../../.skills/verify-frontend-change/SKILL.md).
 ## Registro de ejecucion
 
 Se rellena en la etapa 2 (Q-12): por tarea, cada comando con su resultado (tests, lint y build, con el tamano del chunk principal y del chunk de `comparison-page`), cada mutacion con el cambio, el test que fallo y la restauracion (Q-11), la comprobacion de que Vite sirve el codigo nuevo y los limites encontrados.
+
+Reglas leidas antes de editar: WF, FIN (porcentajes y totales de grupo), API (consumo de `categories/top`), CAL (solo se reutiliza `getDateRangeIssue`, sin tocar fechas) y FE. DX no aplica (sin cambios de configuracion). Base de F3: commit `efa1456` (ultimo de F2), con 65 tests en 6 archivos y lint limpio. Todas las comparaciones de esta fase son contra ese commit.
+
+### Tarea 1 (2026-11-20)
+
+- Rojo: `npm --prefix frontend test -- src/lib/financial-utils.test.ts` -> 3 fallidos, 11 pasados: `toGroupRows is not a function`, `sumTotals is not a function` y `formatCategoryLabel is not a function`.
+- Verde: mismo comando -> 14 pasados. Lint y `npx tsc -b` sin errores.
+
+### Tarea 2 (2026-11-20)
+
+- Rojo: `npm --prefix frontend test -- src/components/dashboard/view-tabs.test.tsx` -> `Failed to resolve import "./view-tabs"`, porque el componente aun no existe.
+- Verde: mismo comando -> 2 pasados. ESLint de los dos archivos y `npx tsc -b` sin errores.
+
+### Tarea 3 (2026-11-20)
+
+- Rojo: `npm --prefix frontend test -- src/components/dashboard/group-top-table.test.tsx` -> `Failed to resolve import "./group-top-table"`, porque el componente aun no existe.
+- El aviso rojo de DEC-29 pasa de la funcion local de `alerts-table.tsx` a `error-notice.tsx` (`ErrorNotice`), para usarlo tambien en `GroupTopTable` y en el grafico. El marcado no cambia. `DateRangePicker` conserva su propio marcado (F1, sin tocar).
+- Verde: `npm --prefix frontend test -- src/components/dashboard/group-top-table.test.tsx src/components/dashboard/alerts-table.test.tsx` -> 13 pasados (5 nuevos y los 8 de `AlertsTable`, que siguen pasando tras mover `ErrorNotice`). ESLint de `src/components/dashboard/` y `npx tsc -b` sin errores.
+
+### Tarea 4 (2026-11-20)
+
+- Rojo: `npm --prefix frontend test -- src/components/dashboard/group-comparison-chart.test.tsx` -> `Failed to resolve import "./group-comparison-chart"`, porque el componente aun no existe.
+- Color por barra con `shape={(props: BarShapeProps) => <Rectangle {...props} fill=... />}` (tipos de `recharts` 3.8.1: `BarShapeProps` trae `index`); `Cell` esta marcado como obsoleto en esa version.
+- Verde: mismo comando -> 5 pasados. ESLint de `src/components/dashboard/` y `npx tsc -b` sin errores. En jsdom el grafico no pinta barras (`ResponsiveContainer` mide 0 px): etiquetas, colores y tooltip quedan para la prueba visual.
+
+### Tarea 5 (2026-11-20)
+
+- Montaje de los tests: `routeFetch` pasa la URL al handler (`type Handler = (url: string) => Promise<Response>`), para que `top` responda segun `business_type`; los handlers existentes ignoran el argumento. Fixtures de `top` tomados de verification.md (B2B 557903.97 y 57636.75; B2C 574193.41 y 68412.74).
+- Las esperas que incluyen la primera carga del chunk diferido de `ComparisonPage` (con Recharts) usan `{ timeout: 3000 }`, por la misma causa demostrada en Q-26 de F2.
+- Rojo: `npm --prefix frontend test -- src/App.test.tsx` -> 13 fallidos (los nuevos) y 22 pasados (los existentes). Motivo: `B2B vs B2C tab not found` (12) y `Dashboard tab not found` (1), porque aun no hay pestanas.
+- Verde: mismo comando -> 35 pasados. Suite completa `npm --prefix frontend test` -> 9 archivos, 93 pasados (65 de F2 + 3 + 2 + 5 + 5 + 13 de F3). Lint y `npx tsc -b` sin errores.
+- Q-10: ninguna expectativa existente cambia. La lista de `h2` y las `section` con `aria-busy` del dashboard siguen igual, porque `ViewTabs` no tiene `h2` y la vista comparativa no se monta en esos tests.
+
+### Tarea 6: verificacion (2026-11-20)
+
+**Cambio presente.** `git diff --stat efa1456 -- frontend/` (ultimo commit de F2 en esta rama) muestra 14 archivos de `frontend/src` (911 inserciones, 75 borrados): los 9 nuevos de F3 (`view-tabs`, `group-top-table`, `group-comparison-chart` y sus tests, `comparison-page.tsx` y `error-notice.tsx`), `App.tsx`, `App.test.tsx`, `alerts-table.tsx` (solo usa `ErrorNotice`), `financial-types.ts`, `financial-utils.ts` y su test. Commits `09af430`, `0cac710`, `94fa240`, `3148311` y `da069ec`.
+
+**Comandos:**
+
+| Comando | Resultado |
+| --- | --- |
+| `npm --prefix frontend run lint` | Sin errores ni avisos |
+| `npm --prefix frontend test` | 9 archivos, 93 tests pasados (F2: 6 archivos, 65) |
+| `npm --prefix frontend run build` | Exit 0, sin avisos; chunk propio `comparison-page-*.js` |
+
+Tamanos del build frente a F2:
+
+| Chunk | F2 | F3 | Diferencia |
+| --- | --- | --- | --- |
+| Principal `index-*.js` | 194.44 kB (gzip 61.74 kB) | 193.90 kB (gzip 61.33 kB) | -0.54 kB: `ViewTabs` y el fallback entran, pero `use-api-resource` pasa a un chunk compartido |
+| `comparison-page-*.js` | - | 20.61 kB (gzip 7.21 kB) | Nuevo: pagina, tablas y grafico de F3 |
+| `use-api-resource-*.js` | - | 3.82 kB | Nuevo chunk compartido entre el principal y `comparison-page` |
+| Compartido `skeleton-*.js` | 40.99 kB | 41.29 kB | +0.30 kB |
+| Recharts | `LineChart-*.js` 342.29 kB | `CartesianChart-*.js` 330.74 kB + `LineChart-*.js` 14.59 kB | Vite separa la parte comun a lineas y barras |
+| Graficos de lineas | 9.86 y 6.69 kB | 9.93 y 6.74 kB | Sin cambio relevante |
+
+El `index.html` del build limpio solo precarga `skeleton-*.js` y `use-api-resource-*.js`, y el chunk principal solo importa esos dos: Recharts no se carga al abrir la pagina.
+
+**Mutaciones (Q-11).** Script en el scratchpad: aplica cada rotura (una o varias sustituciones), ejecuta `npx vitest run` completo (o el build en la 5) y restaura con `git checkout -- <archivo>` en un `finally`. Al final `git status --short src` quedo vacio y se borro el directorio del build de la mutacion.
+
+| # | Rotura | Que fallo |
+| --- | --- | --- |
+| 1 | Sin `operation_type: 'income'` en `topPath` | `requests both groups when the view opens` y `sends the shared filter to both groups` |
+| 2 | Ruta de movimientos solo con `dateIssue === null` (se pide tambien en la comparativa) | `does not request dashboard data while comparing` |
+| 3 | El grafico muestra el error mientras carga (`if (loading && !error)`) | `GroupComparisonChart > prefers loading over error` |
+| 4 | Filas rellenadas hasta 5 en `GroupTopTable` | `GroupTopTable > renders title, description and rows` |
+| 5 | `GroupComparisonChart` importado en `App` (en el fallback) sin `lazy` | El build **no** avisa: ver abajo y [Q-27](decisions.md#q-27-como-comprobar-la-mutacion-5-sin-el-aviso-de-500-kb) |
+| 6 | `ComparisonPage` solo bloquea `inverted` (`!== 'inverted'`) | `opens with an out-of-bounds date` |
+
+Mutacion 5, salida del build con la rotura (`npx vite build --outDir ../.f3-mutation-dist`):
+
+- Exit 0, sin aviso de chunk mayor de 500 kB. El chunk principal mide 193.92 kB (como sin la rotura) y `comparison-page-*.js` baja a 1.05 kB.
+- **Lo que si cambia:** el chunk principal importa estaticamente `CartesianChart-*.js` (372.33 kB, Recharts mas el grafico de barras) y `index.html` lo precarga con `modulepreload`. Recharts vuelve a descargarse al abrir la pagina, que es lo que DEC-13 quiere evitar, pero repartido en un chunk aparte que no supera 500 kB.
+- Causa: con la division de chunks actual (Vite 8.0.8), Recharts va a un chunk compartido en lugar de al principal, asi que el aviso de 500 kB que menciona DEC-13 ya no aparece. El plan espera ese aviso como prueba; anotado como Q-27, sin decidir el criterio.
+
+**App en Docker:**
+
+- `docker compose ps`: `backend` y `frontend` arriba.
+- Primera comprobacion: `curl -s http://localhost:5173/src/App.tsx | grep -c ComparisonPage` -> 0. Tambien 0 para `error-notice` en `alerts-table.tsx` y `toGroupRows` en `financial-utils.ts`; los archivos nuevos (`comparison-page.tsx`) si se servian.
+  - **Causa demostrada:** `docker compose exec -T frontend grep -c ComparisonPage src/App.tsx` -> 3. El contenedor tiene el archivo nuevo y Vite servia la version anterior de los modulos modificados, la misma trampa que en F1 y F2.
+  - `docker compose restart frontend` -> `ComparisonPage` 6, `error-notice` 1, `toGroupRows` 1. `AppView` en `financial-types.ts` da 0 tambien despues: es un tipo y no llega al JS servido.
+- Proxy: `curl -s 'http://localhost:5173/api/metrics/categories/top?operation_type=income&limit=5&business_type=B2B'` -> `sales` 557903.97 y `others` 57636.75.
+
+**Valores esperados para la prueba visual.** Pedidos al backend (`http://localhost:8000/api/metrics/categories/top?operation_type=income&limit=5&business_type=...`) y formateados en Node con `Intl.NumberFormat` (USD, 0 decimales) y `toFixed(1)`, como la app. Los dias con ingresos de un solo grupo salen de `GET /api/metrics`. Dependen de la fecha de hoy.
+
+| Filtro | B2B | B2C | Grafico |
+| --- | --- | --- | --- |
+| Sin filtro | `Sales` $557,904 90.6%; `Others` $57,637 9.4% | `Sales` $574,193 89.4%; `Others` $68,413 10.6% | $615,541 y $642,606 |
+| `2026-01-01` a `2026-01-31` | `Sales` $30,201 79.1%; `Others` $7,968 20.9% | `Sales` $54,070 87.8%; `Others` $7,508 12.2% | $38,169 y $61,578 |
+| `2025-11-01` a `2025-11-01` | `No income in the selected range for B2B.` | `Sales` $5,466 100.0% | barra B2B con `$0` y B2C $5,466 |
+| `2025-11-02` a `2025-11-02` | `Sales` $5,260 100.0% | `No income in the selected range for B2C.` | B2B $5,260 y barra B2C con `$0` |
+| `2025-11-05` a `2025-11-05` | vacio | vacio | `No income to compare in the selected range.` |
+
+**Revision final:** autorrevision del diff `efa1456..HEAD` en `frontend/src`. No se lanzo un revisor independiente porque en esta sesion solo se lanzan agentes si el mantenedor lo pide. Sin hallazgos que corregir.
+
+**Limites:**
+
+- En jsdom el grafico no pinta barras, etiquetas ni tooltip (`ResponsiveContainer` mide 0 px): colores, etiquetas `$0` (DEC-38) y tooltip quedan para la prueba visual.
+- El aspecto de las pestanas, el foco con teclado, las dos columnas desde 1280 px y la ausencia de salto de altura (DEC-23, DEC-39, DEC-40) no los cubren los tests.
+- No se probo con un lector de pantalla real, ni con zoom, ni en navegadores distintos del de la prueba visual.

@@ -199,6 +199,17 @@ Las tres las cierra la v1.10 (DEC-41 a DEC-43). Al releer la v1.10 no aparecio n
 - **Propuesta:** (a). Es el cambio mas pequeno, ataca la causa (el limite de espera de un chunk diferido) y no cambia lo que comprueba el test.
 - **Estado:** sigue abierta en la spec, que no trata los tests existentes. **Respuesta del mantenedor (2026-11-20):** opcion (a).
 
+### Q-27. Como comprobar la mutacion 5 sin el aviso de 500 kB
+
+- **Seccion:** [F3, Tarea 6](f3-plan.md#tarea-6-verificacion-2026-11-20), mutacion 5 ("el build vuelve a avisar del chunk"), y DEC-13 ("importarlo directamente lo devuelve al chunk principal y reaparece el aviso de chunk > 500 kB").
+- **Duda:** con la rotura (importar `GroupComparisonChart` en `App` sin `lazy`), el build no avisa. Vite 8.0.8 deja Recharts en un chunk compartido (`CartesianChart-*.js`, 372 kB) que el principal importa estaticamente y `index.html` precarga; ningun chunk pasa de 500 kB. La rotura existe (Recharts se descarga al abrir la pagina), pero el criterio del plan no la detecta.
+- **Opciones:**
+  - (a) Cambiar el criterio de la mutacion 5 a "el chunk principal importa estaticamente el chunk de Recharts y `index.html` lo precarga". Se comprueba con `grep` sobre el build, sin cambiar codigo ni configuracion. En el build limpio no ocurre (solo `skeleton-*.js` y `use-api-resource-*.js`).
+  - (b) Anadir un test que lo compruebe automaticamente (por ejemplo, que `App.tsx` no importe `group-comparison-chart` ni `recharts`). Anade un test que la spec no pide.
+  - (c) Dar la mutacion 5 por no verificable con el criterio del plan y dejarlo anotado.
+- **Propuesta:** (a). Mide la consecuencia que DEC-13 quiere evitar (Recharts en la carga inicial) con el mismo build, y el resultado de la mutacion ya esta en el Registro de ejecucion de F3.
+- **Estado:** pendiente.
+
 ## Observaciones (no requieren respuesta)
 
 - Los enlaces de la spec a `docs/plans` siguen rotos a proposito en la v1.9 (el README y la ultima restriccion negativa de components.md). Los planes de esta fase estan en `docs/handover`.
