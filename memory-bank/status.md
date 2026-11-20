@@ -149,7 +149,7 @@ Ampliacion v2 del proyecto 3 (planes, implementacion y traspaso), ramas de fase 
 | 7 F2 | `acc8080` a `04ab5df` (tareas y spec v1.6-v1.8), `fc601b5`, `44c3040` | merge `b3228b8` via PR #20 |
 | 8 F3 | `f53139b`, `155c5b6`, `177e987` a `0062490` (tareas), `3bfe8b0`, `c8dce42`, `0246288` | merge `152e454` via PR #21 |
 | 9 Traspaso | `a522467` a `fafbb8f` (spec v1.9-v1.11, planes, grafico de F3, tests y evidencia); codigo del agente en `feature/frontend-specs-v2-fase9-handover` (`20b43c3`), sin integrar | merge `8b97a82` via PR #22 |
-| Final | `feature/frontend-specs-v2` -> `main` | PR #23, pendiente de merge |
+| Final | `feature/frontend-specs-v2` -> `main` | merge `c228134` via PR #23 |
 
 Detalle y evidencia en [ROADMAP-Project-2.md](../docs/entregables/ROADMAP-Project-2.md),
 [ROADMAP-Project-3.md](../docs/entregables/ROADMAP-Project-3.md) (seccion 9 para la ampliacion v2) y
