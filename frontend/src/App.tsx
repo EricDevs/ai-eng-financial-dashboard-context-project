@@ -1,17 +1,20 @@
 import { lazy, Suspense, useState } from "react";
+import { AlertsTable } from "@/components/dashboard/alerts-table";
 import { DashboardHeader } from "@/components/dashboard/dashboard-header";
 import { DateRangePicker } from "@/components/dashboard/date-range-picker";
 import { KPIRow } from "@/components/dashboard/kpi-row";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { buildQuery } from "@/lib/api";
-import type { FacetsResponse } from "@/lib/api-types";
+import type { AlertsResponse, FacetsResponse } from "@/lib/api-types";
 import { type FinancialMovement } from "@/lib/financial-types";
 import {
   computeKPIs,
   computeMonthlyData,
   formatPeriodLabel,
   getDateRangeIssue,
+  parseThreshold,
+  THRESHOLD_DEFAULT,
 } from "@/lib/financial-utils";
 import type { DateRangeFilter } from "@/lib/param-types";
 import { useApiResource } from "@/lib/use-api-resource";
@@ -63,6 +66,25 @@ function App() {
   const monthlyData = computeMonthlyData(movements ?? []);
   const noMovements = !loading && movements !== null && movements.length === 0;
 
+  const [thresholdText, setThresholdText] = useState(String(THRESHOLD_DEFAULT));
+  const [appliedThreshold, setAppliedThreshold] = useState(THRESHOLD_DEFAULT);
+  const alertsPath =
+    dateIssue === null
+      ? "/api/metrics/alerts" +
+        buildQuery({
+          threshold: appliedThreshold,
+          start_date: filter.start_date,
+          end_date: filter.end_date,
+        })
+      : null;
+  const alerts = useApiResource<AlertsResponse>(alertsPath);
+
+  function changeThreshold(text: string) {
+    setThresholdText(text);
+    const threshold = parseThreshold(text);
+    if (threshold !== null) setAppliedThreshold(threshold);
+  }
+
   return (
     <main className="dark min-h-screen bg-background text-foreground">
       <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
@@ -107,6 +129,17 @@ function App() {
             <Suspense fallback={<ChartFallback />}>
               <ProfitPercentChart data={monthlyData} loading={loading} />
             </Suspense>
+          </section>
+
+          <section aria-label="Anomaly alerts" aria-busy={alerts.loading}>
+            <AlertsTable
+              alerts={alerts.data}
+              appliedThreshold={appliedThreshold}
+              thresholdText={thresholdText}
+              onThresholdChange={changeThreshold}
+              loading={alerts.loading}
+              error={alerts.error}
+            />
           </section>
         </div>
       </div>
