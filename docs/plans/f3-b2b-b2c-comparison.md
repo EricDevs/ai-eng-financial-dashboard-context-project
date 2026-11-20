@@ -1,6 +1,6 @@
 # F3 - Vista comparativa B2B vs B2C: plan de implementacion
 
-**Version:** 5.5 | **Fecha:** 2026-11-19 | **Estado:** version de entrega, sin codigo | **Spec:** v1.10
+**Version:** 5.6 | **Fecha:** 2026-11-20 | **Estado:** version de entrega, sin codigo | **Spec:** v1.11
 
 **Como ejecutar:** tarea por tarea y en orden; marcar cada paso (`- [ ]`) al completarlo. No empezar una tarea sin que la anterior tenga sus tests en verde. Cada test se ve fallar antes de implementar.
 
@@ -30,7 +30,7 @@
 - Estados con precedencia `loading` > `error` > vacio > datos (DEC-16); errores `role="alert"`, vacios `role="status"` (DEC-18).
 - Un unico selector de fechas (INV-5). Sin cambios de firma en `DashboardHeader`, `KPIRow` ni graficos existentes; sin backend.
 - Errores de los paneles y del grafico con `ErrorNotice`, el aviso rojo compartido que extrae el plan F2 (DEC-29).
-- Build sin aviso de chunk > 500 kB (DEC-13). Estilo de cada archivo como en F1.
+- `ComparisonPage` en un chunk propio y Recharts fuera de la carga inicial: el chunk principal no importa de forma estatica el chunk con Recharts y `index.html` no lo precarga (DEC-13, DEC-44). Estilo de cada archivo como en F1.
 
 ## Mapa de archivos
 
@@ -196,7 +196,7 @@ Los tests existentes no cambian (las pestanas y el panel no anaden `section` ni 
 
 - [ ] **Paso 2:** `npm --prefix frontend test -- src/App.test.tsx` -> FAIL en los nuevos.
 - [ ] **Paso 3: implementar.**
-- [ ] **Paso 4:** mismo comando -> PASS (incluidos F1 y F2). `npm --prefix frontend run build` -> `ComparisonPage` en un chunk propio, sin aviso > 500 kB.
+- [ ] **Paso 4:** mismo comando -> PASS (incluidos F1 y F2). `npm --prefix frontend run build` -> `ComparisonPage` en un chunk propio; ni `dist/index.html` (`modulepreload`) ni los imports del chunk principal nombran el chunk con Recharts (DEC-44). El aviso de 500 kB no sirve de prueba: con Vite 8 no aparece aunque Recharts entre en la carga inicial.
 - [ ] **Paso 5: commit** `feat(f3): add view tabs and comparison view to App`.
 
 ### Tarea 7: Verificacion final y evidencia
@@ -226,3 +226,4 @@ Procedimiento del repositorio para verificar cambios del frontend: [.skills/veri
 | 5.3 | 2026-11-19 | Tras ejecutar la iteracion 1: dos notas de los tests (un `Response` por `fetch` simulado; cambiar el filtro tras el primer render). Prueba visual aprobada sin hallazgos: la spec sigue en 1.8 |
 | 5.4 | 2026-11-19 | Spec 1.9, tras la planificacion de la prueba de traspaso: etiqueta de importe en cada barra (DEC-38), descripcion visible (DEC-39) y su test; color por barra con `shape` en lugar de `Cell`, obsoleto en Recharts 3.8. Iteracion 1 cerrada (fase 8, PR #21) |
 | 5.5 | 2026-11-19 | Spec 1.10: test de reabrir la vista comparativa con un filtro que no se puede pedir (DEC-42) y aspecto del vacio del grafico (DEC-43) |
+| 5.6 | 2026-11-20 | Spec 1.11: la carga diferida se comprueba con los imports del chunk principal y las precargas de `index.html` (DEC-44), no con el aviso de 500 kB, que con Vite 8 no aparece |
