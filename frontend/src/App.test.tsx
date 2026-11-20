@@ -3,8 +3,8 @@ import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import App from "./App";
-import type { AlertsResponse, FacetsResponse } from "@/lib/api-types";
-import type { FinancialMovement } from "@/lib/financial-types";
+import type { AlertsResponse, FacetsResponse, TopCategoriesResponse } from "@/lib/api-types";
+import type { BusinessType, FinancialMovement } from "@/lib/financial-types";
 import { changeInput, inputByLabel, settle } from "@/test-utils";
 
 let container: HTMLDivElement;
@@ -74,7 +74,7 @@ describe("App loading and error states", () => {
   });
 });
 
-type Handler = () => Promise<Response>;
+type Handler = (url: string) => Promise<Response>;
 
 let requested: string[] = [];
 
@@ -86,7 +86,7 @@ function routeFetch(routes: Record<string, Handler>) {
     vi.fn((url: string) => {
       requested.push(url);
       const handler = routes[url.split("?")[0]];
-      return handler ? handler() : Promise.resolve(new Response(null, { status: 404 }));
+      return handler ? handler(url) : Promise.resolve(new Response(null, { status: 404 }));
     }),
   );
 }
@@ -429,5 +429,210 @@ describe("F2 anomaly alerts", () => {
     await vi.waitFor(() => expect(alertTexts()).toContain("Could not load anomaly alerts."));
     expect(container.textContent).not.toContain("No se pudo cargar");
     expect(kpiValues()).toEqual(filledKPIs);
+  });
+});
+
+// Top income per group from verification.md (full dataset on 2026-11-15); not the current API dataset.
+const b2bTop: TopCategoriesResponse = [
+  { category: "sales", operation_type: "income", total_amount: 557903.97 },
+  { category: "others", operation_type: "income", total_amount: 57636.75 },
+];
+const b2cTop: TopCategoriesResponse = [
+  { category: "sales", operation_type: "income", total_amount: 574193.41 },
+  { category: "others", operation_type: "income", total_amount: 68412.74 },
+];
+
+/** Answers `top` by the business_type of the URL. */
+function topByGroup(groups: Record<BusinessType, Handler>): Handler {
+  return (url) => groups[url.includes("business_type=B2B") ? "B2B" : "B2C"](url);
+}
+
+const comparisonRoutes = {
+  ...allRoutes,
+  "/api/metrics/categories/top": topByGroup({ B2B: ok(b2bTop), B2C: ok(b2cTop) }),
+};
+
+const topBase = "/api/metrics/categories/top?operation_type=income&limit=5&business_type=";
+const comparisonEmptyStates = [
+  "No income in the selected range for B2B.",
+  "No income in the selected range for B2C.",
+  "No income to compare in the selected range.",
+];
+
+function tab(label: "Dashboard" | "B2B vs B2C"): HTMLButtonElement {
+  const button = [...container.querySelectorAll<HTMLButtonElement>('button[role="tab"]')].find(
+    (item) => item.textContent === label,
+  );
+  if (!button) throw new Error(`${label} tab not found`);
+  return button;
+}
+
+async function selectTab(label: "Dashboard" | "B2B vs B2C") {
+  tab(label).click();
+  await settle();
+}
+
+function topRequests(): string[] {
+  return requested.filter((url) => url.startsWith("/api/metrics/categories/top"));
+}
+
+function dashboardRequests(): string[] {
+  return requested.filter((url) => url.startsWith("/api/metrics?") || url.startsWith("/api/metrics/alerts"));
+}
+
+function panelText(group: BusinessType): string {
+  const panel = [...container.querySelectorAll('section[aria-label="Income by business type"] [data-slot="card"]')].find(
+    (card) => card.querySelector("h2")?.textContent === `${group} - Top income categories`,
+  );
+  return panel?.textContent ?? "";
+}
+
+function statusTexts(): string[] {
+  return [...container.querySelectorAll('#view-panel [role="status"]')].map((node) => node.textContent ?? "");
+}
+
+/** The first open downloads the lazy ComparisonPage chunk with Recharts; same wait budget as Q-26. */
+async function waitForGroupRows() {
+  await vi.waitFor(() => {
+    expect(panelText("B2B")).toContain("Sales");
+    expect(panelText("B2C")).toContain("Sales");
+  }, { timeout: 3000 });
+}
+
+async function openComparison(routes: Record<string, Handler> = comparisonRoutes) {
+  await renderWithAlerts(routes);
+  await selectTab("B2B vs B2C");
+  await waitForGroupRows();
+}
+
+describe("F3 B2B vs B2C view", () => {
+  it("starts on the dashboard tab", async () => {
+    await renderWithAlerts(comparisonRoutes);
+
+    expect(tab("Dashboard").getAttribute("aria-selected")).toBe("true");
+    expect(tab("B2B vs B2C").getAttribute("aria-selected")).toBe("false");
+    expect(container.querySelector('[role="tabpanel"]')?.getAttribute("aria-labelledby")).toBe("tab-dashboard");
+  });
+
+  it("requests both groups when the view opens", async () => {
+    await openComparison();
+
+    expect(requested).toContain(`${topBase}B2B`);
+    expect(requested).toContain(`${topBase}B2C`);
+    expect(container.querySelector('[role="tabpanel"]')?.getAttribute("aria-labelledby")).toBe("tab-comparison");
+  });
+
+  it("replaces the dashboard content", async () => {
+    await openComparison();
+
+    expect(container.querySelector('section[aria-label="Key performance indicators"]')).toBeNull();
+    expect(container.querySelector('section[aria-label="Anomaly alerts"]')).toBeNull();
+    expect(container.querySelector('[role="group"][aria-label="Date range"]')).not.toBeNull();
+  });
+
+  it("sends the shared filter to both groups", async () => {
+    await openComparison();
+
+    await typeDate("Start date", "2026-01-01");
+    expect(topRequests().slice(-2).sort()).toEqual([
+      `${topBase}B2B&start_date=2026-01-01`,
+      `${topBase}B2C&start_date=2026-01-01`,
+    ]);
+  });
+
+  it("does not request dashboard data while comparing", async () => {
+    await openComparison();
+    const count = dashboardRequests().length;
+
+    await typeDate("Start date", "2026-01-01");
+    expect(dashboardRequests()).toHaveLength(count);
+  });
+
+  it("refetches the dashboard with the current filter", async () => {
+    await openComparison();
+    await typeDate("Start date", "2026-01-01");
+
+    await selectTab("Dashboard");
+    expect(requested).toContain("/api/metrics?start_date=2026-01-01");
+    expect(requested).toContain("/api/metrics/alerts?threshold=0.3&start_date=2026-01-01");
+    expect(dateInput("Start date").value).toBe("2026-01-01");
+  });
+
+  it("keeps the last result on an invalid range", async () => {
+    await openComparison();
+    await typeDate("Start date", "2026-02-01");
+    await waitForGroupRows();
+    const count = topRequests().length;
+
+    await typeDate("End date", "2026-01-01");
+    expect(topRequests()).toHaveLength(count);
+    expect(panelText("B2B")).toContain("Sales");
+    expect(panelText("B2C")).toContain("Sales");
+  });
+
+  it("opens with an invalid range", async () => {
+    await renderWithAlerts(comparisonRoutes);
+    await typeDate("Start date", "2026-02-01");
+    await typeDate("End date", "2026-01-01");
+
+    await selectTab("B2B vs B2C");
+    await vi.waitFor(() => expect(statusTexts()).toEqual(comparisonEmptyStates), { timeout: 3000 });
+    expect(topRequests()).toEqual([]);
+  });
+
+  it("opens with an out-of-bounds date", async () => {
+    await renderWithAlerts(comparisonRoutes);
+    await vi.waitFor(() => expect(container.textContent).toContain("Available data"));
+    await typeDate("Start date", "2030-01-01");
+
+    await selectTab("B2B vs B2C");
+    await vi.waitFor(() => expect(statusTexts()).toEqual(comparisonEmptyStates), { timeout: 3000 });
+    expect(topRequests()).toEqual([]);
+  });
+
+  it("shows empty states when it reopens with an invalid filter", async () => {
+    await openComparison();
+    const count = topRequests().length;
+    await selectTab("Dashboard");
+    await typeDate("Start date", "2026-02-01");
+    await typeDate("End date", "2026-01-01");
+
+    await selectTab("B2B vs B2C");
+    await vi.waitFor(() => expect(statusTexts()).toEqual(comparisonEmptyStates));
+    expect(topRequests()).toHaveLength(count);
+  });
+
+  it("isolates an empty group", async () => {
+    await renderWithAlerts({
+      ...comparisonRoutes,
+      "/api/metrics/categories/top": topByGroup({ B2B: ok([]), B2C: ok(b2cTop) }),
+    });
+
+    await selectTab("B2B vs B2C");
+    await vi.waitFor(() => expect(panelText("B2C")).toContain("Sales"), { timeout: 3000 });
+    expect(panelText("B2B")).toContain("No income in the selected range for B2B.");
+  });
+
+  it("isolates a failed group", async () => {
+    await renderWithAlerts({
+      ...comparisonRoutes,
+      "/api/metrics/categories/top": topByGroup({ B2B: ok(b2bTop), B2C: failing() }),
+    });
+
+    await selectTab("B2B vs B2C");
+    await vi.waitFor(() => expect(panelText("B2B")).toContain("Sales"), { timeout: 3000 });
+    await vi.waitFor(() =>
+      expect(alertTexts()).toEqual(["Could not load B2C income data.", "Could not load the comparison."]),
+    );
+  });
+
+  it("hides dashboard notices while comparing", async () => {
+    routeFetch({ ...comparisonRoutes, "/api/metrics": failing() });
+    root.render(<App />);
+    await vi.waitFor(() => expect(container.textContent).toContain("No se pudo cargar"));
+
+    await selectTab("B2B vs B2C");
+    await waitForGroupRows();
+    expect(container.textContent).not.toContain("No se pudo cargar");
   });
 });

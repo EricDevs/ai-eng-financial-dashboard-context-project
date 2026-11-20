@@ -2,12 +2,14 @@ import { lazy, Suspense, useState } from "react";
 import { AlertsTable } from "@/components/dashboard/alerts-table";
 import { DashboardHeader } from "@/components/dashboard/dashboard-header";
 import { DateRangePicker } from "@/components/dashboard/date-range-picker";
+import { GroupTopTable } from "@/components/dashboard/group-top-table";
 import { KPIRow } from "@/components/dashboard/kpi-row";
+import { ViewTabs } from "@/components/dashboard/view-tabs";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { buildQuery } from "@/lib/api";
 import type { AlertsResponse, FacetsResponse } from "@/lib/api-types";
-import { type FinancialMovement } from "@/lib/financial-types";
+import { type AppView, type FinancialMovement } from "@/lib/financial-types";
 import {
   computeKPIs,
   computeMonthlyData,
@@ -30,6 +32,8 @@ const ProfitPercentChart = lazy(() =>
     default: m.ProfitPercentChart,
   })),
 );
+// The comparison chart also uses Recharts; keep it out of the main chunk (DEC-13).
+const ComparisonPage = lazy(() => import("@/components/dashboard/comparison-page"));
 
 /** Same markup as the charts' own loading state, so the swap causes no layout shift. */
 function ChartFallback() {
@@ -46,19 +50,34 @@ function ChartFallback() {
   );
 }
 
+/** ComparisonPage markup in its loading state, without importing the chart (DEC-23, DEC-36). */
+function ComparisonFallback() {
+  return (
+    <>
+      <section aria-label="Income by business type" aria-busy className="grid grid-cols-1 gap-4 xl:grid-cols-2">
+        <GroupTopTable businessType="B2B" rows={[]} loading />
+        <GroupTopTable businessType="B2C" rows={[]} loading />
+      </section>
+      <section aria-label="Income comparison" aria-busy>
+        <ChartFallback />
+      </section>
+    </>
+  );
+}
+
 function App() {
+  const [view, setView] = useState<AppView>("dashboard");
   const [filter, setFilter] = useState<DateRangeFilter>({});
   const facets = useApiResource<FacetsResponse>("/api/metrics/facets");
   const bounds = facets.data
     ? { min_date: facets.data.min_date, max_date: facets.data.max_date }
     : null;
   const dateIssue = getDateRangeIssue(filter, bounds);
+  const dashboardRequestable = view === "dashboard" && dateIssue === null;
 
-  const movementsPath =
-    dateIssue === null
-      ? "/api/metrics" +
-        buildQuery({ start_date: filter.start_date, end_date: filter.end_date })
-      : null;
+  const movementsPath = dashboardRequestable
+    ? "/api/metrics" + buildQuery({ start_date: filter.start_date, end_date: filter.end_date })
+    : null;
   const { data: movements, loading, error } =
     useApiResource<FinancialMovement[]>(movementsPath);
 
@@ -68,15 +87,14 @@ function App() {
 
   const [thresholdText, setThresholdText] = useState(String(THRESHOLD_DEFAULT));
   const [appliedThreshold, setAppliedThreshold] = useState(THRESHOLD_DEFAULT);
-  const alertsPath =
-    dateIssue === null
-      ? "/api/metrics/alerts" +
-        buildQuery({
-          threshold: appliedThreshold,
-          start_date: filter.start_date,
-          end_date: filter.end_date,
-        })
-      : null;
+  const alertsPath = dashboardRequestable
+    ? "/api/metrics/alerts" +
+      buildQuery({
+        threshold: appliedThreshold,
+        start_date: filter.start_date,
+        end_date: filter.end_date,
+      })
+    : null;
   const alerts = useApiResource<AlertsResponse>(alertsPath);
 
   function changeThreshold(text: string) {
@@ -91,6 +109,8 @@ function App() {
         <div className="flex flex-col gap-8">
           <DashboardHeader period={formatPeriodLabel(filter) ?? "2024 - Full Year"} />
 
+          <ViewTabs view={view} onChange={setView} />
+
           <DateRangePicker
             value={filter}
             onChange={setFilter}
@@ -98,49 +118,64 @@ function App() {
             boundsLoading={facets.loading}
           />
 
-          {noMovements ? (
-            <p role="status" className="text-sm text-muted-foreground">
-              No movements found for the selected range.
-            </p>
-          ) : null}
-
-          {error ? (
-            <div
-              role="alert"
-              lang="es"
-              className="rounded-lg border border-destructive/30 bg-destructive/10 p-4 text-sm text-destructive-foreground"
-            >
-              No se pudo cargar la informacion financiera. Revisa la API de backend.
-            </div>
-          ) : null}
-
-          <section aria-label="Key performance indicators" aria-busy={loading}>
-            <KPIRow metrics={metrics} loading={loading} />
-          </section>
-
-          <section
-            aria-label="Financial charts"
-            aria-busy={loading}
-            className="grid grid-cols-1 gap-4 xl:grid-cols-2"
+          <div
+            id="view-panel"
+            role="tabpanel"
+            aria-labelledby={view === "dashboard" ? "tab-dashboard" : "tab-comparison"}
+            className="flex flex-col gap-8"
           >
-            <Suspense fallback={<ChartFallback />}>
-              <IncomeOutcomeChart data={monthlyData} loading={loading} />
-            </Suspense>
-            <Suspense fallback={<ChartFallback />}>
-              <ProfitPercentChart data={monthlyData} loading={loading} />
-            </Suspense>
-          </section>
+            {view === "comparison" ? (
+              <Suspense fallback={<ComparisonFallback />}>
+                <ComparisonPage filter={filter} bounds={bounds} />
+              </Suspense>
+            ) : (
+              <>
+                {noMovements ? (
+                  <p role="status" className="text-sm text-muted-foreground">
+                    No movements found for the selected range.
+                  </p>
+                ) : null}
 
-          <section aria-label="Anomaly alerts" aria-busy={alerts.loading}>
-            <AlertsTable
-              alerts={alerts.data}
-              appliedThreshold={appliedThreshold}
-              thresholdText={thresholdText}
-              onThresholdChange={changeThreshold}
-              loading={alerts.loading}
-              error={alerts.error}
-            />
-          </section>
+                {error ? (
+                  <div
+                    role="alert"
+                    lang="es"
+                    className="rounded-lg border border-destructive/30 bg-destructive/10 p-4 text-sm text-destructive-foreground"
+                  >
+                    No se pudo cargar la informacion financiera. Revisa la API de backend.
+                  </div>
+                ) : null}
+
+                <section aria-label="Key performance indicators" aria-busy={loading}>
+                  <KPIRow metrics={metrics} loading={loading} />
+                </section>
+
+                <section
+                  aria-label="Financial charts"
+                  aria-busy={loading}
+                  className="grid grid-cols-1 gap-4 xl:grid-cols-2"
+                >
+                  <Suspense fallback={<ChartFallback />}>
+                    <IncomeOutcomeChart data={monthlyData} loading={loading} />
+                  </Suspense>
+                  <Suspense fallback={<ChartFallback />}>
+                    <ProfitPercentChart data={monthlyData} loading={loading} />
+                  </Suspense>
+                </section>
+
+                <section aria-label="Anomaly alerts" aria-busy={alerts.loading}>
+                  <AlertsTable
+                    alerts={alerts.data}
+                    appliedThreshold={appliedThreshold}
+                    thresholdText={thresholdText}
+                    onThresholdChange={changeThreshold}
+                    loading={alerts.loading}
+                    error={alerts.error}
+                  />
+                </section>
+              </>
+            )}
+          </div>
         </div>
       </div>
     </main>
