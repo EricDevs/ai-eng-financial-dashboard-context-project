@@ -1,6 +1,6 @@
 # Status
 
-Revision: 2026-11-17, cierre del proyecto 4. Fuentes: [01-structure.md](../docs/validations/01-structure.md),
+Revision: 2026-11-20, F1 a F3 y prueba de traspaso de la ampliacion v2 del proyecto 3 (antes: 2026-11-17, cierre del proyecto 4). Fuentes: [01-structure.md](../docs/validations/01-structure.md),
 [03-verification-resume.md](../docs/validations/03-verification-resume.md),
 [02-handover-checks.md](../docs/validations/02-handover-checks.md),
 [05-rules-checks.md](../docs/validations/05-rules-checks.md),
@@ -29,15 +29,35 @@ enlaza el check que lo demuestra.
   graficas cargadas en diferido y skeletons sin salto de altura; tres skills
   comunitarias y una interna. Detalle y mediciones en [progress.md](progress.md).
 
-## Especificado, no implementado (proyecto 3)
+## Especificado (proyecto 3) e implementacion en curso (ampliacion v2)
 
 - Specs frontend de tres funcionalidades en [frontend/specs](../frontend/specs/README.md):
   F1 filtro de rango de fechas (`/facets` + `/api/metrics`), F2 tabla de
   alertas de anomalias (`/alerts?threshold=`) y F3 comparativa B2B vs B2C
   (`/categories/top`). Tipos verificados contra `/openapi.json` en vivo;
   evidencia en [verification.md](../frontend/specs/verification.md).
-- Sin componentes React, `fetch` ni cambios de backend: la UI sigue
-  consumiendo solo `/api/metrics`.
+- Revision 2026-11-20 (ampliacion v2 de [ROADMAP-Project-3](../docs/entregables/ROADMAP-Project-3.md)):
+  spec v1.11 con decisiones `DEC-01` a `DEC-44` y planes en [docs/plans](../docs/plans).
+- **F1 implementado** (iteracion 1, fase 6): filtro de fechas con `facets`,
+  validacion unica de peticion (`getDateRangeIssue`), capa de datos
+  compartida (`api.ts`, `useApiResource`); prueba visual del usuario
+  aprobada en dos rondas.
+- **F2 implementado** (iteracion 1, fase 7): tabla de alertas con umbral
+  configurable, aviso rojo compartido (`ErrorNotice`); prueba visual del
+  usuario aprobada en cuatro rondas (spec v1.6 a v1.8). 76 tests frontend.
+- **F3 implementado** (iteracion 1, fase 8): pestanas `Dashboard` / `B2B vs B2C`,
+  categorias de ingreso por grupo y grafico de dos barras, cargado en
+  diferido; prueba visual del usuario aprobada en una ronda, sin cambios de
+  spec. 110 tests frontend.
+- Evidencia de F1, F2 y F3 en [08-features-checks.md](../docs/validations/08-features-checks.md).
+- **Prueba de traspaso** (fase 9): un agente sin contexto planifico e
+  implemento F1 a F3 desde la spec, con sus tres pruebas visuales aprobadas a
+  la primera y ninguna decision de producto propia. La spec v1.8 no bastaba:
+  la v1.9 a la v1.11 cerraron 22 huecos (DEC-33 a DEC-44), sobre todo
+  decisiones que la iteracion 1 tomo sin anotarlas. La iteracion 1 se ajusto
+  a la v1.9 (etiquetas y descripcion del grafico de F3) y suma 117 tests. Su
+  codigo queda en `feature/frontend-specs-v2-fase9-handover`, sin integrar.
+  Evidencia en [09-handover-checks.md](../docs/validations/09-handover-checks.md).
 
 ## Gaps conocidos (no corregidos; fuera de alcance sin acuerdo explicito)
 
@@ -120,6 +140,17 @@ Proyecto 4 (agent skills), ramas de fase hacia `feature/agent-skills`:
 | 6 Memory bank y verificacion final | `c8a29a8`, `1b8e111` | merge `95ab9e0` via PR #16 |
 | Final | `feature/agent-skills` -> `main` | merge `3b98558` via PR #17 |
 
+Ampliacion v2 del proyecto 3 (planes, implementacion y traspaso), ramas de fase hacia `feature/frontend-specs-v2`:
+
+| Fase | Commit(s) | Integracion |
+| --- | --- | --- |
+| 5 Planes y specs | `b880d90`, `9297324`, `4e51f0a`, `f486623`, `a6aaf55` | merge `87be002` via PR #18 |
+| 6 F1 | `e5a08bb`, `3189afa`, `9e87cd3` | merge `074dcf4` via PR #19 |
+| 7 F2 | `acc8080` a `04ab5df` (tareas y spec v1.6-v1.8), `fc601b5`, `44c3040` | merge `b3228b8` via PR #20 |
+| 8 F3 | `f53139b`, `155c5b6`, `177e987` a `0062490` (tareas), `3bfe8b0`, `c8dce42`, `0246288` | merge `152e454` via PR #21 |
+| 9 Traspaso | `a522467` a `fafbb8f` (spec v1.9-v1.11, planes, grafico de F3, tests y evidencia); codigo del agente en `feature/frontend-specs-v2-fase9-handover` (`20b43c3`), sin integrar | merge `8b97a82` via PR #22 |
+| Final | `feature/frontend-specs-v2` -> `main` | PR #23, pendiente de merge |
+
 Detalle y evidencia en [ROADMAP-Project-2.md](../docs/entregables/ROADMAP-Project-2.md),
-[ROADMAP-Project-3.md](../docs/entregables/ROADMAP-Project-3.md) y
+[ROADMAP-Project-3.md](../docs/entregables/ROADMAP-Project-3.md) (seccion 9 para la ampliacion v2) y
 [ROADMAP-Project-4.md](../docs/entregables/ROADMAP-Project-4.md).

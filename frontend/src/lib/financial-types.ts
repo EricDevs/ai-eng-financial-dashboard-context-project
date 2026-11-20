@@ -23,3 +23,20 @@ export interface MonthlyDataPoint {
   outcome: number
   profitPercent: number
 }
+
+/** Active view of the app. */
+export type AppView = 'dashboard' | 'comparison'
+
+/** One row of a group panel: API data plus the share computed on the client. */
+export interface GroupCategoryRow {
+  category: Category
+  total_amount: number
+  /** Share of the group total, from 0 to 1. */
+  share: number
+}
+
+/** Total income of one group, for the comparison chart. */
+export interface GroupTotal {
+  business_type: BusinessType
+  total_income: number
+}
