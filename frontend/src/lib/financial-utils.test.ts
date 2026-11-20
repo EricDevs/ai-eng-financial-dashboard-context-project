@@ -8,6 +8,7 @@ import {
   formatPeriodLabel,
   getDateRangeIssue,
   isValidDateRange,
+  parseThreshold,
 } from "./financial-utils";
 import type { FinancialMovement } from "./financial-types";
 
@@ -182,5 +183,21 @@ describe("date range utilities", () => {
     expect(getDateRangeIssue({ start_date: "2025-10-31" }, null)).toBeNull();
     expect(getDateRangeIssue({ start_date: "2026-02-01", end_date: "2026-01-01" }, bounds)).toBe("inverted");
     expect(getDateRangeIssue({ start_date: "2030-01-01", end_date: "2026-01-01" }, bounds)).toBe("outOfBounds");
+  });
+});
+
+describe("parseThreshold", () => {
+  it("accepts finite ratios between 0.01 and 1 inclusive", () => {
+    expect(parseThreshold("0.3")).toBe(0.3);
+    expect(parseThreshold("0.01")).toBe(0.01);
+    expect(parseThreshold("1")).toBe(1);
+    expect(parseThreshold("1.0")).toBe(1);
+    expect(parseThreshold("0.015")).toBe(0.015);
+  });
+
+  it("rejects empty, non-numeric and out-of-range text", () => {
+    for (const text of ["", "0", "0.009", "1.01", "5", "-0.1", "abc", "Infinity"]) {
+      expect(parseThreshold(text)).toBeNull();
+    }
   });
 });

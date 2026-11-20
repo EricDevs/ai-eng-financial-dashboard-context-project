@@ -111,3 +111,14 @@ export function getDateRangeIssue(
   if (!isValidDateRange(filter)) return "inverted";
   return null;
 }
+
+export const THRESHOLD_MIN = 0.01;
+export const THRESHOLD_MAX = 1;
+export const THRESHOLD_DEFAULT = 0.3;
+
+/** The threshold if the text is a finite number in [THRESHOLD_MIN, THRESHOLD_MAX]; otherwise null. Empty text -> null. */
+export function parseThreshold(text: string): number | null {
+  if (text === "") return null;
+  const value = Number(text);
+  return Number.isFinite(value) && value >= THRESHOLD_MIN && value <= THRESHOLD_MAX ? value : null;
+}
