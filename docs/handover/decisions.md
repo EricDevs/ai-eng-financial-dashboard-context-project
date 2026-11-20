@@ -197,7 +197,7 @@ Las tres las cierra la v1.10 (DEC-41 a DEC-43). Al releer la v1.10 no aparecio n
   - (b) Cargar los dos modulos de graficos en un `beforeAll` de `App.test.tsx` (`await import(...)`), para que `lazy()` los encuentre ya cargados. Tampoco cambia los asserts, pero el test deja de pasar por el `Suspense`.
   - (c) No tocarlo en F2 y dejarlo anotado como defecto conocido.
 - **Propuesta:** (a). Es el cambio mas pequeno, ataca la causa (el limite de espera de un chunk diferido) y no cambia lo que comprueba el test.
-- **Estado:** pendiente.
+- **Estado:** sigue abierta en la spec, que no trata los tests existentes. **Respuesta del mantenedor (2026-11-20):** opcion (a).
 
 ## Observaciones (no requieren respuesta)
 

@@ -251,3 +251,12 @@ Tamanos del build frente a F1:
 - No se probo con un lector de pantalla real, ni con zoom, ni en navegadores distintos del de la prueba visual.
 - La disposicion de la tarjeta (AC-F2-14) y los estilos (DEC-31, DEC-32, DEC-40) no los cubren los tests.
 - jsdom no reproduce como trata el navegador `0,3` en un `input type="number"`; se comprueba en la prueba visual.
+
+### Q-26 y cierre de F2 (2026-11-20)
+
+- Prueba visual de F2: aprobada por el mantenedor, todas las comprobaciones correctas.
+- Respuesta del mantenedor a Q-26: opcion (a). Unico cambio: el primer `vi.waitFor` de `announces a load error in Spanish and keeps the heading structure` recibe `{ timeout: 3000 }`. Ningun valor esperado cambia (`git diff`: 1 linea en `App.test.tsx`).
+- Estabilidad, suite completa `npx vitest run` desde `frontend/`:
+  - 10 pasadas con `--reporter=verbose` (la configuracion que mas fallaba): 10 de 10 con 65 pasados. Ese test duro 937-1726 ms; 9 de las 10 pasadas superaron los 1000 ms y habrian fallado con el limite anterior.
+  - 5 pasadas con el reporter por defecto: 5 de 5 con 65 pasados.
+- Lint sin errores.

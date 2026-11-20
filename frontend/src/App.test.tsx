@@ -53,7 +53,7 @@ describe("App loading and error states", () => {
       );
       expect(headings).toContain("Income vs. Outcome");
       expect(headings).toContain("Profit Margin %");
-    });
+    }, { timeout: 3000 }); // Q-26: the lazy chart chunk can take over 1 s under a parallel suite.
 
     const alert = container.querySelector('[role="alert"]');
     expect(alert?.getAttribute("lang")).toBe("es");
