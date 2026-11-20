@@ -1,6 +1,6 @@
 # F1 - Filtro de rango de fechas: plan de implementacion
 
-**Version:** 8.0 | **Fecha:** 2026-11-18 | **Estado:** version de entrega, sin codigo | **Spec:** v1.4
+**Version:** 8.2 | **Fecha:** 2026-11-19 | **Estado:** version de entrega, sin codigo | **Spec:** v1.10
 
 **Como ejecutar:** tarea por tarea y en orden; marcar cada paso (`- [ ]`) al completarlo. No empezar una tarea sin que la anterior tenga sus tests en verde. Cada test se ve fallar antes de implementar.
 
@@ -136,11 +136,14 @@
 | `sets error and drops data on a failed request` | `/a` responde 500 | `{ data: null, loading: false, error: true }` |
 | `keeps the last data and does not fetch when path is null` | `/a` resuelto, despues `null` | `data: "a"`, `loading: false`, `fetch` llamado 1 vez |
 | `shows only the response for the latest path` | `/a` -> `/b`; se resuelve `/b` y despues `/a` | `data` queda en `"b"` |
-| `does not stay loading when returning to the last loaded path` | `/a` -> `null` -> `/a` | `loading: false` |
+| `does not stay loading when returning to the last loaded path` (DEC-33) | `/a` -> `null` -> `/a` | `loading: false`, `data: "a"` y `fetch` llamado 2 veces: la ruta se pide de nuevo |
+| `keeps the last data while a new path loads` (DEC-33) | `/a` resuelto con `"a"`, despues `/b` pendiente | `{ data: "a", loading: true, error: false }` |
+| `discards a pending response when path becomes null` (DEC-33) | `/a` resuelto con `"a"`, `/b` pendiente, `null` y despues se resuelve `/b` | `{ data: "a", loading: false, error: false }` |
+| `shows the last error when returning to a failed path` (DEC-41) | `/a` responde 500; `null`; `/a` otra vez con la respuesta pendiente | `{ data: null, loading: false, error: true }` mientras llega y `fetch` llamado 2 veces |
 
 - [ ] **Paso 2:** `npm --prefix frontend test -- src/lib/use-api-resource.test.tsx` -> FAIL (import no resuelto).
 - [ ] **Paso 3: implementar** el hook y los helpers.
-- [ ] **Paso 4:** mismo comando -> PASS (5 tests); `npm --prefix frontend run lint` -> sin errores.
+- [ ] **Paso 4:** mismo comando -> PASS (8 tests); `npm --prefix frontend run lint` -> sin errores.
 - [ ] **Paso 5: commit** `feat(f1): add useApiResource hook and test helpers`.
 
 ### Tarea 4: Componente `DateRangePicker`
@@ -154,7 +157,7 @@
 **Comportamiento a implementar:**
 - Dos inputs `type="date"` con etiqueta visible (`useId` para asociar etiqueta e input). Un input vacio emite el filtro sin su clave.
 - `Clear dates` solo con alguna fecha: llama `onChange({})` y mueve el foco al input `Start date` (con una `ref`), porque el boton desaparece.
-- `Available data` en su linea bajo los inputs; `Skeleton` mientras `boundsLoading`; nada si `bounds` es `null`. `min` y `max` solo con `bounds`.
+- `Available data` en su linea bajo los inputs; `Skeleton` `h-4 w-64` mientras `boundsLoading` (DEC-40); nada si `bounds` es `null`. `min` y `max` solo con `bounds`.
 - `issue = getDateRangeIssue(value, bounds)`. Un solo aviso: `outOfBounds` -> `Dates must be between {min_date} and {max_date}.`; `inverted` -> `Start date must be on or before end date.`; `incomplete` -> ninguno.
 - `aria-invalid`: en los dos inputs si `inverted`; solo en el input fuera de rango si `outOfBounds`; en ninguno si `incomplete`.
 - Aviso: componente interno con `role="alert"`, icono `AlertCircle` y los estilos de la seccion de presentacion de la spec. Contenedor `div role="group" aria-label="Date range"` (DEC-19).
@@ -173,7 +176,7 @@
 | `moves focus to the start date after clearing` (AC-F1-16) | con inicio, click en `Clear dates` | `document.activeElement` es el input `Start date` |
 | `flags an inverted range` (AC-F1-09) | `2026-02-01`/`2026-01-01` | `role="alert"` con el texto del rango invertido; ambos inputs `aria-invalid="true"` |
 | `flags a date outside the available range` (AC-F1-18) | inicio `1900-02-02`, `BOUNDS` | `role="alert"` con `Dates must be between 2025-11-01 and 2026-10-28.`; solo inicio `aria-invalid` |
-| `shows one notice at a time, out of range first` (AC-F1-19) | `2027-01-01`/`2026-01-01`, `BOUNDS` | un unico `role="alert"`, el de fuera de rango |
+| `shows one notice at a time, out of range first` (AC-F1-19) | `2027-01-01`/`2026-01-01`, `BOUNDS` | un unico `role="alert"`, el de fuera de rango; `aria-invalid` solo en `Start date` (DEC-37) |
 | `shows no message while a year is being typed` (AC-F1-17) | inicio `0019-02-02`, `BOUNDS` | sin `role="alert"` ni `aria-invalid` |
 | `accepts a single-day range` (AC-F1-07) | `2026-01-15`/`2026-01-15` | sin `role="alert"` ni `aria-invalid` |
 | `is a labelled group, not a section` (DEC-19) | `value={}` | existe `[role="group"][aria-label="Date range"]`; ninguna `section` |
@@ -199,6 +202,7 @@
 | `refetches with only the informed dates and recalculates KPIs` (AC-F1-05/06/12) | inicio `2026-01-01`; despues fin `2026-01-31` | `/api/metrics?start_date=2026-01-01`, encabezado `From 2026-01-01`, KPI `$100`, `$25`, `$75`, `75.0%`; despues `...&end_date=2026-01-31` y `2026-01-01 — 2026-01-31` |
 | `blocks requests and keeps data on an inverted range` (AC-F1-09, AC-F1-15, INV-2) | fin `2026-01-01`, inicio `2026-02-01`, despues vaciar inicio | sin llamadas nuevas, KPI anteriores, aviso, encabezado `2026-02-01 — 2026-01-01`; al vaciar, `Until 2026-01-01` y sin `Skeleton` en KPI |
 | `shows dashes, empty charts and a notice for an empty range` (AC-F1-10) | inicio `2026-10-28` con respuesta `[]` | KPI `—` x4, dos `No data available to display`, `role="status"` con el aviso |
+| `hides the empty-range notice while reloading` (DEC-33) | inicio `2026-10-28` con `[]`; despues inicio `2026-01-01` con la respuesta pendiente | aviso visible con `[]`; sin aviso mientras carga |
 | `clears both dates and reloads without filters` (AC-F1-11, DEC-22) | inicio y despues `Clear dates` | ultima llamada `/api/metrics`, encabezado `2024 - Full Year`, KPI `$1,000`, `$250`, `$750`, `75.0%` |
 | `works without the reference line when facets fails` (AC-F1-04) | `facets` 500 | sin `Available data`, sin `role="alert"`, input sin `min`, KPI con valores |
 | `shows dashes and the banner when movements fail, and recovers` (AC-F1-13) | `/api/metrics` 500; despues inicio con 200 | banner `No se pudo cargar…` y KPI `—`; despues sin banner y KPI del filtro |
@@ -208,7 +212,7 @@
 
 - [ ] **Paso 2:** `npm --prefix frontend test -- src/App.test.tsx` -> FAIL en los nuevos; los 2 existentes pasan.
 - [ ] **Paso 3: implementar** los cambios de `App.tsx`.
-- [ ] **Paso 4:** mismo comando -> PASS (12 tests).
+- [ ] **Paso 4:** mismo comando -> PASS (13 tests).
 - [ ] **Paso 5: commit** `feat(f1): wire date range filter into App`.
 
 ### Tarea 6: Verificacion final y evidencia
@@ -246,3 +250,5 @@ Procedimiento del repositorio para verificar cambios del frontend: [.skills/veri
 | 6.0 | 2026-11-18 | Iteracion 1 ejecutada; tarea 7 con los cambios de la prueba visual |
 | 7.0 | 2026-11-18 | Regenerado sobre la spec 1.4; cambios de la prueba visual integrados en sus tareas; codigo igual al implementado (commit `9297324`) |
 | 8.0 | 2026-11-18 | Version de entrega sin codigo: interfaces y comportamiento en texto, casos de test en tablas con sus valores exactos, mapa de archivos y notas de la iteracion 1 |
+| 8.1 | 2026-11-19 | Spec 1.9, tras la planificacion de la prueba de traspaso: tests de los casos limite de `useApiResource` y del aviso de rango vacio durante la recarga (DEC-33), `aria-invalid` con dos problemas (DEC-37) y tamano del `Skeleton` de `Available data` (DEC-40). Las versiones 1.5 a 1.8 de la spec no afectaban a F1 |
+| 8.2 | 2026-11-19 | Spec 1.10: test de volver a una ruta cuyo ultimo resultado fue un error (DEC-41) |

@@ -198,6 +198,28 @@ describe("date range filter", () => {
     }, LAZY_CHARTS);
   });
 
+  it("hides the empty-range notice while reloading", async () => {
+    const NOTICE = "No movements found for the selected range.";
+    const pending = deferred<Response>();
+    stubApi((url) => {
+      if (url === "/api/metrics?start_date=2026-10-28") return Promise.resolve(jsonResponse([]));
+      if (url === "/api/metrics?start_date=2026-01-01") return pending.promise;
+      return undefined;
+    });
+    await renderLoaded();
+    await setDate("Start date", "2026-10-28");
+    await vi.waitFor(() => expect(container.textContent).toContain(NOTICE));
+
+    await setDate("Start date", "2026-01-01");
+    await vi.waitFor(() =>
+      expect(kpiSection()?.querySelector('[data-slot="skeleton"]')).not.toBeNull(),
+    );
+    expect(container.textContent).not.toContain(NOTICE);
+
+    pending.resolve(jsonResponse(FILTERED_MOVEMENTS));
+    await vi.waitFor(() => expect(kpiValues()).toEqual(["$100", "$25", "$75", "75.0%"]));
+  });
+
   it("clears both dates and reloads without filters", async () => {
     const fetchMock = stubApi();
     await renderLoaded();
@@ -371,6 +393,24 @@ describe("anomaly alerts", () => {
     );
   });
 
+  it("refetches alerts with the applied threshold when dates change and the text is invalid", async () => {
+    const fetchMock = stubApi();
+    await renderLoaded();
+    await setThreshold("0.5");
+    await vi.waitFor(() =>
+      expect(alertCalls(fetchMock).at(-1)).toBe("/api/metrics/alerts?threshold=0.5"),
+    );
+
+    await setThreshold("");
+    await setDate("Start date", "2026-01-01");
+    await vi.waitFor(() =>
+      expect(alertCalls(fetchMock).at(-1)).toBe(
+        "/api/metrics/alerts?threshold=0.5&start_date=2026-01-01",
+      ),
+    );
+    expect(container.textContent).toContain("Enter a value between 0.01 and 1.0.");
+  });
+
   it("does not request alerts with a date filter that cannot be requested", async () => {
     const fetchMock = stubApi();
     await renderLoaded();
@@ -482,6 +522,28 @@ async function openComparison() {
 }
 
 describe("view tabs", () => {
+  it("shows empty states when reopening the comparison with a filter that cannot be requested", async () => {
+    const fetchMock = stubApi(withTop);
+    const topCalls = () => calledUrls(fetchMock).filter((url) => url.startsWith(TOP));
+    await renderLoaded();
+    await openComparison();
+    await vi.waitFor(() => expect(container.textContent).toContain("Sales"));
+
+    buttonByText(container, "Dashboard").click();
+    await vi.waitFor(() => expect(kpiSection()).not.toBeNull());
+    await setDate("End date", "2026-01-01");
+    await setDate("Start date", "2026-02-01");
+    const topBefore = topCalls().length;
+
+    buttonByText(container, "B2B vs B2C").click();
+    await vi.waitFor(() => {
+      expect(container.textContent).toContain("No income in the selected range for B2B.");
+      expect(container.textContent).toContain("No income in the selected range for B2C.");
+      expect(container.textContent).toContain("No income to compare in the selected range.");
+    }, LAZY_CHARTS);
+    expect(topCalls()).toHaveLength(topBefore);
+  });
+
   it("starts on the dashboard tab", async () => {
     stubApi();
     await renderLoaded();

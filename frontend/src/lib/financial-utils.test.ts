@@ -233,6 +233,8 @@ describe("parseThreshold", () => {
     expect(parseThreshold("0.01")).toBe(0.01);
     expect(parseThreshold("1")).toBe(1);
     expect(parseThreshold("1.0")).toBe(1);
+    // Validity does not depend on the input's step (spec DEC-40).
+    expect(parseThreshold("0.015")).toBe(0.015);
   });
 
   it("rejects empty, non-numeric and out-of-range text", () => {

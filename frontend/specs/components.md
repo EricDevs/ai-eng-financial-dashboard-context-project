@@ -1,10 +1,10 @@
 # Especificacion de componentes
 
-**Version:** 1.8 | **Fecha:** 2026-11-19 | Cambios en el [Historial de versiones](#historial-de-versiones).
+**Version:** 1.11 | **Fecha:** 2026-11-20 | Cambios en el [Historial de versiones](#historial-de-versiones).
 
 Capa frontend de tres funcionalidades del dashboard financiero. Es una especificacion: no hay codigo React ni llamadas a la API. Tipos en [api-types.ts](api-types.ts) y [param-types.ts](param-types.ts); evidencia de la API en [verification.md](verification.md).
 
-Las versiones 1.1 a 1.3 no cambian el comportamiento de la 1.0: cierran decisiones que la 1.0 dejaba abiertas para poder implementar sin preguntas. La 1.4 **si cambia** un comportamiento de la 1.0, tras la prueba visual de F1: una fecha fuera del rango disponible pasa a ser un error de validacion (DEC-26). La 1.5 fija el aspecto de los errores de F2 y F3 (DEC-29) y la 1.6 la disposicion de la tarjeta de alertas (DEC-30), revisada en la 1.7 (DEC-31); la 1.8 fija el color de la etiqueta del umbral (DEC-32) y corrige el caso `0,3`. Cada una tiene un ID `DEC-xx` y se explica en [Decisiones de implementacion](#decisiones-de-implementacion); en el texto se marcan con la version que la introdujo, por ejemplo `(v1.1, DEC-xx)`.
+Las versiones 1.1 a 1.3 no cambian el comportamiento de la 1.0: cierran decisiones que la 1.0 dejaba abiertas para poder implementar sin preguntas. La 1.4 **si cambia** un comportamiento de la 1.0, tras la prueba visual de F1: una fecha fuera del rango disponible pasa a ser un error de validacion (DEC-26). La 1.5 fija el aspecto de los errores de F2 y F3 (DEC-29) y la 1.6 la disposicion de la tarjeta de alertas (DEC-30), revisada en la 1.7 (DEC-31); la 1.8 fija el color de la etiqueta del umbral (DEC-32) y corrige el caso `0,3`. La 1.9 cierra los huecos que encontro la prueba de traspaso (DEC-33 a DEC-40) y anade al grafico de F3 la etiqueta de cada barra y una descripcion visible (DEC-38, DEC-39). La 1.10 cierra las tres dudas que el agente encontro al releer la 1.9 (DEC-41 a DEC-43), sin cambiar el comportamiento. La 1.11 corrige el criterio verificable de la carga diferida (DEC-44). Cada una tiene un ID `DEC-xx` y se explica en [Decisiones de implementacion](#decisiones-de-implementacion); en el texto se marcan con la version que la introdujo, por ejemplo `(v1.1, DEC-xx)`.
 
 ## Convenciones comunes
 
@@ -71,6 +71,13 @@ export function getJson<T>(path: string): Promise<T>
  * - loading: true mientras el ultimo resultado no corresponde a `path`.
  * - error: la ultima peticion fallo; en ese caso data es null.
  * - Solo cuenta la respuesta del `path` vigente (las anteriores se descartan).
+ * - (v1.9, DEC-33) Mientras carga una ruta nueva, `data` conserva el ultimo resultado.
+ * - (v1.9, DEC-33) Si `path` pasa a null con una peticion en curso, su respuesta se descarta;
+ *   con path null, loading es false.
+ * - (v1.9, DEC-33) Si `path` vuelve a ser igual al del ultimo resultado (pasando antes por null,
+ *   por ejemplo al volver a `Dashboard` sin cambiar el filtro), se pide de nuevo; mientras llega,
+ *   loading es false y se ve el ultimo resultado: los datos anteriores o, si la ultima peticion
+ *   fallo, el error (v1.10, DEC-41).
  */
 export function useApiResource<T>(path: string | null): { data: T | null; loading: boolean; error: boolean }
 ```
@@ -138,6 +145,8 @@ Requisitos visuales salidos de la prueba de F1. Las clases son las de Tailwind d
 | Foco | Anillo visible con `ring` en inputs y boton al navegar con teclado |
 | Aviso de error | Caja con borde y fondo rojo translucido (`border-red-500/40`, `bg-red-500/10`), texto rojo claro (`text-red-300`), icono `AlertCircle` y `role="alert"` |
 | `Available data` | Texto de 14 px, color `muted-foreground` |
+| Carga de `Available data` | (v1.9, DEC-40) Una barra `Skeleton` de `h-4 w-64` en su linea |
+| Aviso `No movements found...` | (v1.9, DEC-40) Texto `text-sm` en `muted-foreground`, sin caja ni icono: no es un error |
 
 ### Renderizado condicional
 
@@ -151,7 +160,7 @@ Requisitos visuales salidos de la prueba de F1. Las clases son las de Tailwind d
 | Ninguna fecha informada | Boton `Clear dates` oculto |
 | Alguna fecha informada | Boton `Clear dates` visible; al pulsarlo llama `onChange({})` y mueve el foco al input `Start date`, porque el boton desaparece y el foco se perderia (v1.3, DEC-24) |
 | `start_date` > `end_date` | Mensaje `Start date must be on or before end date.` con `role="alert"` bajo los inputs, e inputs con `aria-invalid` |
-| Cualquier error de validacion | Se muestra como aviso (ver [Presentacion](#presentacion-v14-dec-27-dec-28)), no como texto suelto (v1.4, DEC-28). Se muestra un solo aviso, el del primer problema segun el orden de `getDateRangeIssue`: una fecha fuera de rango se avisa antes que un rango invertido |
+| Cualquier error de validacion | Se muestra como aviso (ver [Presentacion](#presentacion-v14-dec-27-dec-28)), no como texto suelto (v1.4, DEC-28). Se muestra un solo aviso, el del primer problema segun el orden de `getDateRangeIssue`: una fecha fuera de rango se avisa antes que un rango invertido. `aria-invalid` sigue al aviso mostrado: con una fecha fuera de rango y ademas el rango invertido, solo lo lleva el input fuera de rango (v1.9, DEC-37) |
 | `start_date` = `end_date` | Valido (limites inclusivos: un solo dia) |
 
 ### Comportamiento de la pagina
@@ -160,7 +169,7 @@ Requisitos visuales salidos de la prueba de F1. Las clases son las de Tailwind d
 2. Cada cambio del filtro que cumple la regla unica de peticion (`getDateRangeIssue(filter, bounds) === null`, v1.4) vuelve a pedir `GET /api/metrics` con `start_date` y/o `end_date` (solo los informados, sin `category` ni `operation_type`). Los KPI y los dos graficos se recalculan con la respuesta. El mismo filtro se pasa a la tabla de alertas (F2) y a la vista B2B vs B2C (F3), que lo reciben por props y piden sus propios datos.
 3. **Un solo input de fecha.** Si solo hay `start_date`, el filtro va desde esa fecha hasta el final del dataset; si solo hay `end_date`, desde el inicio hasta esa fecha. Se aplica de inmediato, sin esperar a la otra fecha.
 4. **Filtro que no se puede pedir** (ano a medio escribir, fecha fuera de `bounds` o rango invertido; v1.4). No se lanza ninguna peticion y se mantienen en pantalla los ultimos datos validos. `DateRangePicker` muestra el aviso que corresponde, salvo con el ano a medio escribir, que no muestra ninguno (DEC-25). Al corregir el filtro se vuelve a pedir.
-5. **Rango sin movimientos** (respuesta `[]` para un rango dentro de `bounds`, o con `bounds` desconocido): los KPI reciben `metrics={null}` y muestran `—` (no `$0`: distingue "sin datos" de un cero valido); los graficos muestran su estado vacio existente `No data available to display`; bajo los inputs aparece `No movements found for the selected range.` con `role="status"`, solo en la vista `Dashboard` (v1.2, DEC-15).
+5. **Rango sin movimientos** (respuesta `[]` para un rango dentro de `bounds`, o con `bounds` desconocido): los KPI reciben `metrics={null}` y muestran `—` (no `$0`: distingue "sin datos" de un cero valido); los graficos muestran su estado vacio existente `No data available to display`; bajo los inputs aparece `No movements found for the selected range.` con `role="status"`, solo en la vista `Dashboard` (v1.2, DEC-15). El aviso no se muestra mientras se cargan los movimientos (v1.9, DEC-33).
 6. **Cargando.** Durante cada recarga `loading=true`: KPI y graficos muestran sus `Skeleton`. Si llegan respuestas fuera de orden, solo cuenta la del ultimo filtro.
 7. **Error de red o respuesta no 2xx.** Se mantiene el banner de error actual de `App` y los KPI muestran `—`. El banner solo se ve en la vista `Dashboard` (v1.2, DEC-15).
 8. **Etiqueta de periodo de `DashboardHeader`.** Con filtro activo, la prop `period` muestra el rango efectivo: `{start} — {end}`, `From {start}` o `Until {end}`. Sin filtro conserva su valor actual, `2024 - Full Year` (v1.2, DEC-22). Las fechas se muestran tal cual, en `YYYY-MM-DD`, con `formatPeriodLabel` (v1.1, DEC-02). La etiqueta sigue el texto de los inputs aunque el filtro no se pueda pedir (rango invertido, fecha fuera de rango o ano a medio escribir, que se ve un instante como `From 0019-02-02`); el aviso de error indica que los datos en pantalla son los ultimos validos (v1.1, DEC-03; ampliado en v1.4).
@@ -276,7 +285,7 @@ Es una tabla HTML (`table`, `thead`, `tbody`); los mensajes de vacio y las filas
 
 ### `ThresholdInput`
 
-`<input type="number">` con `min=0.01`, `max=1`, `step=0.01`, etiqueta `Alert threshold` y ayuda `Ratio between 0.01 and 1.0 (default 0.3).` Valor inicial `'0.3'`. Los extremos 0.01 y 1.0 son validos. Un texto vacio o que el navegador no reconoce como numero (entonces entrega `''`) es invalido. Si `0,3` es un numero depende del idioma del navegador: con un idioma que usa coma decimal (por ejemplo, espanol) el navegador lo acepta y entrega `0.3`, que es valido; con otros entrega `''` (corregido en v1.8: la 1.0 decia que `0,3` siempre era invalido; la prueba visual de F2 mostro `0,28` aceptado como `0.28`).
+`<input type="number">` con `min=0.01`, `max=1`, `step=0.01`, etiqueta `Alert threshold` y ayuda `Ratio between 0.01 and 1.0 (default 0.3).` Valor inicial `'0.3'`. Los extremos 0.01 y 1.0 son validos. Un texto vacio o que el navegador no reconoce como numero (entonces entrega `''`) es invalido. Si `0,3` es un numero depende del idioma del navegador: con un idioma que usa coma decimal (por ejemplo, espanol) el navegador lo acepta y entrega `0.3`, que es valido; con otros entrega `''` (corregido en v1.8: la 1.0 decia que `0,3` siempre era invalido; la prueba visual de F2 mostro `0,28` aceptado como `0.28`). La validez la decide solo `parseThreshold`, no el `step` del navegador: `0.015` es valido y se pide con ese valor (v1.9, DEC-40).
 
 El umbral es el incremento minimo (ratio) que debe superar un periodo: se muestran los periodos con `increase_ratio > threshold`. Solo afecta a la tabla de alertas, no a los KPI ni a los graficos.
 
@@ -289,6 +298,9 @@ El umbral es el incremento minimo (ratio) que debe superar un periodo: se muestr
 | Etiqueta `Alert threshold` | Color `muted-foreground`, distinto del titulo de la tarjeta (`foreground`), para que no compita con el (v1.8, DEC-32) |
 | Input | Alto 44 px y texto de 16 px, como los inputs de fecha de F1; fondo `secondary` (mas claro que la tarjeta) para distinguir el campo dentro de la tarjeta (v1.7, DEC-31); anillo de foco y borde rojo con `aria-invalid` |
 | Errores | Aviso rojo de DEC-29 |
+| Tabla | (v1.9, DEC-40) Texto `text-sm`; cabecera `text-xs` en mayusculas, `muted-foreground` y `font-medium`; `Period` alineada a la izquierda y las columnas de importes y porcentaje a la derecha; cada fila con borde superior `border-border/60` y celdas con `py-2` |
+| Carga | (v1.9, DEC-40) 3 filas `tr`, cada una con una sola celda que ocupa las 4 columnas y una barra `Skeleton` `h-5` a todo el ancho |
+| Vacio | (v1.9, DEC-40) Una fila con una celda que ocupa las 4 columnas; los dos textos centrados, `text-sm` en `muted-foreground` |
 
 ### Renderizado condicional
 
@@ -304,7 +316,7 @@ El umbral es el incremento minimo (ratio) que debe superar un periodo: se muestr
 
 1. Al montar pide las alertas con `threshold=0.3` y el filtro vigente.
 2. Cada cambio de texto: si `parseThreshold` da un numero **y** el rango de fechas es valido, se vuelve a pedir; si no, no hay peticion y se conserva el ultimo resultado. `appliedThreshold` solo cambia cuando se aplica un valor valido. Un umbral valido escrito mientras el rango de fechas es invalido se guarda como aplicado y se usa en la peticion en cuanto el rango vuelve a ser valido (v1.1, DEC-08).
-3. Un cambio del filtro de fechas (F1) vuelve a pedir las alertas con el umbral aplicado. Con rango invertido no hay peticion.
+3. Un cambio del filtro de fechas (F1) vuelve a pedir las alertas con el umbral aplicado. Con rango invertido no hay peticion. Si el texto del umbral es invalido en ese momento, se pide igual con el umbral aplicado y el aviso del umbral sigue visible: la tabla sigue al filtro, como los KPI y los graficos (v1.9, DEC-34).
 4. Si llegan respuestas fuera de orden, solo cuenta la del ultimo umbral y filtro.
 5. Un fallo de esta peticion solo afecta a la tabla (`error`); no activa el banner global de `App` ni vacia los KPI.
 
@@ -327,8 +339,8 @@ El umbral es el incremento minimo (ratio) que debe superar un periodo: se muestr
 | AC-F2-01 | El sistema deberá mostrar bajo los graficos del dashboard una tarjeta de alertas con titulo, un input de umbral con valor inicial `0.3` y una tabla de cuatro columnas: `Period`, `Outcome`, `Avg. of previous periods` e `Increase` |
 | AC-F2-02 | Cuando la aplicacion carga, el sistema deberá pedir `GET /api/metrics/alerts` con `threshold=0.3` y el filtro de fechas vigente |
 | AC-F2-03 | Cuando el usuario cambia el umbral a un valor de `0.01` a `1.0` (ambos inclusive) y el rango de fechas es valido, el sistema deberá pedir las alertas con ese umbral y mostrar el resultado |
-| AC-F2-04 | Si el texto del umbral esta vacio, no es un numero o esta fuera de `0.01` a `1.0`, entonces el sistema no deberá pedir datos, deberá mostrar `Enter a value between 0.01 and 1.0.` y conservar el ultimo resultado valido |
-| AC-F2-05 | Cuando cambia el filtro de fechas, el sistema deberá volver a pedir las alertas con el ultimo umbral aplicado y las fechas informadas |
+| AC-F2-04 | Si el texto del umbral esta vacio, no es un numero o esta fuera de `0.01` a `1.0`, entonces el sistema no deberá pedir datos por ese cambio del umbral, deberá mostrar `Enter a value between 0.01 and 1.0.` y conservar el ultimo resultado valido. Un cambio de fechas posterior se rige por AC-F2-05 (ajustado en v1.9, DEC-34) |
+| AC-F2-05 | Cuando cambia el filtro de fechas, el sistema deberá volver a pedir las alertas con el ultimo umbral aplicado y las fechas informadas, tambien si el texto del umbral es invalido (v1.9, DEC-34) |
 | AC-F2-06 | Mientras el rango de fechas sea invalido, el sistema no deberá pedir alertas y deberá conservar el ultimo resultado |
 | AC-F2-07 | El sistema deberá mostrar cada alerta con su periodo `YYYY-MM`, el outcome y el promedio con `formatCurrency` y el incremento como `increase_ratio * 100` con `formatPercent`, en el orden de la API |
 | AC-F2-08 | El sistema deberá mostrar bajo el titulo de la tarjeta la linea `Average outcome of all earlier periods in the selected range.` |
@@ -441,7 +453,7 @@ interface GroupComparisonChartProps {
 
 Las filas de cada tabla salen **de la respuesta de `top`**, no de `facets.categories` (lista global que incluye categorias sin ingresos; ver verification.md). Las dos secciones son siempre B2B y B2C, en ese orden; `facets.business_types` confirma esos dos valores pero la vista no lo consulta.
 
-Si la vista se abre con el rango invertido y todavia no hay ningun resultado, no se pide nada y cada panel muestra su estado vacio (`No income in the selected range for {group}.`), y el grafico el suyo; el error del rango ya se ve en `DateRangePicker` (v1.1, DEC-14).
+Si la vista se abre con un filtro que no se puede pedir (rango invertido, fecha fuera de rango o ano a medio escribir; v1.9, DEC-35) y todavia no hay ningun resultado, no se pide nada y cada panel muestra su estado vacio (`No income in the selected range for {group}.`), y el grafico el suyo; el aviso del filtro, si lo hay, ya se ve en `DateRangePicker` (v1.1, DEC-14). "Sin resultado previo" cuenta desde que se abre la vista: `ComparisonPage` se desmonta al cambiar de pestana y no conserva sus datos, de modo que al reabrirla con un filtro que no se puede pedir muestra de nuevo los estados vacios. El dashboard, en cambio, conserva los suyos porque sus peticiones viven en `App` (v1.10, DEC-42).
 
 ### Navegacion entre vistas (v1.1, DEC-12)
 
@@ -449,7 +461,7 @@ Mientras la vista activa es `comparison`, `App` no pide movimientos ni alertas (
 
 El banner de error de movimientos y el aviso `No movements found for the selected range.` solo se muestran en la vista `Dashboard`: describen datos que la vista comparativa no ensena (v1.2, DEC-15).
 
-Mientras se descarga el codigo diferido de `ComparisonPage`, el `Suspense` muestra los dos paneles y el grafico en su estado de carga, con el mismo marcado, para que no haya salto de altura (v1.2, DEC-23).
+Mientras se descarga el codigo diferido de `ComparisonPage`, el `Suspense` muestra los dos paneles y el grafico en su estado de carga, con el mismo marcado, para que no haya salto de altura (v1.2, DEC-23). Ese fallback vive en `App`: usa `GroupTopTable` con `loading` y el marcado de carga de los graficos existentes, sin importar `GroupComparisonChart`, que haria descargar Recharts al abrir la pagina (v1.9, DEC-36; motivo corregido en v1.11, DEC-44).
 
 ### Tablas (`GroupTopTable`)
 
@@ -469,6 +481,19 @@ El porcentaje es sobre el total del grupo. Ese total es la suma de las filas por
 
 Detalles (v1.2, DEC-20): eje X con `B2B` y `B2C` (`dataKey="business_type"`); serie `Income` (`<Bar dataKey="total_income" name="Income">`); el `BarChart` lleva `title="Income: B2B vs B2C"` y `desc="Total income of B2B and B2C in the selected range."`, como los graficos existentes. Mientras carga usa el mismo marcado de carga que los graficos existentes (v1.2, DEC-17). El vacio `No income to compare in the selected range.` lleva `role="status"` y el error `Could not load the comparison.`, `role="alert"` (v1.2, DEC-18), como aviso rojo (v1.5, DEC-29).
 
+Etiquetas y descripcion (v1.9, DEC-38, DEC-39): cada barra lleva encima su importe con `formatCurrency`, de modo que un grupo sin ingresos muestra `$0` sin pasar el raton. Bajo el titulo, la descripcion visible `Total income of B2B and B2C in the selected range.` (el mismo texto que `desc`), como los graficos existentes; asi el marcado de carga, que tiene una linea de descripcion, ocupa lo mismo que el grafico cargado. Alto del area del grafico 280 px, sin leyenda (una sola serie) y tooltip con el estilo de los graficos existentes.
+
+### Presentacion de F3 (v1.9, DEC-40)
+
+| Elemento | Requisito |
+| --- | --- |
+| `ViewTabs` | Barra con borde inferior `border-border`. Cada pestana: `px-4 py-2`, `text-sm`, `font-medium` y borde inferior de 2 px. Activa: borde `primary` y texto `foreground`. Inactiva: borde transparente y texto `muted-foreground` (`foreground` al pasar el raton). Anillo de foco `ring` |
+| Paneles | Una columna; dos columnas desde `xl` (1280 px), como los graficos del dashboard |
+| `GroupTopTable` | Titulo y descripcion siempre visibles. En carga, vacio o error el contenido sustituye a la tabla (no se pinta tabla). Carga: 3 barras `Skeleton` `h-5` a todo el ancho. Vacio: texto `text-sm` en `muted-foreground` |
+| Tabla de `GroupTopTable` | El estilo de la tabla de alertas (ver [Presentacion de F2](#presentacion-de-f2-v16-dec-30)): `Category` a la izquierda y `Total income` y `Share of group` a la derecha |
+| Errores | Aviso rojo de DEC-29; en el grafico, centrado en el area de 280 px |
+| Vacio del grafico | (v1.10, DEC-43) Como el de los graficos existentes: titulo y descripcion visibles y, en lugar de las barras, el mensaje centrado en el area de 280 px, `text-sm` en `muted-foreground`, con `role="status"` |
+
 ### Criterios de aceptacion (EARS)
 
 | ID | Criterio |
@@ -482,13 +507,13 @@ Detalles (v1.2, DEC-20): eje X con `B2B` y `B2C` (`dataKey="business_type"`); se
 | AC-F3-07 | Si un grupo tiene menos de 5 categorias con ingresos, entonces el sistema deberá mostrar solo esas filas, sin filas de relleno |
 | AC-F3-08 | Si la respuesta de un grupo es `[]`, entonces el sistema deberá mostrar en su seccion `No income in the selected range for {group}.` sin tabla, y la otra seccion se mostrara con normalidad |
 | AC-F3-09 | El sistema deberá mostrar bajo ambas secciones un unico grafico de dos barras con el total de ingresos de B2B y de B2C |
-| AC-F3-10 | Si un grupo esta vacio y el otro no, entonces el grafico deberá mostrar la barra del grupo vacio con total `$0` |
+| AC-F3-10 | Si un grupo esta vacio y el otro no, entonces el grafico deberá mostrar la barra del grupo vacio con total `$0`, visible en su etiqueta (v1.9, DEC-38) |
 | AC-F3-11 | Si ambos grupos estan vacios, entonces el grafico deberá mostrar `No income to compare in the selected range.` en lugar de las barras |
 | AC-F3-12 | Mientras se cargan los datos de un grupo, el sistema deberá mostrar `Skeleton` en su seccion; mientras falte cualquiera de los dos, el grafico deberá mostrar `Skeleton` |
 | AC-F3-13 | Si falla la peticion de un grupo, entonces el sistema deberá mostrar `Could not load {group} income data.` en su seccion y `Could not load the comparison.` en el grafico, y la otra seccion se mostrara con normalidad |
 | AC-F3-14 | Si llegan respuestas fuera de orden, el sistema deberá mostrar solo la correspondiente al ultimo filtro |
 | AC-F3-15 | (v1.1, DEC-12) Mientras la vista `B2B vs B2C` este activa, el sistema no deberá pedir movimientos ni alertas; cuando el usuario vuelva a `Dashboard`, deberá pedirlos con el filtro vigente |
-| AC-F3-16 | (v1.1, DEC-14) Si la vista se abre con el rango invertido y sin resultado previo, entonces el sistema no deberá pedir datos y deberá mostrar el estado vacio de cada panel y del grafico |
+| AC-F3-16 | (v1.1, DEC-14; ampliado en v1.9, DEC-35) Si la vista se abre con un filtro que no se puede pedir y sin resultado previo, entonces el sistema no deberá pedir datos y deberá mostrar el estado vacio de cada panel y del grafico |
 | AC-F3-17 | (v1.2, DEC-15) Mientras la vista `B2B vs B2C` este activa, el sistema no deberá mostrar el banner de error de movimientos ni el aviso `No movements found for the selected range.` |
 | AC-F3-18 | (v1.2, DEC-16) Mientras un grupo se carga y el otro ha fallado, el grafico deberá mostrar su estado de carga y no el error |
 
@@ -531,7 +556,7 @@ Valen para las tres funcionalidades. Los invariantes son condiciones que nunca d
 
 ## Decisiones de implementacion
 
-Puntos que la version 1.0 no fijaba y que habia que decidir para implementar y escribir tests con valores exactos. Salieron de la revision de los planes de implementacion del 2026-11-18 y el usuario las acepto: DEC-01 a DEC-14 en la v1.1, DEC-15 a DEC-23 en la v1.2 (tras regenerar los planes sobre la v1.1) y DEC-24 en la v1.3 (tras regenerarlos sobre la v1.2). DEC-25 a DEC-28 salen de la prueba visual y de funcionamiento de F1 hecha por el usuario (v1.4). DEC-29 sale de adaptar los planes de F2 y F3 a la v1.4 (hueco H-11) y la decidio el usuario (v1.5). DEC-30 a DEC-32 salen de las pruebas visuales de F2 (v1.6 a v1.8). Los IDs no se renumeran ni se reutilizan; una decision retirada se marca como obsoleta.
+Puntos que la version 1.0 no fijaba y que habia que decidir para implementar y escribir tests con valores exactos. Salieron de la revision de los planes de implementacion del 2026-11-18 y el usuario las acepto: DEC-01 a DEC-14 en la v1.1, DEC-15 a DEC-23 en la v1.2 (tras regenerar los planes sobre la v1.1) y DEC-24 en la v1.3 (tras regenerarlos sobre la v1.2). DEC-25 a DEC-28 salen de la prueba visual y de funcionamiento de F1 hecha por el usuario (v1.4). DEC-29 sale de adaptar los planes de F2 y F3 a la v1.4 (hueco H-11) y la decidio el usuario (v1.5). DEC-30 a DEC-32 salen de las pruebas visuales de F2 (v1.6 a v1.8). DEC-33 a DEC-40 salen de la prueba de traspaso: un agente sin contexto planifico desde la 1.8 y anoto sus dudas (Q-01 a Q-21 de `docs/handover/decisions.md`, en la rama de la fase 9); fijan lo que hace la iteracion 1, aprobada en las pruebas visuales, salvo DEC-38 y DEC-39, que decidio el usuario (v1.9). DEC-41 a DEC-43 salen de las dudas Q-22 a Q-24 del mismo agente al releer la 1.9 y tambien fijan lo que hace la iteracion 1 (v1.10). DEC-44 sale de la duda Q-27 del mismo agente al implementar F3 (v1.11). Los IDs no se renumeran ni se reutilizan; una decision retirada se marca como obsoleta.
 
 | ID | Decision | Motivo | Alternativa descartada |
 | --- | --- | --- | --- |
@@ -547,7 +572,7 @@ Puntos que la version 1.0 no fijaba y que habia que decidir para implementar y e
 | DEC-10 | `ViewTabs` con `role="tablist"` / `role="tab"` / `aria-selected`, sin navegacion por flechas | Los lectores de pantalla las anuncian como pestanas sin complicar el componente | Implementar el patron completo de teclado (flechas, tabindex movil) |
 | DEC-11 | `formatCategoryLabel` pone la primera letra en mayuscula | Con la clase CSS `capitalize` el texto real seguiria siendo `sales` y los tests no podrian comprobar `Sales` | La clase CSS `capitalize`, que ya usa el tooltip existente |
 | DEC-12 | En la vista `B2B vs B2C`, `App` no pide movimientos ni alertas; al volver a `Dashboard` los pide con el filtro vigente | Evita peticiones inutiles en cada cambio de fecha mientras no se ven esos datos | Seguir pidiendolos en segundo plano |
-| DEC-13 | `ComparisonPage` se carga en diferido (`lazy` + `Suspense`) | El grafico usa Recharts; importarlo directamente lo devuelve al chunk principal y reaparece el aviso de chunk > 500 kB resuelto en el proyecto 4 | Importacion directa |
+| DEC-13 | `ComparisonPage` se carga en diferido (`lazy` + `Suspense`) | El grafico usa Recharts; importarlo directamente hace que la pagina lo descargue al abrirse, aunque no se use la vista comparativa. (Corregido en v1.11, DEC-44: la 1.1 decia que reaparecia el aviso de chunk > 500 kB, que con Vite 8 ya no sale) | Importacion directa |
 | DEC-14 | Vista comparativa abierta con rango invertido y sin datos previos: sin peticiones y estado vacio en paneles y grafico | La 1.0 decia "conservar el ultimo resultado", pero no habia ninguno | Un mensaje propio, por ejemplo `Fix the date range to load data.` |
 | DEC-15 | El banner de error de movimientos y el aviso de rango sin movimientos solo se ven en la vista `Dashboard` | Con DEC-12, `App` conserva el ultimo estado de movimientos; mostrarlo en la comparativa hablaria de datos que no se ven | Mostrarlos en las dos vistas |
 | DEC-16 | Precedencia de estados: `loading` > `error` > vacio > datos | En el grafico de F3 pueden coincidir un grupo cargando y otro con error; hace falta una regla unica | Mostrar el error en cuanto exista |
@@ -567,6 +592,18 @@ Puntos que la version 1.0 no fijaba y que habia que decidir para implementar y e
 | DEC-30 | ~~Tarjeta de alertas en una columna: titulo, fila del umbral (etiqueta, input y ayuda en linea), aviso y tabla~~ (disposicion obsoleta desde v1.7, la sustituye DEC-31). Sigue vigente: input del umbral con el tamano de los inputs de fecha de F1 | Prueba visual de F2: con el control en una columna lateral de la cabecera, su altura (etiqueta, input, ayuda y aviso) dejaba un hueco vacio entre el titulo y la tabla. El tamano del input no estaba fijado; se igualo al de F1 y el usuario lo vio en la prueba | Mantener la columna lateral y reducir la ayuda a un tooltip |
 | DEC-31 | Fila del umbral (etiqueta, input y ayuda) a la derecha del titulo, a la misma altura; el aviso de error del umbral sale del control y lo coloca `AlertsTable` a todo el ancho bajo la cabecera; campo del input con fondo `secondary` | Segunda prueba visual de F2: el usuario prefiere el control a la derecha del titulo, y el campo con fondo `card` no se distinguia de la tarjeta. Lo que provocaba el hueco era el aviso dentro de la columna del control, no la columna en si | La disposicion en una columna de DEC-30 |
 | DEC-32 | Etiqueta `Alert threshold` en `muted-foreground` | Tercera prueba visual de F2: en blanco competia con el titulo de la tarjeta. `muted-foreground` es el color de los textos secundarios del proyecto, ya revisado en contraste en el proyecto 4 | El color primario (azul), con menos margen de contraste sobre la tarjeta |
+| DEC-33 | Casos limite de `useApiResource` (ver [Capa de datos compartida](#capa-de-datos-compartida-v11-dec-05)): `data` conserva el ultimo resultado mientras carga; una respuesta en curso se descarta si la ruta pasa a null; volver a la ruta del ultimo resultado la pide de nuevo sin `Skeleton`. El aviso `No movements found...` no se muestra mientras carga | Prueba de traspaso (Q-01 a Q-04): la 1.8 no lo fijaba y la iteracion 1 lo resolvio sin anotarlo | `data` a null al cambiar de ruta; `Skeleton` al volver a la misma ruta |
+| DEC-34 | AC-F2-04 se refiere al cambio del umbral: un texto invalido no lanza peticion por si mismo, pero un cambio de fechas pide las alertas con el umbral aplicado y el aviso del umbral sigue visible | Q-05: AC-F2-04 y AC-F2-05 se contradecian con un texto invalido y un cambio de fechas. La tabla sigue al filtro, como KPI y graficos | No pedir alertas mientras el texto sea invalido |
+| DEC-35 | DEC-14 y AC-F3-16 valen para cualquier filtro que no se puede pedir, no solo el rango invertido | Q-06: la regla unica de la 1.4 ya lo implicaba, pero el texto seguia diciendo "rango invertido" | `Skeleton` hasta que el filtro se pueda pedir |
+| DEC-36 | El fallback de `Suspense` de `ComparisonPage` usa `GroupTopTable` con `loading` y el marcado de carga de los graficos existentes, sin importar `GroupComparisonChart` | Q-08: importarlo hace que la pagina descargue Recharts al abrirse (DEC-13); DEC-17 ya iguala los dos marcados de carga | Importar `GroupComparisonChart` en `App` |
+| DEC-37 | `aria-invalid` sigue al aviso mostrado: con una fecha fuera de rango y ademas el rango invertido, solo el input fuera de rango | Q-09: lo que anuncia el lector de pantalla coincide con el aviso visible | Marcar los dos inputs |
+| DEC-38 | Cada barra del grafico de F3 lleva encima su importe con `formatCurrency`; el grupo vacio muestra `$0` | Q-07, decidido por el usuario: una barra de valor 0 no tiene altura, y en la iteracion 1 el `$0` solo se veia en el tooltip | Solo el tooltip |
+| DEC-39 | Descripcion visible en el grafico de F3, el mismo texto que `desc`; 280 px de alto, sin leyenda, tooltip como los graficos existentes | Q-20, decidido por el usuario: el marcado de carga (DEC-17) tiene una linea de descripcion; sin ella, en la iteracion 1 habia un salto de altura al terminar de cargar | Quitar la linea del marcado de carga |
+| DEC-40 | Detalles de presentacion que la 1.8 no fijaba: carga de `Available data`, aviso `No movements found...`, estilo de las tablas y de sus estados, pestanas, columnas de la vista comparativa (desde `xl`, decidido por el usuario) y validez de `0.015` | Q-13 a Q-19 y Q-21: la iteracion 1 los resolvio sin anotarlos; se copian sus valores, ya aprobados en las pruebas visuales | Dejarlos a quien implemente |
+| DEC-41 | Al volver a la ruta del ultimo resultado se ve ese resultado mientras se pide de nuevo: los datos o, si la ultima peticion fallo, el error | Q-22: DEC-33 decia "los datos anteriores", que no existen si el ultimo resultado fue un error | Mostrar `Skeleton` o vaciar el error mientras llega |
+| DEC-42 | "Sin resultado previo" (DEC-14) cuenta desde que se abre la vista comparativa: al reabrirla con un filtro que no se puede pedir, estados vacios | Q-23: `ComparisonPage` se desmonta al cambiar de pestana y no conserva sus datos; conservarlos exigiria subir sus peticiones a `App` | Subir las peticiones de la comparativa a `App` para conservar el ultimo resultado |
+| DEC-43 | Vacio del grafico de F3 como el de los graficos existentes, con titulo y descripcion visibles | Q-24: la spec daba el texto y el rol, no el aspecto | Un aspecto propio |
+| DEC-44 | La carga diferida de DEC-13 se comprueba en el build: el chunk principal no importa de forma estatica el chunk con Recharts y `index.html` no lo precarga (`modulepreload`) | Q-27 del agente de traspaso, al implementar F3: con `GroupComparisonChart` importado en `App` sin `lazy`, Vite 8.0.8 pone Recharts en un chunk compartido (372 kB) que el principal importa y la pagina precarga, sin ningun aviso de 500 kB. El criterio de la 1.1 no detectaba la rotura | Esperar el aviso de chunk > 500 kB |
 
 ## Historial de versiones
 
@@ -581,3 +618,6 @@ Puntos que la version 1.0 no fijaba y que habia que decidir para implementar y e
 | 1.6 | 2026-11-18 | Tras la prueba visual de F2: DEC-30 (disposicion de la tarjeta de alertas y tamano del input del umbral), criterio AC-F2-14 y aclaracion de que el umbral solo afecta a la tabla de alertas. Sin cambios de comportamiento ni de tipos |
 | 1.7 | 2026-11-19 | Tras la segunda prueba visual de F2: DEC-31 (control del umbral a la derecha del titulo, aviso a todo el ancho colocado por `AlertsTable`, campo con fondo `secondary`); la disposicion de DEC-30 queda obsoleta. Sin cambios de comportamiento ni de tipos |
 | 1.8 | 2026-11-19 | Tras la tercera prueba visual de F2: DEC-32 (color de la etiqueta del umbral) y correccion del caso `0,3`, que depende del idioma del navegador. Sin cambios de comportamiento ni de tipos |
+| 1.9 | 2026-11-19 | Tras la etapa de planificacion de la prueba de traspaso: DEC-33 a DEC-40; se resuelve la contradiccion entre AC-F2-04 y AC-F2-05 (DEC-34); AC-F2-04, AC-F2-05, AC-F3-10 y AC-F3-16 ajustados; seccion [Presentacion de F3](#presentacion-de-f3-v19-dec-40). **Cambia la presentacion** del grafico de F3 (etiqueta en cada barra y descripcion visible, DEC-38 y DEC-39); el resto fija lo que ya hacia la iteracion 1. Tipos sin cambios |
+| 1.10 | 2026-11-19 | Tras la segunda revision de los planes del agente de traspaso: DEC-41 a DEC-43 (resultado visible al volver a una ruta con error, alcance de "sin resultado previo" en la vista comparativa y aspecto del vacio de su grafico). Sin cambios de comportamiento ni de tipos |
+| 1.11 | 2026-11-20 | Tras la implementacion de F3 por el agente de traspaso: DEC-44 (criterio verificable de la carga diferida); motivo de DEC-13 y DEC-36 corregido. Sin cambios de comportamiento ni de tipos |

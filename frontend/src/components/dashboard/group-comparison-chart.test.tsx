@@ -38,6 +38,15 @@ describe('GroupComparisonChart', () => {
     })
   })
 
+  it('shows the description under the title', async () => {
+    // By data-slot: the chart's accessible `desc` holds the same sentence.
+    const description = () => view.container.querySelector('[data-slot="card-description"]')?.textContent
+    for (const props of [{ totals: ONE_GROUP }, { totals: NONE }, { totals: NONE, error: true }]) {
+      view.root.render(<GroupComparisonChart {...props} />)
+      await vi.waitFor(() => expect(description()).toBe('Total income of B2B and B2C in the selected range.'))
+    }
+  })
+
   it('shows the empty message when both totals are zero', async () => {
     view.root.render(<GroupComparisonChart totals={NONE} />)
     await vi.waitFor(() => expect(view.container.querySelector('[role="status"]')?.textContent).toBe(EMPTY))

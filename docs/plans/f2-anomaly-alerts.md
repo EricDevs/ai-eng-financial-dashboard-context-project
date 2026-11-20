@@ -1,6 +1,6 @@
 # F2 - Tabla de alertas de anomalias: plan de implementacion
 
-**Version:** 5.4 | **Fecha:** 2026-11-19 | **Estado:** version de entrega, sin codigo; iteracion 1 en curso (fase 7) | **Spec:** v1.8
+**Version:** 5.5 | **Fecha:** 2026-11-19 | **Estado:** version de entrega, sin codigo | **Spec:** v1.9
 
 **Como ejecutar:** tarea por tarea y en orden; marcar cada paso (`- [ ]`) al completarlo. No empezar una tarea sin que la anterior tenga sus tests en verde. Cada test se ve fallar antes de implementar.
 
@@ -68,7 +68,7 @@
 
 | Test | Entrada | Esperado |
 | --- | --- | --- |
-| `parses thresholds within 0.01 and 1 inclusive` | `"0.3"`, `"0.01"`, `"1"`, `"1.0"` | `0.3`, `0.01`, `1`, `1` |
+| `parses thresholds within 0.01 and 1 inclusive` | `"0.3"`, `"0.01"`, `"1"`, `"1.0"`, `"0.015"` | `0.3`, `0.01`, `1`, `1`, `0.015` (la validez no depende del `step`, DEC-40) |
 | `rejects empty, non-numeric and out-of-range text` | `""`, `" "`, `"abc"`, `"0"`, `"0.009"`, `"1.01"`, `"5"`, `"-0.1"`, `"Infinity"` | `null` |
 
 - [ ] **Paso 2:** `npm --prefix frontend test -- src/lib/financial-utils.test.ts` -> FAIL.
@@ -105,7 +105,8 @@
 **Interfaces (produce):** `AlertsTable(props: AlertsTableProps)` con las props de la spec.
 
 **Comportamiento a implementar:** cabecera de la `Card` con el titulo `Anomaly Alerts` (DEC-06) y la ayuda `Average outcome of all earlier periods in the selected range.` a la izquierda y `ThresholdInput` a la derecha, a la misma altura; en pantallas estrechas el control pasa bajo el titulo (DEC-31). En el contenido, primero el aviso `Enter a value between 0.01 and 1.0.` con `ErrorNotice` si `parseThreshold(thresholdText)` es `null` (a todo el ancho, fuera del control: DEC-31) y despues la tabla o su estado. Cuerpo segun la precedencia (DEC-16):
-- `loading`: tabla con cabecera y 3 filas de `Skeleton` en `tbody`; input activo.
+- `loading`: tabla con cabecera y 3 filas de `Skeleton` en `tbody` (cada una, una celda que ocupa las 4 columnas con una barra `h-5`, DEC-40); input activo.
+- Estilo de la tabla, del vacio y de la carga: [Presentacion de F2](../../frontend/specs/components.md#presentacion-de-f2-v16-dec-30) de la spec (DEC-40).
 - `error`: `Could not load anomaly alerts.` con `ErrorNotice` (DEC-29) y sin tabla.
 - `alerts` vacio o `null`: tabla con cabecera; en `tbody`, un elemento con `role="status"` con `No anomalies detected for the current threshold ({formatPercent(appliedThreshold * 100)}).` y `Try a lower threshold or a wider date range.` (DEC-09, DEC-18).
 - Con filas: `Period` tal cual, `Outcome` y `Avg. of previous periods` con `formatCurrency`, `Increase` con `formatPercent(increase_ratio * 100)`, en el orden recibido.
@@ -146,6 +147,7 @@
 | `refetches with a valid threshold` (AC-F2-03) | `0.5`, `0.01`, `1.0` | `?threshold=0.5`, `?threshold=0.01`, `?threshold=1` |
 | `does not request with an invalid threshold` (AC-F2-04, INV-3) | `""`, `"0"`, `"5"` | sin llamadas nuevas, filas previas y error del input |
 | `refetches alerts when the date filter changes` (AC-F2-05) | umbral `0.5`, inicio `2026-01-01` | `/api/metrics/alerts?threshold=0.5&start_date=2026-01-01` |
+| `refetches alerts with the applied threshold when dates change and the text is invalid` (AC-F2-04/05, DEC-34) | umbral `0.5`; texto `""` (sin llamada); inicio `2026-01-01` | ultima `/api/metrics/alerts?threshold=0.5&start_date=2026-01-01`; el aviso del umbral sigue visible |
 | `does not request alerts with a date filter that cannot be requested` (AC-F2-06, INV-7) | rango invertido; ano `0019-02-02`; inicio `1900-02-02` | sin llamadas nuevas de alertas en los tres casos |
 | `applies a threshold typed during an invalid range once fixed` (AC-F2-13) | inicio `2026-02-01`, fin `2026-01-01`, umbral `0.4` (sin llamada); inicio `2025-12-01` | ultima `/api/metrics/alerts?threshold=0.4&start_date=2025-12-01&end_date=2026-01-01` |
 | `keeps alert errors inside the card` (AC-F2-11, INV-6) | alertas 500, movimientos 200; despues umbral `0.4` con 200 | mensaje en la tarjeta, sin `No se pudo cargar`, KPI con valores; despues sin error |
@@ -183,3 +185,4 @@ Procedimiento del repositorio para verificar cambios del frontend: [.skills/veri
 | 5.2 | 2026-11-18 | Spec 1.6, tras la prueba visual de F2: disposicion de la tarjeta en una columna y tamano del input del umbral (DEC-30) en las Tareas 2 y 3; comprobacion visual AC-F2-14 en la Tarea 5 |
 | 5.3 | 2026-11-19 | Spec 1.7, tras la segunda prueba visual de F2: control del umbral a la derecha del titulo, aviso colocado por `AlertsTable` bajo la cabecera y campo con fondo `secondary` (DEC-31); tests de las Tareas 2 y 3 y rotura de la Tarea 5 ajustados |
 | 5.4 | 2026-11-19 | Spec 1.8, tras la tercera prueba visual de F2: etiqueta del umbral en `muted-foreground` (DEC-32) y caso `0,3` dependiente del idioma del navegador en la Tarea 5 |
+| 5.5 | 2026-11-19 | Spec 1.9, tras la planificacion de la prueba de traspaso: test de umbral invalido con cambio de fechas (DEC-34), `0.015` valido y estilo de la tabla (DEC-40). Iteracion 1 cerrada (fase 7, PR #20) |
