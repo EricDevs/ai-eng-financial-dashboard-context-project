@@ -147,3 +147,107 @@ Sigue [verify-frontend-change](../../.skills/verify-frontend-change/SKILL.md).
 ## Registro de ejecucion
 
 Se rellena en la etapa 2 (Q-12): por tarea, cada comando con su resultado (tests, lint y build, con el tamano del chunk principal), cada mutacion con el cambio, el test que fallo y la restauracion (Q-11), la comprobacion de que Vite sirve el codigo nuevo y los limites encontrados.
+
+Reglas leidas antes de editar: WF, FIN, API y FE. CAL solo en la Tarea 3, porque se reutiliza `getDateRangeIssue` sin cambiarla; DX no aplica (sin cambios de configuracion). Base de F2: commit `857e3f4` (ultimo de F1), con 46 tests en 5 archivos y lint limpio. Todas las comparaciones de esta fase son contra ese commit, no contra otra rama.
+
+### Tarea 1 (2026-11-20)
+
+- Rojo: `npm --prefix frontend test -- src/lib/financial-utils.test.ts` -> 2 fallidos, 9 pasados. Causa: `TypeError: parseThreshold is not a function`, es decir, la funcion aun no existe.
+- Verde: mismo comando -> 11 pasados. Lint y `npx tsc -b` sin errores.
+
+### Tarea 2 (2026-11-20)
+
+- Rojo: `npm --prefix frontend test -- src/components/dashboard/alerts-table.test.tsx` -> `Failed to resolve import "./alerts-table"`, porque el componente aun no existe.
+- Verde a la primera: mismo comando -> 8 pasados. Lint y `npx tsc -b` sin errores. Que estos tests detectan roturas se demuestra con las mutaciones de la Tarea 4.
+- El aviso rojo (DEC-29) es una funcion local `ErrorNotice` en `alerts-table.tsx` con las mismas clases que el aviso de `DateRangePicker`; no se extrae a un componente compartido porque la spec no lo pide.
+
+### Tarea 3 (2026-11-20)
+
+- Tests existentes (Q-10): `busyStates()` pasa a `["true", "true", "true"]` y `["false", "false", "false"]`, y la lista de `h2` anade `Anomaly Alerts`. Siguen con `toEqual`.
+- Rojo: `npm --prefix frontend test -- src/App.test.tsx` -> 11 fallidos y 11 pasados. Fallan los 9 nuevos de F2 (`expected [] to deeply equal [ '2026-03', '2025-12' ]` y `expected [] to include 'Could not load anomaly alerts.'`) y los 2 existentes adaptados (`expected [ 'true', 'true' ] to deeply equal [ 'true', 'true', 'true' ]`). Causa: aun no existe la seccion de alertas.
+- Primera ejecucion tras implementar: 12 pasados y 10 fallidos. Pasan los 9 de F2 y los 2 adaptados; fallan 10 de los 11 tests de F1.
+  - **Causa demostrada por la salida de los asserts, sin cambiar codigo:**
+    - 7 tests (`refetches with only the informed dates`, `accepts a single-day range`, `blocks a date that becomes out of bounds when facets arrives`, `hides the empty notice while reloading`, `clears both dates`, `omits an emptied date` y el de montaje): `Expected: "/api/metrics?start_date=2026-01-01"`, `Received: "/api/metrics/alerts?threshold=0.3&start_date=2026-01-01"`. El hook de alertas pide despues que el de movimientos, asi que su URL es la ultima de `requested`. En el de montaje, la lista ordenada pasa a tener `"/api/metrics/alerts?threshold=0.3"`.
+    - 3 tests (`keeps the last data on an inverted range`, `does not request while the year is being typed`, `works without facets`): `+ "Could not load anomaly alerts."` en la lista exacta de `role="alert"`. Sus rutas no incluyen `/api/metrics/alerts`, y `routeFetch` responde 404 a una ruta sin handler.
+  - Las dos conductas las pide la spec (AC-F2-02, AC-F2-05, AC-F2-11); el fallo esta en el montaje de los tests de F1, no en `App`. El plan no autoriza cambiarlos (Q-10 cubre solo dos tests): anotado como [Q-25](decisions.md#q-25-tests-de-f1-que-dejan-de-pasar-al-anadir-las-alertas) y **parado a la espera de respuesta**. Sin commit de la Tarea 3 hasta entonces.
+- Lint y `npx tsc -b` sin errores con el codigo de la Tarea 3.
+- Respuesta del mantenedor a Q-25: opcion (a). Cambios solo en el montaje de los tests de F1, sin tocar ningun valor esperado:
+  - las 11 llamadas a `routeFetch`/`renderLoaded` de F1 anaden `"/api/metrics/alerts": ok(alertsFixture)` (el fixture sube encima de los tests de F1);
+  - las 7 comprobaciones `requested.at(-1)` pasan a `movementRequests().at(-1)`, que filtra las URL de `/api/metrics` sin otra ruta;
+  - el test de montaje excluye las URL de alertas antes de la comparacion exacta;
+  - las comprobaciones `expect(requested).toHaveLength(count)` no cambian: con un rango no pedible tampoco se piden alertas, asi que siguen contando todas las rutas.
+- Verde: `npm --prefix frontend test -- src/App.test.tsx` -> 22 pasados. Suite completa `npm --prefix frontend test` -> 6 archivos, 65 pasados (46 de F1 + 2 de la Tarea 1 + 8 de la Tarea 2 + 9 de la Tarea 3). Lint y `npx tsc -b` sin errores.
+- Nota: los textos anadidos con heredoc quedaron con LF en archivos con CRLF (checkout con `core.autocrlf=true`); `App.test.tsx` se normalizo a CRLF. Git guarda LF en el commit en ambos casos.
+
+### Tarea 4: verificacion (2026-11-20)
+
+**Cambio presente.** `git diff --stat 857e3f4 -- frontend/` (ultimo commit de F1 en esta rama) muestra los 7 archivos de F2: `App.tsx`, `App.test.tsx`, `alerts-table.tsx`, `alerts-table.test.tsx`, `threshold-input.tsx`, `financial-utils.ts` y `financial-utils.test.ts` (513 inserciones, 22 borrados). Commits `06ef974`, `6c179de` y `2c0fa7d`.
+
+**Comandos:**
+
+| Comando | Resultado |
+| --- | --- |
+| `npm --prefix frontend run lint` | Sin errores ni avisos |
+| `npm --prefix frontend test` | 6 archivos, 65 tests pasados (F1: 5 archivos, 46). Ver el test inestable mas abajo |
+| `npm --prefix frontend run build` | Exit 0, sin avisos |
+
+Tamanos del build frente a F1:
+
+| Chunk | F1 | F2 | Diferencia |
+| --- | --- | --- | --- |
+| Principal | 190.94 kB (gzip 60.89 kB) | 194.44 kB (gzip 61.74 kB) | +3.50 kB: `AlertsTable`, `ThresholdInput` y `parseThreshold` |
+| Compartido | `card-*.js` 40.85 kB | `skeleton-*.js` 40.99 kB | +0.14 kB; Vite le da otro nombre |
+| `LineChart-*.js` | 342.29 kB | 342.29 kB | Sin cambio |
+| Graficos | 9.86 y 6.68 kB | 9.86 y 6.69 kB | Sin cambio relevante |
+
+**Mutaciones (Q-11).** Un script en el scratchpad aplica cada rotura, ejecuta `npx vitest run` completo y restaura con `git checkout -- <archivo>` (en un `finally`). Al final `git status --short src` quedo vacio.
+
+| # | Rotura | Tests que fallaron |
+| --- | --- | --- |
+| 1 | `parseThreshold` acepta `0` (`value >= 0`) | `parseThreshold > rejects empty, non-numeric and out-of-range text` y `does not request with an invalid threshold` |
+| 2 | Vacio sin `role="status"` | `AlertsTable > keeps the table head on an empty result` |
+| 3 | Se envia `group_by: "month"` a alertas | 6 de F2: `requests alerts with the default threshold on mount`, `refetches with a valid threshold`, `requests a threshold outside the input step`, `refetches alerts when dates change`, `applies a threshold typed during an invalid range` y `uses the applied threshold when dates change` |
+| 4 | Alertas tambien con `dateIssue === "inverted"` | `does not request alerts on an invalid range`, `applies a threshold typed during an invalid range` y, de F1, `keeps the last data on an inverted range` |
+| 5 | Error de alertas tambien en el banner global (`error` o `alerts.error`) | `keeps alert errors inside the card` |
+| 6 | Ruta de alertas `null` con el texto del umbral invalido (DEC-34) | `uses the applied threshold when dates change` |
+
+- La primera version de la mutacion 4 estaba mal escrita: `dateIssue !== "inverted"` pide alertas con `incomplete` y `outOfBounds`, no con el rango invertido. Fallaron `does not request while the year is being typed` y `blocks a date that becomes out of bounds when facets arrives`, que es correcto para esa rotura pero no era la pedida. Se repitio con `dateIssue === null || dateIssue === "inverted"` (fila 4).
+- En las mutaciones 2 y 6, y en una de tres pasadas de la 1, fallo tambien `announces a load error in Spanish and keeps the heading structure`. No depende de las mutaciones: ver el apartado siguiente.
+
+**Test inestable anterior a F2: `announces a load error in Spanish and keeps the heading structure`.**
+
+- Sintoma: `expected [ 'Total Income', …(5) ] to include 'Income vs. Outcome'` en el primer `vi.waitFor` del test.
+- **Causa demostrada:**
+  - Los `h2` presentes son los 4 KPI y `Anomaly Alerts`: los dos graficos siguen en el `Suspense` de su `lazy()` porque el chunk de Recharts aun no se ha cargado. `vi.waitFor` se rinde a los 1000 ms (su valor por defecto).
+  - Con `--reporter=verbose`, el test dura 579-743 ms cuando pasa y 1020-1023 ms cuando falla: va justo por debajo del limite.
+  - Sobre el codigo de F2 sin mutar: 8 de 8 pasadas verdes con el reporter por defecto y 2 fallos en 4 con `--reporter=verbose`. Solo `src/App.test.tsx`: 2 de 2 verdes (579 y 642 ms).
+  - Sobre el codigo de F1 (`git checkout 857e3f4 -- frontend/src` con los 5 archivos de test de F1, restaurado despues con `git checkout HEAD -- frontend/src` y `git status` vacio): 4 fallos en 8 pasadas, con 993-1294 ms. **El fallo ya existia en F1**; F2 no lo introduce.
+  - Un intento previo de medir F1 en un `git worktree` con `node_modules` enlazado fallo (`Cannot read properties of undefined (reading 'config')`); se descarto y se borraron el enlace y el worktree.
+- No se corrige: el test es anterior a F2 y el plan no lo cubre. Anotado como [Q-26](decisions.md#q-26-test-inestable-por-la-carga-diferida-de-los-graficos).
+
+**App en Docker:**
+
+- `docker compose ps`: `backend` y `frontend` arriba.
+- Primera comprobacion: `curl -s http://localhost:5173/src/App.tsx | grep -c AlertsTable` -> 0, y `parseThreshold` en el `financial-utils.ts` servido -> 0. En cambio, `alerts-table.tsx` (archivo nuevo) si se servia.
+  - **Causa demostrada:** `docker compose exec -T frontend grep -c AlertsTable src/App.tsx` -> 2 (el contenedor tiene el archivo nuevo) y el `App.tsx` servido tenia `DateRangePicker` (codigo de F1). Vite servia la version anterior de los modulos modificados, la misma trampa que en F1.
+  - `docker compose restart frontend` -> `AlertsTable` 2, `parseThreshold` 1 y `bg-secondary` en `threshold-input.tsx` 1.
+- Proxy: `curl -s 'http://localhost:5173/api/metrics/alerts?threshold=0.3'` -> 4 filas.
+
+**Valores esperados para la prueba visual.** Pedidos al backend (`http://localhost:8000/api/metrics/alerts`) sin pasar por el frontend, y formateados en Node con `Intl.NumberFormat("en-US", USD, 0 decimales)` y `toFixed(1)`, como la app. Python con `round()` daba `$57,416` para `57416.5` (redondeo a par); la app muestra `$57,417`. Dependen de la fecha de hoy.
+
+| Umbral y fechas | Filas (`Period`, `Outcome`, `Avg. of previous periods`, `Increase`) |
+| --- | --- |
+| `0.3`, sin fechas | `2025-12` $103,379 $41,404 149.7%; `2026-03` $88,077 $55,334 59.2%; `2026-06` $80,212 $57,417 39.7%; `2026-08` $82,189 $60,292 36.3% |
+| `0.5` | `2025-12` y `2026-03` |
+| `1` | `2025-12` |
+| `0.01` | las 4 de `0.3` mas `2026-09` $76,372 $62,482 22.2% |
+| `0.3`, `2026-01-01` a `2026-01-31` | `[]`: vacio con `(30.0%)` |
+| `0.3`, desde `2026-03-01` | `2026-06` $80,212 $60,193 33.3% (la base cambia con el rango) |
+
+**Revision final:** autorrevision del diff `857e3f4..HEAD` en `frontend/src`. No se lanzo un revisor independiente porque en esta sesion solo se lanzan agentes si el mantenedor lo pide. Sin hallazgos que corregir.
+
+**Limites:**
+
+- No se probo con un lector de pantalla real, ni con zoom, ni en navegadores distintos del de la prueba visual.
+- La disposicion de la tarjeta (AC-F2-14) y los estilos (DEC-31, DEC-32, DEC-40) no los cubren los tests.
+- jsdom no reproduce como trata el navegador `0,3` en un `input type="number"`; se comprueba en la prueba visual.

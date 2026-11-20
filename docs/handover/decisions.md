@@ -3,7 +3,7 @@
 Fase 9 (prueba de traspaso, [ROADMAP-Project-3](../entregables/ROADMAP-Project-3.md#92-fase-9-prueba-de-traspaso)).
 Fuente: [frontend/specs](../../frontend/specs/README.md). Q-01 a Q-21 salen de la spec v1.8
 (etapa 1); su `Estado` se reviso contra la v1.9 (2026-11-19). Q-22 a Q-24 salen de la
-v1.9 y su `Estado` se reviso contra la v1.10 (2026-11-19). La v1.10 no genera dudas nuevas. Cada entrada anota una pregunta, hueco o decision que la spec no resuelve:
+v1.9 y su `Estado` se reviso contra la v1.10 (2026-11-19). La v1.10 no genera dudas nuevas. Q-25 en adelante salen de la implementacion (etapa 2). Cada entrada anota una pregunta, hueco o decision que la spec no resuelve:
 seccion, duda, opciones y propuesta. **Ninguna entrada pendiente se aplica hasta que el
 mantenedor responda.**
 
@@ -172,6 +172,32 @@ Las tres las cierra la v1.10 (DEC-41 a DEC-43). Al releer la v1.10 no aparecio n
   - (b) Solo el mensaje, sin titulo ni descripcion.
 - **Propuesta:** (a). AC-F3-11 dice "en lugar de las barras", es decir, dentro de la tarjeta, y asi no hay salto de altura.
 - **Estado:** resuelta por la spec v1.10: DEC-43, en la [Presentacion de F3](../../frontend/specs/components.md#presentacion-de-f3-v19-dec-40) (fila `Vacio del grafico`). Coincide con (a). Para el error, DEC-43 no nombra el titulo, pero la fila `Errores` ya lo centra "en el area de 280 px", que es el area del grafico bajo la cabecera (DEC-39). Leo que en el error el titulo y la descripcion tambien se ven. No abro una entrada nueva porque la spec lo implica; si no es asi, el test `shows the comparison error` de la Tarea 4 de F3 es el que cambia. **Confirmado por el mantenedor (2026-11-19):** con error, el grafico muestra titulo y descripcion y el aviso va centrado en el area de 280 px.
+
+## Dudas de la implementacion (etapa 2)
+
+### Q-25. Tests de F1 que dejan de pasar al anadir las alertas
+
+- **Seccion:** [F2, Tarea 3](f2-plan.md#tarea-3-integracion-en-app) y Q-10. Q-10 solo autoriza cambiar los valores esperados de los dos tests de `App loading and error states`; el plan no menciona los tests de `F1 date range filter`.
+- **Duda:** con `App` pidiendo alertas, 10 de los 11 tests de F1 fallan sin que haya un defecto (evidencia en el [Registro de ejecucion de F2](f2-plan.md#tarea-3-2026-11-20)):
+  - 7 comprueban `requested.at(-1)` tras cambiar fechas, y ahora la ultima URL es la de alertas (`/api/metrics/alerts?threshold=0.3&start_date=...`), que la spec exige pedir tambien (AC-F2-05). El test de montaje compara la lista exacta de URLs, que pasa de 2 a 3 (AC-F2-02).
+  - 3 comparan la lista exacta de `role="alert"`. Sus rutas de `routeFetch` no incluyen `/api/metrics/alerts`, el stub devuelve 404 y aparece `Could not load anomaly alerts.` (AC-F2-11).
+- **Opciones:**
+  - (a) Cambiar solo el montaje de los tests de F1, sin tocar ningun valor esperado: (1) anadir `/api/metrics/alerts` a sus rutas con el fixture de alertas, asi no aparece el error; (2) comprobar la ultima URL de movimientos (`/api/metrics` sin `/alerts`) en lugar de la ultima URL de cualquier ruta, y en el test de montaje excluir las URL de alertas de la lista exacta. Las comparaciones siguen siendo exactas.
+  - (b) Lo mismo que (a), pero el test de montaje compara la lista completa con la URL de alertas incluida (`["/api/metrics", "/api/metrics/alerts?threshold=0.3", "/api/metrics/facets"]`). Mezcla F2 en un test de F1, pero no filtra nada.
+  - (c) Mantener la ruta de alertas con 404 en los tests de F1 y buscar los avisos solo dentro del grupo `Date range`. Oculta cualquier `role="alert"` inesperado fuera del picker; no la recomiendo.
+- **Propuesta:** (a). Los tests de F1 siguen comprobando lo mismo (URL de movimientos, avisos exactos) y la peticion de alertas la cubren los tests de F2.
+- **Estado:** sigue abierta en la spec, que no habla de los tests existentes. **Respuesta del mantenedor (2026-11-20):** opcion (a).
+
+### Q-26. Test inestable por la carga diferida de los graficos
+
+- **Seccion:** [F2, Tarea 4](f2-plan.md#tarea-4-verificacion-2026-11-20), regla WF (no debilitar asserts) y DEC-19. El test es anterior a F2 y el plan no lo trata.
+- **Duda:** `announces a load error in Spanish and keeps the heading structure` falla a veces con `expected [ 'Total Income', …(5) ] to include 'Income vs. Outcome'`. Los graficos son `lazy()` y su chunk de Recharts tarda en cargarse; el primer `vi.waitFor` del test tiene el limite por defecto de 1000 ms y el test dura entre 580 y 1300 ms. Con el codigo de F1 fallo 4 de 8 veces: ya existia antes de F2.
+- **Opciones:**
+  - (a) Dar a ese `vi.waitFor` un limite mayor (`{ timeout: 3000 }`, por debajo de los 5000 ms del test). No cambia ningun valor esperado.
+  - (b) Cargar los dos modulos de graficos en un `beforeAll` de `App.test.tsx` (`await import(...)`), para que `lazy()` los encuentre ya cargados. Tampoco cambia los asserts, pero el test deja de pasar por el `Suspense`.
+  - (c) No tocarlo en F2 y dejarlo anotado como defecto conocido.
+- **Propuesta:** (a). Es el cambio mas pequeno, ataca la causa (el limite de espera de un chunk diferido) y no cambia lo que comprueba el test.
+- **Estado:** pendiente.
 
 ## Observaciones (no requieren respuesta)
 
