@@ -209,6 +209,51 @@ Comprobacion independiente en la rama de traspaso, sin modificarla:
 
 Prueba visual del usuario: umbrales `0.3`, `0.5`, `1`, `0.01`, rango de un mes y desde `2026-03-01` con los valores calculados por el agente; disposicion de la tarjeta; umbral invalido; texto invalido con cambio de fecha (DEC-34); backend parado. "Perfectas todas las comprobaciones". Sin hallazgos.
 
-#### F3
+#### F3 (2026-11-20)
+
+Mensaje: Q-26 con la opcion (a), F2 aprobado y paso a F3 con las mismas reglas.
+
+| Commit | Contenido |
+| --- | --- |
+| `efa1456` | Q-26: limite mayor solo en la espera de los graficos diferidos del test de F2 |
+| `09af430` | Tarea 1: tipos y utilidades de grupo |
+| `0cac710` | Tarea 2: `ViewTabs` |
+| `94fa240` | Tarea 3: `GroupTopTable` y `ErrorNotice` compartido |
+| `3148311` | Tarea 4: `GroupComparisonChart` |
+| `da069ec` | Tarea 5: vista comparativa y pestanas en `App` |
+| `1ea87e5` | Tarea 6: verificacion y registro de ejecucion |
+
+**Dudas anotadas durante la implementacion: una, Q-27.** Con la mutacion 5 de su plan (importar `GroupComparisonChart` en `App` sin `lazy`), el build no da el aviso de chunk > 500 kB que DEC-13 daba por consecuencia. Vite 8.0.8 pone Recharts en un chunk compartido (372 kB) que el principal importa y `index.html` precarga: la rotura existe, pero el criterio no la detecta. Propuso comprobar los imports del chunk principal y las precargas de `index.html`. Recomendada esa opcion; respuesta del usuario pendiente de enviar.
+
+Q-27 si es un hueco de la spec, y tambien de nuestro plan de F3, que usaba el mismo criterio ("sin aviso > 500 kB") y no habria detectado la rotura. Correccion:
+
+| Commit | Contenido |
+| --- | --- |
+| `54ee951` | Spec v1.11: DEC-44 (criterio verificable de la carga diferida); motivo de DEC-13 y DEC-36 corregido. Sin cambios de comportamiento |
+| `cb75242` | Plan F3 v5.6 con el criterio de DEC-44 |
+
+La rama de traspaso se queda en la v1.10: la implementacion ya estaba hecha y DEC-44 no cambia el producto.
+
+Del registro de ejecucion (`docs/handover/f3-plan.md`):
+
+- Paso rojo de TDD y 6 mutaciones; las 5 que afectan a tests las detecta al menos un test.
+- En F3 extrajo el aviso rojo a `ErrorNotice` compartido, al pasar a tres usos, como hizo la iteracion 1 en F2. Colorea las barras con `shape`, no con `Cell`.
+- Esperas de la vista comparativa diferida con `{ timeout: 3000 }`, por la causa demostrada en Q-26.
+- Vite volvio a servir los modulos modificados anteriores; demostrado y resuelto como en F1 y F2.
+- Valores esperados pedidos al backend; dias con un solo grupo con ingresos sacados de `GET /api/metrics`.
+
+Comprobacion independiente en la rama de traspaso, sin modificarla:
+
+| Comando (desde la raiz) | Resultado |
+| --- | --- |
+| `npm --prefix frontend test` (3 pasadas) | 9 archivos, 93 passed en las 3: la correccion de Q-26 estabilizo el test (iteracion 1 tras F3: 110) |
+| `npm --prefix frontend run lint` | Sin errores ni avisos |
+| `npm --prefix frontend run build` | Sin avisos; chunk principal 193.90 kB, `comparison-page` 20.61 kB (iteracion 1: 193.74 y 19.91 kB) |
+| Precargas de `dist/index.html` e imports del chunk principal | Solo `skeleton-*.js` y `use-api-resource-*.js`: Recharts no entra en la carga inicial (DEC-44) |
+| `curl -s http://localhost:5173/src/App.tsx \| grep -c ComparisonPage` | 6: Vite sirve el codigo de F3 |
+
+Prueba visual del usuario: valores de las dos tablas y del grafico sin filtro, enero de 2026 y tres dias (B2B vacio, B2C vacio y ambos vacios, con la etiqueta `$0`), pestanas y foco, cambio de vista, disposicion, vuelta al dashboard sin saltos y errores con el backend parado. "Todo perfecto en las pruebas". Sin hallazgos.
+
+#### Resumen final del agente
 
 Pendiente.
