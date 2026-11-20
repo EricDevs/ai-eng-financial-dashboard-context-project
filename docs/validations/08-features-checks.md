@@ -2,6 +2,8 @@
 
 Evidencia de la implementacion (iteracion 1) de las specs de [frontend/specs](../../frontend/specs/README.md), siguiendo los planes de [docs/plans](../plans).
 
+Cambios posteriores (fase 9, spec v1.9 a v1.11): la prueba de traspaso llevo a anadir al grafico de F3 la etiqueta de importe en cada barra y una descripcion visible, colorear sus barras con `shape` en lugar de `Cell` y anadir tests de los comportamientos que fijo la spec (117 tests). Evidencia en [09-handover-checks.md](09-handover-checks.md); las cifras de este documento son las de cada fase.
+
 ## F1 - Filtro de rango de fechas
 
 Fecha: 2026-11-18. Rama `feature/frontend-specs-v2-fase6-f1`; codigo en el commit `2b8f862`. Se empezo con la spec v1.3 y el plan v5.0; la prueba visual llevo la spec a v1.4 y el plan a v7.0 (version de entrega sin codigo: v8.0).
