@@ -256,4 +256,46 @@ Prueba visual del usuario: valores de las dos tablas y del grafico sin filtro, e
 
 #### Resumen final del agente
 
-Pendiente.
+Mensaje: Q-27 con la opcion (a), F3 aprobado, y resumen final con las entradas por tipo y las decisiones tomadas sin preguntar. Respuesta (rama de traspaso en `20b43c3`, 22 commits, subida para conservarla):
+
+| Tipo | Entradas |
+| --- | --- |
+| Resueltas por la spec | 21: Q-01 a Q-09 y Q-13 a Q-21 (v1.9), Q-22 a Q-24 (v1.10) |
+| De proceso, respondidas por el usuario | 6: Q-10 a Q-12, Q-25 a Q-27 |
+| Abiertas | 0 |
+
+Decisiones que el agente declara haber tomado sin preguntar, clasificadas:
+
+| Decision | Tipo |
+| --- | --- |
+| `ErrorNotice` en un archivo propio al llegar a F3 | Implementacion; la iteracion 1 hizo lo mismo en F2 |
+| `ComparisonFallback` con las dos `section` y su `aria-busy`, como la vista cargada | Implementacion |
+| Tabla de alertas con cuerpo vacio si no hay resultado, carga ni error | Caso que la spec no cubre, pero inalcanzable en la app: con la ruta a `null` la tarjeta no se ve (vista comparativa) y al volver al dashboard la ruta pide y hay carga. La iteracion 1 mostraria ahi el mensaje de vacio. Sin cambio de spec |
+| Ancho fijo del input del umbral, alineacion de la cabecera de alertas, `py-2` del vacio, margenes y ejes del grafico de barras, separacion de las barras de carga | Detalle visual por debajo del nivel de la spec; aprobado en las pruebas visuales |
+| Esperas de 3 s, `routeFetch` con la URL, finales de linea | Montaje de los tests |
+
+Ninguna es una decision de producto.
+
+### Comparacion con la iteracion 1
+
+| Aspecto | Iteracion 1 (con contexto) | Traspaso (sin contexto, spec v1.10) |
+| --- | --- | --- |
+| Planes | F1 6 tareas, F2 5, F3 7, en `docs/plans` | F1 5, F2 4, F3 6, en `docs/handover`: une el cliente API y el hook, `ThresholdInput` y `AlertsTable`, y `ComparisonPage` con `App`. Mismo orden y mismos componentes |
+| Registro | Evidencia aparte en `08-features-checks.md` | "Registro de ejecucion" al final de cada plan (Q-12) |
+| Archivos de `frontend/src` | Los mismos, salvo los de abajo | Igual; helpers de test en `test-utils.ts` (nosotros `test-helpers.ts`) y sin archivos de test propios para `ThresholdInput` y `ComparisonPage`, que cubre desde `AlertsTable` y `App` |
+| Tests | 117 (11 archivos) | 93 (9 archivos) |
+| Chunk principal | 193.74 kB | 193.90 kB |
+| Carga diferida (DEC-44) | Cumple: el principal solo importa y precarga `financial-utils` y `use-api-resource` | Cumple: solo `skeleton` y `use-api-resource` |
+| Pruebas visuales | F1 2 rondas, F2 4, F3 1, mas la de la v1.9 | F1, F2 y F3 aprobadas a la primera |
+| Trampas encontradas | Vite sirviendo modulos viejos, renders agrupados en tests, graficos diferidos de mas de 1 s | Las mismas tres, con la causa demostrada antes de corregir |
+
+### Conclusion
+
+Con la spec v1.10, un agente sin contexto planifico e implemento F1, F2 y F3, con tests en verde, las tres pruebas visuales del usuario aprobadas a la primera y ninguna decision de producto propia. La spec v1.8, la que la iteracion 1 dio por buena, no bastaba: hicieron falta tres versiones mas (v1.9 a v1.11) para cerrar 22 huecos de la spec (21 en la planificacion y DEC-44 en la implementacion). La mayoria eran decisiones que la iteracion 1 tomo con todo el contexto de la conversacion y no paso a la spec.
+
+### Limites
+
+- Un solo agente y una sola ejecucion; otro modelo u otra ejecucion podria encontrar otros huecos.
+- La restriccion de no consultar otras ramas ni el historial dependia de las instrucciones; se respeto salvo el `git diff --stat main` de F1, que solo mostraba estadisticas de sus cambios.
+- El agente leyo el roadmap y la memoria del proyecto de su rama (permitido), que describen el ejercicio pero no la implementacion.
+- Detalles visuales finos quedaron a criterio del agente y se validaron solo en la prueba visual.

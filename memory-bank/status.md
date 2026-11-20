@@ -1,6 +1,6 @@
 # Status
 
-Revision: 2026-11-19, F1 a F3 de la ampliacion v2 del proyecto 3 (antes: 2026-11-17, cierre del proyecto 4). Fuentes: [01-structure.md](../docs/validations/01-structure.md),
+Revision: 2026-11-20, F1 a F3 y prueba de traspaso de la ampliacion v2 del proyecto 3 (antes: 2026-11-17, cierre del proyecto 4). Fuentes: [01-structure.md](../docs/validations/01-structure.md),
 [03-verification-resume.md](../docs/validations/03-verification-resume.md),
 [02-handover-checks.md](../docs/validations/02-handover-checks.md),
 [05-rules-checks.md](../docs/validations/05-rules-checks.md),
@@ -36,8 +36,8 @@ enlaza el check que lo demuestra.
   alertas de anomalias (`/alerts?threshold=`) y F3 comparativa B2B vs B2C
   (`/categories/top`). Tipos verificados contra `/openapi.json` en vivo;
   evidencia en [verification.md](../frontend/specs/verification.md).
-- Revision 2026-11-19 (ampliacion v2 de [ROADMAP-Project-3](../docs/entregables/ROADMAP-Project-3.md)):
-  spec v1.8 con decisiones `DEC-01` a `DEC-32` y planes en [docs/plans](../docs/plans).
+- Revision 2026-11-20 (ampliacion v2 de [ROADMAP-Project-3](../docs/entregables/ROADMAP-Project-3.md)):
+  spec v1.11 con decisiones `DEC-01` a `DEC-44` y planes en [docs/plans](../docs/plans).
 - **F1 implementado** (iteracion 1, fase 6): filtro de fechas con `facets`,
   validacion unica de peticion (`getDateRangeIssue`), capa de datos
   compartida (`api.ts`, `useApiResource`); prueba visual del usuario
@@ -50,7 +50,14 @@ enlaza el check que lo demuestra.
   diferido; prueba visual del usuario aprobada en una ronda, sin cambios de
   spec. 110 tests frontend.
 - Evidencia de F1, F2 y F3 en [08-features-checks.md](../docs/validations/08-features-checks.md).
-- Pendiente: prueba de traspaso sin contexto (fase 9 de ROADMAP-Project-3).
+- **Prueba de traspaso** (fase 9): un agente sin contexto planifico e
+  implemento F1 a F3 desde la spec, con sus tres pruebas visuales aprobadas a
+  la primera y ninguna decision de producto propia. La spec v1.8 no bastaba:
+  la v1.9 a la v1.11 cerraron 22 huecos (DEC-33 a DEC-44), sobre todo
+  decisiones que la iteracion 1 tomo sin anotarlas. La iteracion 1 se ajusto
+  a la v1.9 (etiquetas y descripcion del grafico de F3) y suma 117 tests. Su
+  codigo queda en `feature/frontend-specs-v2-fase9-handover`, sin integrar.
+  Evidencia en [09-handover-checks.md](../docs/validations/09-handover-checks.md).
 
 ## Gaps conocidos (no corregidos; fuera de alcance sin acuerdo explicito)
 

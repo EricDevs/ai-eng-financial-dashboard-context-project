@@ -68,8 +68,8 @@ Revision: 2026-11-17, cierre del proyecto 4. Fuentes: [requirements.txt](../back
 
 - Backend: `uv run --no-project --python 3.13 --with-requirements backend/requirements.txt pytest backend/tests/test_routes.py -q`
   -> 15 passed (BACKEND-TEST-01; reconfirmado en fase 3, API-01).
-- Frontend tests: `npm --prefix frontend test` -> 11 archivos, 110 passed
-  (2026-11-19, tras F3): `financial-utils.test.ts`, `api.test.ts`,
+- Frontend tests: `npm --prefix frontend test` -> 11 archivos, 117 passed
+  (2026-11-20, tras ajustar la iteracion 1 a la spec v1.10; 110 tras F3): `financial-utils.test.ts`, `api.test.ts`,
   `use-api-resource.test.tsx`, `date-range-picker.test.tsx`,
   `threshold-input.test.tsx`, `alerts-table.test.tsx`, `view-tabs.test.tsx`,
   `group-top-table.test.tsx`, `group-comparison-chart.test.tsx`,
@@ -78,7 +78,10 @@ Revision: 2026-11-17, cierre del proyecto 4. Fuentes: [requirements.txt](../back
   que dependen de los graficos diferidos usan un limite de 5 s: con el de
   1 s por defecto fallaban en esta maquina (~1.1 s de carga en jsdom).
   Build sin avisos: chunk principal 191.21 kB tras F1, 194.52 kB tras F2 y
-  193.74 kB tras F3 (vista comparativa en su chunk diferido, 19.91 kB).
+  193.74 kB tras F3 (vista comparativa en su chunk diferido, 19.91 kB; 20.10 kB
+  tras la spec v1.9). La carga diferida se comprueba en el build (DEC-44): el
+  chunk principal no importa ni `dist/index.html` precarga el chunk de
+  Recharts; el aviso de 500 kB no sirve de prueba con Vite 8.
 - Lint: `npm --prefix frontend run lint` -> sin errores/avisos
   (FRONTEND-LINT-01; reconfirmado en el proyecto 4).
 - Build: `npm --prefix frontend run build` (`tsc -b && vite build`) -> exitoso
