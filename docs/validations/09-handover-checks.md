@@ -169,6 +169,46 @@ Prueba visual del usuario (2026-11-20): comprobo F1 manualmente y "funciona todo
 
 Observacion: para verificar que el cambio estaba presente, el agente ejecuto `git diff --stat main -- frontend/`, que consulta otra rama. Solo muestra estadisticas de sus propios cambios frente a `main`, sin codigo de la iteracion 1, pero roza la restriccion del prompt.
 
-#### F2
+#### F2 (2026-11-20)
+
+Mensaje: F1 aprobado; comparar solo con commits de esta rama (no `main`); F2 con las mismas reglas.
+
+| Commit | Contenido |
+| --- | --- |
+| `06ef974` | Tarea 1: `parseThreshold` |
+| `6c179de` | Tarea 2: `AlertsTable` y `ThresholdInput` |
+| `2c0fa7d` | Tarea 3: integracion bajo los graficos |
+| `0ac2e43` | Tarea 4: verificacion y registro de ejecucion |
+
+El agente comparo con `857e3f4`, el ultimo commit de F1 en su rama, como se le pidio.
+
+**Dudas anotadas durante la implementacion: dos, ambas de proceso, ninguna de producto.**
+
+| Entrada | Duda | Respuesta |
+| --- | --- | --- |
+| Q-25 | Al pedir alertas, 10 de los 11 tests de F1 fallan sin defecto: comprobaban la ultima URL pedida (ahora la de alertas) o la lista exacta de avisos (sus stubs respondian 404 a las alertas). El plan solo autorizaba adaptar dos tests (Q-10) | Usuario: opcion (a), cambiar solo el montaje de los tests de F1 (ruta de alertas en los stubs, ultima URL de movimientos), sin tocar valores esperados |
+| Q-26 | `announces a load error in Spanish and keeps the heading structure` falla a veces: los graficos diferidos tardan cerca de 1 s y `vi.waitFor` se rinde a los 1000 ms. Demostro que ya fallaba con su codigo de F1 (4 de 8 pasadas) | Recomendada la opcion (a): ampliar el limite solo en esa espera. Es la misma correccion que la iteracion 1 (`LAZY_CHARTS`, ver F1 en [08-features-checks.md](08-features-checks.md)). Respuesta del usuario pendiente de enviar |
+
+Ninguna de las dos es un hueco de la spec: Q-25 es mantenimiento de los tests propios del agente y Q-26 un defecto del test de partida, que no se corrigio antes de la prueba para no dar pistas.
+
+Del registro de ejecucion (`docs/handover/f2-plan.md`):
+
+- Paso rojo de TDD y 6 mutaciones, cada una detectada. La primera version de la mutacion 4 estaba mal escrita; lo detecto por los tests que fallaron y la repitio.
+- Vite volvio a servir los modulos modificados anteriores; demostrado con `docker compose exec` y resuelto con `docker compose restart frontend`.
+- Valores esperados pedidos al backend y formateados en Node como la app; senalo que `round()` de Python daba `$57,416` donde la app muestra `$57,417`.
+- Decision de implementacion, no de producto: el aviso rojo (DEC-29) es una funcion local de `alerts-table.tsx` con las clases del aviso del filtro, no un componente compartido como el `ErrorNotice` de la iteracion 1, porque la spec no lo pide.
+
+Comprobacion independiente en la rama de traspaso, sin modificarla:
+
+| Comando (desde la raiz) | Resultado |
+| --- | --- |
+| `npm --prefix frontend test` (3 pasadas) | 65 tests; 2 pasadas con 1 fallo (`announces a load error in Spanish and keeps the heading structure`, el de Q-26) y 1 verde (iteracion 1 tras F2: 76) |
+| `npm --prefix frontend run lint` | Sin errores ni avisos |
+| `npm --prefix frontend run build` | Sin avisos; chunk principal 194.44 kB (iteracion 1 tras F2: 194.52 kB) |
+| `curl -s http://localhost:5173/src/App.tsx \| grep -c AlertsTable` | 2: Vite sirve el codigo de F2 |
+
+Prueba visual del usuario: umbrales `0.3`, `0.5`, `1`, `0.01`, rango de un mes y desde `2026-03-01` con los valores calculados por el agente; disposicion de la tarjeta; umbral invalido; texto invalido con cambio de fecha (DEC-34); backend parado. "Perfectas todas las comprobaciones". Sin hallazgos.
+
+#### F3
 
 Pendiente.
