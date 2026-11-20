@@ -131,4 +131,44 @@ Conclusion de la etapa 1: con la spec v1.10, un agente sin contexto planifica F1
 
 ### Ronda 1, etapa 2: implementacion
 
+Mensaje de aprobacion: implementar solo F1 siguiendo `docs/handover/f1-plan.md`, anotar como Q-25 en adelante lo que la spec no resuelva, demostrar la causa de cada test que falle y parar para la prueba visual.
+
+#### F1 (2026-11-19 y 2026-11-20)
+
+| Commit | Contenido |
+| --- | --- |
+| `dfe6587` | Tarea 1: utilidades de fecha y tipos de la API |
+| `0b11411` | Tarea 2: `api.ts` y `useApiResource` |
+| `07da7fb` | Tarea 3: `DateRangePicker` |
+| `3491bd1` | Tarea 4: integracion en el dashboard |
+| `857e3f4` | Tarea 5: verificacion y registro de ejecucion en el plan |
+
+**Decisiones propias: ninguna.** No hubo entradas nuevas en `decisions.md` durante la implementacion.
+
+Del registro de ejecucion del agente (`docs/handover/f1-plan.md`):
+
+- Paso rojo de TDD con la causa de cada fallo (modulos o funciones aun inexistentes) y 6 mutaciones, cada una detectada por al menos un test y restaurada con `git checkout -- <archivo>`.
+- Dos fallos de tests, con la causa demostrada antes de corregir:
+  - Dos `root.render` seguidos se agrupan y React no confirma el paso a `null`; lo probo con un `console.log` temporal. Es la misma trampa que encontro la iteracion 1 al revisar la v1.9.
+  - `renderPicker` volvia antes de que React confirmara las props nuevas; lo probo con aserciones temporales.
+
+  En los dos casos corrigio el montaje del test sin cambiar las aserciones.
+- Vite en Docker servia el `App.tsx` anterior aunque el contenedor tenia el nuevo; lo demostro con `docker compose exec` y lo resolvio con `docker compose restart frontend`, como indica `verify-frontend-change`.
+- Valores esperados para la prueba visual calculados sobre `GET /api/metrics`, sin pasar por el frontend.
+- Senalo dos puntos para revisar: el aviso `No movements found...` queda a 32 px del filtro (`gap-8`, orden de DEC-19), y `DateRangePicker` repite la comprobacion de fuera de rango para colocar `aria-invalid`, porque la spec fija la firma de `getDateRangeIssue`.
+
+Comprobacion independiente en la rama de traspaso, sin modificarla:
+
+| Comando (desde la raiz) | Resultado |
+| --- | --- |
+| `npm --prefix frontend test` | 5 archivos, 46 passed (iteracion 1 tras F1: 51) |
+| `npm --prefix frontend run lint` | Sin errores ni avisos |
+| `npm --prefix frontend run build` | Sin avisos; chunk principal 190.94 kB (iteracion 1 tras F1: 191.21 kB) |
+
+Prueba visual del usuario (2026-11-20): comprobo F1 manualmente y "funciona todo perfecto". Sin hallazgos.
+
+Observacion: para verificar que el cambio estaba presente, el agente ejecuto `git diff --stat main -- frontend/`, que consulta otra rama. Solo muestra estadisticas de sus propios cambios frente a `main`, sin codigo de la iteracion 1, pero roza la restriccion del prompt.
+
+#### F2
+
 Pendiente.
