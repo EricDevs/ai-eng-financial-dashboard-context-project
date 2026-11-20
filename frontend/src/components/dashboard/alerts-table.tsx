@@ -1,4 +1,4 @@
-import { AlertCircle } from 'lucide-react'
+import { ErrorNotice } from '@/components/dashboard/error-notice'
 import { ThresholdInput } from '@/components/dashboard/threshold-input'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -21,19 +21,6 @@ interface AlertsTableProps {
 
 const COLUMNS = ['Period', 'Outcome', 'Avg. of previous periods', 'Increase']
 const rowClass = 'border-t border-border/60'
-
-/** Red notice shared with the F1 date range warning (DEC-29). */
-function ErrorNotice({ message }: { message: string }) {
-  return (
-    <div
-      role="alert"
-      className="flex items-center gap-2 rounded-lg border border-red-500/40 bg-red-500/10 px-3 py-2 text-sm text-red-300"
-    >
-      <AlertCircle size={16} aria-hidden="true" />
-      {message}
-    </div>
-  )
-}
 
 function TableBody({ alerts, appliedThreshold, loading }: Pick<AlertsTableProps, 'alerts' | 'appliedThreshold' | 'loading'>) {
   if (loading) {
