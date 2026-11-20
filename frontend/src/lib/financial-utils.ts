@@ -1,5 +1,8 @@
+import type { TopCategoriesResponse } from "./api-types";
 import {
+  type Category,
   type FinancialMovement,
+  type GroupCategoryRow,
   type KPIMetrics,
   type MonthlyDataPoint,
 } from "./financial-types";
@@ -121,4 +124,24 @@ export function parseThreshold(text: string): number | null {
   if (text === "") return null;
   const value = Number(text);
   return Number.isFinite(value) && value >= THRESHOLD_MIN && value <= THRESHOLD_MAX ? value : null;
+}
+
+/** Sum of total_amount of the entries (0 if empty). */
+export function sumTotals(entries: TopCategoriesResponse): number {
+  return entries.reduce((sum, entry) => sum + entry.total_amount, 0);
+}
+
+/** Rows in API order with share = total_amount / group sum (0 if the sum is 0). */
+export function toGroupRows(entries: TopCategoriesResponse): GroupCategoryRow[] {
+  const total = sumTotals(entries);
+  return entries.map(({ category, total_amount }) => ({
+    category,
+    total_amount,
+    share: total > 0 ? total_amount / total : 0,
+  }));
+}
+
+/** Category name with its first letter in upper case: "sales" -> "Sales". */
+export function formatCategoryLabel(category: Category): string {
+  return category.charAt(0).toUpperCase() + category.slice(1);
 }
